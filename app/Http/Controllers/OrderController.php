@@ -328,32 +328,35 @@ class OrderController extends Controller
 
     private function orderPanelEtagFromDatabase(Order $order): string
     {
-        $aggregate = $order
-            ->items()
+        $snapshot = Order::query()
+            ->leftJoin("order_items", "order_items.order_id", "=", "orders.id")
+            ->where("orders.id", $order->id)
             ->selectRaw(
-                "count(*) as items_count, max(updated_at) as items_max_updated",
+                "orders.id as id, orders.status as status, orders.total_amount as total_amount, orders.updated_at as order_updated_at, count(order_items.id) as items_count, max(order_items.updated_at) as items_max_updated",
             )
-            ->first();
-
-        $itemsCount = (string) ((int) ($aggregate?->items_count ?? 0));
-        $itemsMaxUpdated = (string) ($aggregate?->items_max_updated ?? "0");
-
-        $freshOrder = Order::query()
-            ->select(["id", "status", "total_amount", "updated_at"])
-            ->findOrFail($order->id);
+            ->groupBy(
+                "orders.id",
+                "orders.status",
+                "orders.total_amount",
+                "orders.updated_at",
+            )
+            ->firstOrFail();
+        $orderUpdatedAtTs = !empty($snapshot->order_updated_at)
+            ? (int) strtotime((string) $snapshot->order_updated_at)
+            : 0;
 
         return sha1(
-            $freshOrder->id .
+            $snapshot->id .
                 "|" .
-                (string) ($freshOrder->updated_at?->timestamp ?? 0) .
+                (string) $orderUpdatedAtTs .
                 "|" .
-                $freshOrder->status .
+                $snapshot->status .
                 "|" .
-                (string) $freshOrder->total_amount .
+                (string) $snapshot->total_amount .
                 "|" .
-                $itemsMaxUpdated .
+                (string) ($snapshot->items_max_updated ?? "0") .
                 "|" .
-                $itemsCount,
+                (string) ((int) ($snapshot->items_count ?? 0)),
         );
     }
 
