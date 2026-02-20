@@ -9,6 +9,7 @@ services:
     env_file:
       - .env
     environment:
+      APP_NAME: Choyxona CRM
       APP_ENV: production
       APP_DEBUG: "false"
       DB_CONNECTION: mysql
@@ -55,6 +56,7 @@ services:
     env_file:
       - .env
     environment:
+      APP_NAME: Choyxona CRM
       APP_ENV: production
       APP_DEBUG: "false"
       DB_CONNECTION: mysql
@@ -82,6 +84,7 @@ services:
     env_file:
       - .env
     environment:
+      APP_NAME: Choyxona CRM
       APP_ENV: production
       APP_DEBUG: "false"
       DB_CONNECTION: mysql
