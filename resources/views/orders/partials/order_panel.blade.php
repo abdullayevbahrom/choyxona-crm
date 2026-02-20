@@ -33,7 +33,13 @@
                 <td class="p-3">{{ number_format((float) $item->subtotal, 2) }}</td>
                 @if ($order->status === 'open')
                     <td class="p-3">
-                        <form method="POST" action="{{ route('orders.items.destroy', [$order, $item]) }}">
+                        <form
+                            method="POST"
+                            action="{{ route('orders.items.destroy', [$order, $item]) }}"
+                            data-confirm="Ushbu mahsulotni buyurtmadan olib tashlamoqchimisiz?"
+                            data-disable-on-submit
+                            data-pending-text="O'chirilmoqda..."
+                        >
                             @csrf
                             @method('DELETE')
                             <button class="text-xs text-red-600 underline">O'chirish</button>
@@ -70,7 +76,14 @@
         <button class="rounded bg-slate-900 p-2 text-white">Chek yaratish</button>
     </form>
 
-    <form method="POST" action="{{ route('orders.cancel', $order) }}" class="mt-3">
+    <form
+        method="POST"
+        action="{{ route('orders.cancel', $order) }}"
+        class="mt-3"
+        data-confirm="Buyurtmani bekor qilmoqchimisiz?"
+        data-disable-on-submit
+        data-pending-text="Bekor qilinmoqda..."
+    >
         @csrf
         <button class="rounded bg-red-700 px-4 py-2 text-white">Buyurtmani bekor qilish</button>
     </form>

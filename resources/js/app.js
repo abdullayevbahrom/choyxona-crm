@@ -140,4 +140,35 @@ window.setupHtmlPolling = function setupHtmlPolling({
     poll().finally(() => start());
 };
 
+const initFormGuards = () => {
+    document.addEventListener("submit", (event) => {
+        const form = event.target;
+        if (!(form instanceof HTMLFormElement)) return;
+
+        const confirmMessage = form.getAttribute("data-confirm");
+        if (confirmMessage && !window.confirm(confirmMessage)) {
+            event.preventDefault();
+            return;
+        }
+
+        if (!form.hasAttribute("data-disable-on-submit")) return;
+
+        const submitButton = form.querySelector(
+            'button[type="submit"], button:not([type])',
+        );
+        if (!submitButton || submitButton.disabled) return;
+
+        submitButton.disabled = true;
+        submitButton.classList.add("opacity-60", "cursor-not-allowed");
+
+        const pendingText = form.getAttribute("data-pending-text");
+        if (pendingText && submitButton instanceof HTMLButtonElement) {
+            submitButton.dataset.originalText = submitButton.textContent ?? "";
+            submitButton.textContent = pendingText;
+        }
+    });
+};
+
+initFormGuards();
+
 Alpine.start();

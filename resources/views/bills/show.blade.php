@@ -56,7 +56,13 @@
         </a>
 
         @if (! $bill->is_printed)
-            <form method="POST" action="{{ route('bills.print', $bill) }}">
+            <form
+                method="POST"
+                action="{{ route('bills.print', $bill) }}"
+                data-confirm="Chekni chop etib buyurtmani yopmoqchimisiz?"
+                data-disable-on-submit
+                data-pending-text="Chop etilmoqda..."
+            >
                 @csrf
                 <button class="bg-green-700 text-white rounded px-4 py-2">Chek print (yopish)</button>
             </form>

@@ -78,7 +78,13 @@
                                     <button class="bg-blue-700 text-white rounded px-3 py-2 text-xs mb-2 w-full">Saqlash</button>
                                 </form>
 
-                                <form method="POST" action="{{ route('menu.toggle-active', $item) }}">
+                                <form
+                                    method="POST"
+                                    action="{{ route('menu.toggle-active', $item) }}"
+                                    data-confirm="Mahsulot faolligini almashtirmoqchimisiz?"
+                                    data-disable-on-submit
+                                    data-pending-text="Saqlanmoqda..."
+                                >
                                     @csrf
                                     <button class="text-blue-700 underline text-xs">Faollikni almashtirish</button>
                                 </form>
