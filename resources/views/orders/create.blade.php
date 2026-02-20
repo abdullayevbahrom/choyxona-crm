@@ -1,5 +1,5 @@
 <x-app-layout>
-    <h1 class="text-2xl font-bold mb-4">Xona {{ $room->number }} uchun buyurtma</h1>
+    <h1 class="mb-4 text-2xl font-bold">Xona {{ $room->number }} uchun buyurtma</h1>
 
     <div id="create-status" data-url="{{ route('orders.create.status', ['room' => $room->id]) }}">
         @include('orders.partials.create_status', ['room' => $room, 'openOrder' => $openOrder])
@@ -8,13 +8,13 @@
     <form id="menu-filter-form" method="GET" class="bg-white rounded-xl border p-4 mb-4 space-y-3">
         <input type="hidden" name="room" value="{{ $room->id }}">
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <input
                 id="menu-search-input"
                 name="q"
                 value="{{ $filters['q'] ?? '' }}"
                 placeholder="Qidirish (real-time)"
-                class="border rounded p-2 md:col-span-2"
+                class="border rounded p-2 sm:col-span-2 lg:col-span-2"
             >
             <select id="menu-type-select" name="type" class="border rounded p-2">
                 <option value="">Barchasi</option>
@@ -42,7 +42,7 @@
     </form>
 
     <div class="bg-white rounded-xl border p-4">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
             @foreach ($menuItems as $item)
                 <div class="border rounded-lg p-3">
                     <div class="font-semibold">{{ $item->name }}</div>
@@ -52,7 +52,7 @@
                     <form
                         method="POST"
                         action="{{ $openOrder ? route('orders.items.store', $openOrder) : '#' }}"
-                        class="flex gap-2"
+                        class="flex flex-wrap gap-2"
                         data-menu-item-form
                         data-disable-on-submit
                         data-pending-text="Qo'shilmoqda..."
@@ -70,7 +70,7 @@
                             type="number"
                             min="1"
                             value="1"
-                            class="border rounded p-1 w-16 text-center"
+                            class="w-16 rounded border p-1 text-center"
                             data-quantity-input
                             @disabled(! $openOrder)
                         >

@@ -3,17 +3,17 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <h1 class="text-2xl font-bold mb-4">Xonalar boshqaruvi</h1>
 
-            <form method="POST" action="{{ route('rooms.store') }}" class="bg-white rounded-xl border p-4 mb-6 grid grid-cols-1 md:grid-cols-4 gap-3">
+            <form method="POST" action="{{ route('rooms.store') }}" class="bg-white rounded-xl border p-4 mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
                 @csrf
                 <input name="number" placeholder="Xona raqami" class="border rounded p-2" required>
                 <input name="name" placeholder="Nomi" class="border rounded p-2">
                 <input name="capacity" type="number" min="1" placeholder="Sig'im" class="border rounded p-2">
                 <button class="bg-slate-900 text-white rounded p-2">Qo'shish</button>
-                <textarea name="description" placeholder="Izoh" class="border rounded p-2 md:col-span-4"></textarea>
+                <textarea name="description" placeholder="Izoh" class="border rounded p-2 sm:col-span-2 xl:col-span-4"></textarea>
             </form>
 
             <div class="bg-white rounded-xl border overflow-x-auto">
-                <table class="min-w-full text-sm">
+                <table class="min-w-[920px] w-full text-sm">
                     <thead class="bg-slate-100">
                     <tr>
                         <th class="text-left p-3">Raqam</th>

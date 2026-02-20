@@ -1,13 +1,13 @@
 <x-app-layout>
     <div class="py-8">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="mb-4 flex items-center justify-between">
+            <div class="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <h1 class="text-2xl font-bold">Xonalar Paneli</h1>
-                <div class="flex items-center gap-3">
+                <div class="flex items-center gap-3 self-start text-sm text-slate-600 sm:self-auto">
                     <span id="room-cards-syncing" role="status" aria-live="polite" class="hidden text-xs font-medium text-amber-700">
                         Yangilanmoqda...
                     </span>
-                    <span class="text-sm text-slate-600">30 soniyada avtomatik yangilanadi</span>
+                    <span>30 soniyada avtomatik yangilanadi</span>
                 </div>
             </div>
 

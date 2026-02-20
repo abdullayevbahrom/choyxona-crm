@@ -19,7 +19,7 @@
                 </div>
             @endif
 
-            <form method="GET" class="bg-white rounded-xl border p-4 mb-4 grid grid-cols-1 md:grid-cols-5 gap-3">
+            <form method="GET" class="bg-white rounded-xl border p-4 mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
                 <input name="action" value="{{ $filters['action'] ?? '' }}" placeholder="Amal" class="border rounded p-2">
 
                 <select name="user_id" class="border rounded p-2">
@@ -32,7 +32,7 @@
                 <input type="date" name="date_from" value="{{ $filters['date_from'] ?? '' }}" class="border rounded p-2">
                 <input type="date" name="date_to" value="{{ $filters['date_to'] ?? '' }}" class="border rounded p-2">
 
-                <select name="subject_type" class="border rounded p-2 md:col-span-2">
+                <select name="subject_type" class="border rounded p-2 sm:col-span-2 xl:col-span-2">
                     <option value="">Barcha obyekt turlari</option>
                     @foreach ($subjectTypes as $subjectType)
                         <option value="{{ $subjectType }}" @selected(($filters['subject_type'] ?? '') === $subjectType)>{{ class_basename($subjectType) }}</option>
@@ -41,7 +41,7 @@
 
                 <input name="subject_id" type="number" min="1" value="{{ $filters['subject_id'] ?? '' }}" placeholder="Obyekt ID" class="border rounded p-2">
 
-                <div class="flex gap-2 md:col-span-2">
+                <div class="flex flex-col gap-2 sm:flex-row sm:col-span-2 xl:col-span-2">
                     <button class="bg-slate-900 text-white rounded p-2 flex-1">Filtrlash</button>
                     <a href="{{ route('activity-logs.export', request()->query()) }}" class="bg-emerald-700 text-white rounded p-2 text-center flex-1">CSV yuklab olish</a>
                 </div>
@@ -61,7 +61,7 @@
 
                 @if($exports->isNotEmpty())
                     <div class="mt-3 overflow-x-auto">
-                        <table class="min-w-full text-xs">
+                        <table class="min-w-[760px] w-full text-xs">
                             <thead class="bg-slate-100">
                                 <tr>
                                     <th class="p-2 text-left">ID</th>
@@ -98,7 +98,7 @@
             </div>
 
             <div class="bg-white rounded-xl border overflow-x-auto">
-                <table class="min-w-full text-sm">
+                <table class="min-w-[980px] w-full text-sm">
                     <thead class="bg-slate-100">
                         <tr>
                             <th class="p-3 text-left">Vaqt</th>

@@ -4,13 +4,13 @@
             <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <h1 class="text-2xl font-bold">Hisobotlar</h1>
                 <div class="flex flex-wrap gap-2">
-                    <a href="{{ route('reports.export.csv', request()->query()) }}" class="inline-flex items-center rounded border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
+                    <a href="{{ route('reports.export.csv', request()->query()) }}" class="inline-flex w-full items-center justify-center rounded border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 sm:w-auto">
                         CSV yuklab olish
                     </a>
-                    <a href="{{ route('reports.export.xls', request()->query()) }}" class="inline-flex items-center rounded border border-emerald-300 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-700 hover:bg-emerald-100">
+                    <a href="{{ route('reports.export.xls', request()->query()) }}" class="inline-flex w-full items-center justify-center rounded border border-emerald-300 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-700 hover:bg-emerald-100 sm:w-auto">
                         XLSX yuklab olish
                     </a>
-                    <a href="{{ route('reports.export.pdf', request()->query()) }}" class="inline-flex items-center rounded border border-rose-300 bg-rose-50 px-3 py-2 text-sm font-medium text-rose-700 hover:bg-rose-100">
+                    <a href="{{ route('reports.export.pdf', request()->query()) }}" class="inline-flex w-full items-center justify-center rounded border border-rose-300 bg-rose-50 px-3 py-2 text-sm font-medium text-rose-700 hover:bg-rose-100 sm:w-auto">
                         PDF yuklab olish
                     </a>
                     <form
@@ -20,7 +20,7 @@
                         data-pending-text="Navbatga qo'yilmoqda..."
                     >
                         @csrf
-                        <button class="inline-flex items-center rounded border border-blue-300 bg-blue-50 px-3 py-2 text-sm font-medium text-blue-700 hover:bg-blue-100">
+                        <button class="inline-flex w-full items-center justify-center rounded border border-blue-300 bg-blue-50 px-3 py-2 text-sm font-medium text-blue-700 hover:bg-blue-100 sm:w-auto">
                             Fon rejimida CSV
                         </button>
                     </form>
@@ -33,7 +33,7 @@
                 </div>
             @endif
 
-            <form method="GET" class="sticky top-2 z-20 bg-white/95 backdrop-blur rounded-xl border p-4 grid grid-cols-1 md:grid-cols-6 gap-3">
+            <form method="GET" class="sticky top-2 z-20 rounded-xl border bg-white/95 p-4 backdrop-blur grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-6">
                 <input type="date" name="date_from" value="{{ $filters['date_from'] ?? '' }}" class="border rounded p-2">
                 <input type="date" name="date_to" value="{{ $filters['date_to'] ?? '' }}" class="border rounded p-2">
 
@@ -70,7 +70,7 @@
 
             <div class="bg-white rounded-xl border overflow-x-auto">
                 <h2 class="font-semibold p-4 border-b">Fon rejimidagi eksportlar</h2>
-                <table class="min-w-full text-sm">
+                <table class="min-w-[760px] w-full text-sm">
                     <thead class="bg-slate-50">
                         <tr>
                             <th class="p-3 text-left">ID</th>
@@ -106,7 +106,7 @@
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <div class="bg-white rounded-xl border overflow-x-auto">
                     <h2 class="font-semibold p-4 border-b">Kunlik daromad (so'nggi 31 kun)</h2>
-                    <table class="min-w-full text-sm">
+                    <table class="min-w-[520px] w-full text-sm">
                         <thead class="bg-slate-50">
                             <tr><th class="p-3 text-left">Sana</th><th class="p-3 text-left">Daromad</th></tr>
                         </thead>
@@ -122,7 +122,7 @@
 
                 <div class="bg-white rounded-xl border overflow-x-auto">
                     <h2 class="font-semibold p-4 border-b">Oylik daromad (12 oy)</h2>
-                    <table class="min-w-full text-sm">
+                    <table class="min-w-[520px] w-full text-sm">
                         <thead class="bg-slate-50">
                             <tr><th class="p-3 text-left">Oy</th><th class="p-3 text-left">Daromad</th></tr>
                         </thead>
@@ -166,7 +166,7 @@
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 <div class="bg-white rounded-xl border overflow-x-auto">
                     <h2 class="font-semibold p-4 border-b">TOP-10 mahsulot</h2>
-                    <table class="min-w-full text-sm">
+                    <table class="min-w-[520px] w-full text-sm">
                         <thead class="bg-slate-50">
                             <tr><th class="p-3 text-left">Nomi</th><th class="p-3 text-left">Soni</th><th class="p-3 text-left">Daromad</th></tr>
                         </thead>
@@ -182,7 +182,7 @@
 
                 <div class="bg-white rounded-xl border overflow-x-auto">
                     <h2 class="font-semibold p-4 border-b">Xonalar faolligi</h2>
-                    <table class="min-w-full text-sm">
+                    <table class="min-w-[520px] w-full text-sm">
                         <thead class="bg-slate-50">
                             <tr><th class="p-3 text-left">Xona</th><th class="p-3 text-left">Buyurtma</th><th class="p-3 text-left">Daromad</th></tr>
                         </thead>
@@ -198,7 +198,7 @@
 
                 <div class="bg-white rounded-xl border overflow-x-auto">
                     <h2 class="font-semibold p-4 border-b">Kassirlar statistikasi</h2>
-                    <table class="min-w-full text-sm">
+                    <table class="min-w-[520px] w-full text-sm">
                         <thead class="bg-slate-50">
                             <tr><th class="p-3 text-left">Kassir</th><th class="p-3 text-left">Chek</th><th class="p-3 text-left">Daromad</th></tr>
                         </thead>

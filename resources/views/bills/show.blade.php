@@ -13,7 +13,7 @@
 
     <div class="bg-white rounded-xl border p-4 mb-6">
         <div class="overflow-x-auto">
-            <table class="min-w-full text-sm mb-4">
+            <table class="min-w-[640px] w-full text-sm mb-4">
                 <thead>
                 <tr class="border-b">
                     <th class="text-left p-2">Mahsulot</th>
@@ -43,14 +43,14 @@
 
         <div class="mt-4 border-t pt-4">
             <p class="text-sm font-medium text-slate-700 mb-2">QR (tekshirish ma'lumoti)</p>
-            <div class="flex items-center gap-4">
+            <div class="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
                 <img src="{{ $qrImageUrl }}" alt="Bill QR" width="120" height="120" class="rounded border">
                 <p class="text-xs text-slate-600 break-all">{{ $qrPayload }}</p>
             </div>
         </div>
     </div>
 
-    <div class="flex items-center gap-3">
+    <div class="flex flex-col items-start gap-3 sm:flex-row sm:items-center">
         <a href="{{ route('bills.pdf', $bill) }}" target="_blank" class="bg-slate-900 text-white rounded px-4 py-2">
             PDF ochish
         </a>

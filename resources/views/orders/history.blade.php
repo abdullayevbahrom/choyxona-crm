@@ -3,7 +3,7 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <h1 class="text-2xl font-bold mb-4">Buyurtmalar tarixi</h1>
 
-            <form method="GET" class="bg-white rounded-xl border p-4 mb-4 grid grid-cols-1 md:grid-cols-6 gap-3">
+            <form method="GET" class="bg-white rounded-xl border p-4 mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-6">
                 <select name="room_id" class="border rounded p-2">
                     <option value="">Barcha xonalar</option>
                     @foreach ($rooms as $room)
@@ -26,7 +26,7 @@
             </form>
 
             <div class="bg-white rounded-xl border overflow-x-auto">
-                <table class="min-w-full text-sm">
+                <table class="min-w-[760px] w-full text-sm">
                     <thead class="bg-slate-100">
                     <tr>
                         <th class="text-left p-3">Buyurtma</th>

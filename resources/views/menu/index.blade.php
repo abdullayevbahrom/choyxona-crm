@@ -3,7 +3,7 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <h1 class="text-2xl font-bold mb-4">Menyu boshqaruvi</h1>
 
-            <form method="GET" class="bg-white rounded-xl border p-4 mb-4 grid grid-cols-1 md:grid-cols-4 gap-3">
+            <form method="GET" class="bg-white rounded-xl border p-4 mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
                 <input name="q" value="{{ $filters['q'] ?? '' }}" placeholder="Qidirish" class="border rounded p-2">
                 <select name="type" class="border rounded p-2">
                     <option value="">Barchasi</option>
@@ -20,7 +20,7 @@
             <form
                 method="POST"
                 action="{{ route('menu.store') }}"
-                class="bg-white rounded-xl border p-4 mb-6 grid grid-cols-1 md:grid-cols-4 gap-3"
+                class="bg-white rounded-xl border p-4 mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4"
                 data-disable-on-submit
                 data-pending-text="Saqlanmoqda..."
             >
@@ -35,11 +35,11 @@
                 <button class="bg-green-700 text-white rounded p-2">Qo'shish</button>
                 <input name="stock_quantity" type="number" min="0" placeholder="Miqdor" class="border rounded p-2">
                 <input name="unit" placeholder="Birlik" class="border rounded p-2">
-                <textarea name="description" placeholder="Izoh" class="border rounded p-2 md:col-span-2"></textarea>
+                <textarea name="description" placeholder="Izoh" class="border rounded p-2 sm:col-span-2 xl:col-span-2"></textarea>
             </form>
 
             <div class="bg-white rounded-xl border overflow-x-auto">
-                <table class="min-w-full text-sm">
+                <table class="min-w-[980px] w-full text-sm">
                     <thead class="bg-slate-100">
                     <tr>
                         <th class="text-left p-3">Nomi</th>

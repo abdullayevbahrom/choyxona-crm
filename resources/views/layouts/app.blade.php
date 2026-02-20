@@ -37,7 +37,7 @@
 
             <!-- Page Content -->
             <main id="main-content" tabindex="-1">
-                <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 pt-4">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
                     @if (session('status'))
                         <div class="mb-4 rounded border border-green-300 bg-green-100 p-3 text-sm text-green-800">
                             {{ session('status') }}

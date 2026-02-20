@@ -3,7 +3,7 @@
         <div class="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
             <h1 class="text-2xl font-bold">Foydalanuvchilar</h1>
 
-            <form method="POST" action="{{ route('users.store') }}" class="grid grid-cols-1 gap-3 rounded-xl border bg-white p-4 md:grid-cols-5">
+            <form method="POST" action="{{ route('users.store') }}" class="grid grid-cols-1 gap-3 rounded-xl border bg-white p-4 sm:grid-cols-2 xl:grid-cols-5">
                 @csrf
                 <input name="name" class="rounded border p-2" placeholder="Ism" required>
                 <input name="email" type="email" class="rounded border p-2" placeholder="Email" required>
@@ -14,11 +14,11 @@
                 </select>
                 <input name="password" type="password" class="rounded border p-2" placeholder="Parol" required>
                 <input name="password_confirmation" type="password" class="rounded border p-2" placeholder="Parol tasdiqi" required>
-                <button class="rounded bg-slate-900 px-4 py-2 text-white md:col-span-5 md:w-48">Qo'shish</button>
+                <button class="rounded bg-slate-900 px-4 py-2 text-white sm:col-span-2 xl:col-span-5 xl:w-48">Qo'shish</button>
             </form>
 
             <div class="overflow-x-auto rounded-xl border bg-white">
-                <table class="min-w-full text-sm">
+                <table class="min-w-[900px] w-full text-sm">
                     <thead class="bg-slate-50">
                     <tr>
                         <th class="p-3 text-left">Ism</th>

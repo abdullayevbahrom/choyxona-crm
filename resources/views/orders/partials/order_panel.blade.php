@@ -1,7 +1,7 @@
 <p class="mb-4 text-slate-600">Xona: {{ $order->room->number }} | Holat: {{ $order->status }}</p>
 
 <div class="mb-6 overflow-x-auto rounded-xl border bg-white">
-    <table class="min-w-full text-sm">
+    <table class="min-w-[680px] w-full text-sm">
         <thead class="bg-slate-100">
         <tr>
             <th class="p-3 text-left">Mahsulot</th>
@@ -28,7 +28,7 @@
                         >
                             @csrf
                             @method('PATCH')
-                            <input name="quantity" type="number" min="1" max="1000" value="{{ $item->quantity }}" class="w-20 rounded border p-1">
+                            <input name="quantity" type="number" min="1" max="1000" value="{{ $item->quantity }}" class="w-16 rounded border p-1 sm:w-20">
                             <button class="text-xs text-blue-700 underline">Saqlash</button>
                         </form>
                     @else
@@ -72,7 +72,7 @@
     <form
         method="POST"
         action="{{ route('orders.bill.store', $order) }}"
-        class="grid grid-cols-1 gap-3 rounded-xl border bg-white p-4 md:grid-cols-4"
+        class="grid grid-cols-1 gap-3 rounded-xl border bg-white p-4 sm:grid-cols-2 xl:grid-cols-4"
         data-disable-on-submit
         data-pending-text="Chek yaratilmoqda..."
     >

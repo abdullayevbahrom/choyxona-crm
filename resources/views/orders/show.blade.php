@@ -1,5 +1,5 @@
 <x-app-layout>
-    <div class="mb-2 flex items-center justify-between gap-3">
+    <div class="mb-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <h1 class="text-2xl font-bold">{{ $order->order_number }}</h1>
         <span id="order-panel-syncing" role="status" aria-live="polite" class="hidden text-xs font-medium text-amber-700">Yangilanmoqda...</span>
     </div>
