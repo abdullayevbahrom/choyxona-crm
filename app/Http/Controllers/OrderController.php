@@ -8,6 +8,7 @@ use App\Http\Requests\Orders\OrderCreateStatusRequest;
 use App\Http\Requests\Orders\OrderHistoryRequest;
 use App\Http\Requests\Orders\OrderStoreRequest;
 use App\Http\Requests\Orders\OrderUpdateItemRequest;
+use App\Models\Bill;
 use App\Models\MenuItem;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -94,6 +95,7 @@ class OrderController extends Controller
             'room:id,number,name,status',
             'items:id,order_id,menu_item_id,quantity,unit_price,subtotal,notes,updated_at',
             'items.menuItem:id,name,type,is_active',
+            'bill:id,order_id,bill_number,subtotal,discount_percent,discount_amount,total_amount,payment_method,is_printed,updated_at',
         ]);
 
         return view('orders.show', compact('order'));
@@ -115,6 +117,7 @@ class OrderController extends Controller
             'room:id,number,name,status',
             'items:id,order_id,menu_item_id,quantity,unit_price,subtotal,notes,updated_at',
             'items.menuItem:id,name,type,is_active',
+            'bill:id,order_id,bill_number,subtotal,discount_percent,discount_amount,total_amount,payment_method,is_printed,updated_at',
         ]);
 
         $response = response()->view(
@@ -341,6 +344,18 @@ class OrderController extends Controller
                 'orders.updated_at',
             )
             ->firstOrFail();
+
+        $billSnapshot = Bill::query()
+            ->where('order_id', $order->id)
+            ->select([
+                'updated_at',
+                'discount_percent',
+                'discount_amount',
+                'total_amount',
+                'is_printed',
+            ])
+            ->first();
+
         $orderUpdatedAtTs = ! empty($snapshot->order_updated_at)
             ? (int) strtotime((string) $snapshot->order_updated_at)
             : 0;
@@ -356,7 +371,17 @@ class OrderController extends Controller
                 '|'.
                 (string) ($snapshot->items_max_updated ?? '0').
                 '|'.
-                (string) ((int) ($snapshot->items_count ?? 0)),
+                (string) ((int) ($snapshot->items_count ?? 0)).
+                '|'.
+                (string) ($billSnapshot?->updated_at?->timestamp ?? 0).
+                '|'.
+                (string) ($billSnapshot?->discount_percent ?? '0').
+                '|'.
+                (string) ($billSnapshot?->discount_amount ?? '0').
+                '|'.
+                (string) ($billSnapshot?->total_amount ?? '0').
+                '|'.
+                (string) ((int) ($billSnapshot?->is_printed ?? 0)),
         );
     }
 
