@@ -16,6 +16,7 @@ class MonitorSystemHealthCommandTest extends TestCase
         config()->set("monitoring.failed_jobs_threshold", 5);
         config()->set("monitoring.queue_backlog_threshold", 200);
         config()->set("monitoring.summary_stale_hours", 48);
+        config()->set("monitoring.min_disk_free_percent", 0);
 
         $this->artisan("monitor:system-health")
             ->expectsOutputToContain("HEALTHY")
@@ -44,6 +45,19 @@ class MonitorSystemHealthCommandTest extends TestCase
 
         config()->set("monitoring.failed_jobs_threshold", 0);
         config()->set("monitoring.queue_backlog_threshold", 0);
+        config()->set("monitoring.min_disk_free_percent", 0);
+
+        $this->artisan("monitor:system-health")
+            ->expectsOutputToContain("DEGRADED")
+            ->assertExitCode(1);
+    }
+
+    public function test_monitor_command_returns_failure_when_disk_free_is_below_threshold(): void
+    {
+        config()->set("monitoring.failed_jobs_threshold", 999999);
+        config()->set("monitoring.queue_backlog_threshold", 999999);
+        config()->set("monitoring.summary_stale_hours", 999999);
+        config()->set("monitoring.min_disk_free_percent", 101);
 
         $this->artisan("monitor:system-health")
             ->expectsOutputToContain("DEGRADED")
