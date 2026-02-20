@@ -15,6 +15,7 @@ Choyxona uchun xona, buyurtma, chek va hisobotlarni boshqarish tizimi.
 - Xonalar paneli (`/dashboard`)
 - Buyurtma yaratish va boshqarish
 - Menyu CRUD (`/menu`)
+- Foydalanuvchi boshqaruvi (`/users`, admin-only)
 - Chek yaratish, print va PDF (`/bills/{id}`)
 - Hisobotlar (`/reports`)
 - Role-based access (`admin`, `manager`, `cashier`)
@@ -59,6 +60,11 @@ Seeddan keyin quyidagi loginlar yaratiladi (`password`):
 - Dashboard: `/dashboard`
 
 `/healthz` JSON qaytaradi va DB yoki storage muammosi bo'lsa `503` beradi.
+
+## Registration siyosati
+
+- Public registration default o'chirilgan: `ALLOW_PUBLIC_REGISTRATION=false`
+- Ichki CRM sifatida foydalanuvchilar admin paneldan (`/users`) boshqariladi.
 
 ## Testlar
 
