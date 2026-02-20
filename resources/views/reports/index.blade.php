@@ -8,7 +8,7 @@
                         CSV export
                     </a>
                     <a href="{{ route('reports.export.xls', request()->query()) }}" class="inline-flex items-center rounded border border-emerald-300 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-700 hover:bg-emerald-100">
-                        XLS export
+                        XLSX export
                     </a>
                     <a href="{{ route('reports.export.pdf', request()->query()) }}" class="inline-flex items-center rounded border border-rose-300 bg-rose-50 px-3 py-2 text-sm font-medium text-rose-700 hover:bg-rose-100">
                         PDF export

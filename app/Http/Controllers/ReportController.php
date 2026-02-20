@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\ReportExport;
 use App\Models\Room;
 use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -12,6 +13,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
+use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -48,51 +50,86 @@ class ReportController extends Controller
 
         $filename = "reports-" . now()->format("Ymd-His") . ".csv";
 
-        return response()->streamDownload(function () use ($reportData): void {
-            $handle = fopen("php://output", "wb");
+        return response()->streamDownload(
+            function () use ($reportData): void {
+                $handle = fopen("php://output", "wb");
 
-            if ($handle === false) {
-                return;
-            }
+                if ($handle === false) {
+                    return;
+                }
 
-            fputcsv($handle, ["Bo'lim", "Nom", "Qiymat"]);
-            fputcsv($handle, ["Umumiy", "Jami daromad", (float) $reportData["totalRevenue"]]);
-            fputcsv($handle, ["Umumiy", "Yopilgan buyurtmalar", (int) $reportData["ordersCount"]]);
+                fputcsv($handle, ["Bo'lim", "Nom", "Qiymat"]);
+                fputcsv($handle, [
+                    "Umumiy",
+                    "Jami daromad",
+                    (float) $reportData["totalRevenue"],
+                ]);
+                fputcsv($handle, [
+                    "Umumiy",
+                    "Yopilgan buyurtmalar",
+                    (int) $reportData["ordersCount"],
+                ]);
 
-            fputcsv($handle, []);
-            fputcsv($handle, ["Kunlik daromad", "Sana", "Daromad"]);
-            foreach ($reportData["dailyRevenue"] as $row) {
-                fputcsv($handle, ["Kunlik daromad", $row->day, (float) $row->revenue]);
-            }
+                fputcsv($handle, []);
+                fputcsv($handle, ["Kunlik daromad", "Sana", "Daromad"]);
+                foreach ($reportData["dailyRevenue"] as $row) {
+                    fputcsv($handle, [
+                        "Kunlik daromad",
+                        $row->day,
+                        (float) $row->revenue,
+                    ]);
+                }
 
-            fputcsv($handle, []);
-            fputcsv($handle, ["Oylik daromad", "Oy", "Daromad"]);
-            foreach ($reportData["monthlyRevenue"] as $row) {
-                fputcsv($handle, ["Oylik daromad", $row->ym, (float) $row->revenue]);
-            }
+                fputcsv($handle, []);
+                fputcsv($handle, ["Oylik daromad", "Oy", "Daromad"]);
+                foreach ($reportData["monthlyRevenue"] as $row) {
+                    fputcsv($handle, [
+                        "Oylik daromad",
+                        $row->ym,
+                        (float) $row->revenue,
+                    ]);
+                }
 
-            fputcsv($handle, []);
-            fputcsv($handle, ["TOP mahsulot", "Nomi", "Soni", "Daromad"]);
-            foreach ($reportData["topItems"] as $row) {
-                fputcsv($handle, ["TOP mahsulot", $row->item_name, (int) $row->total_qty, (float) $row->revenue]);
-            }
+                fputcsv($handle, []);
+                fputcsv($handle, ["TOP mahsulot", "Nomi", "Soni", "Daromad"]);
+                foreach ($reportData["topItems"] as $row) {
+                    fputcsv($handle, [
+                        "TOP mahsulot",
+                        $row->item_name,
+                        (int) $row->total_qty,
+                        (float) $row->revenue,
+                    ]);
+                }
 
-            fputcsv($handle, []);
-            fputcsv($handle, ["Xonalar", "Xona", "Buyurtma", "Daromad"]);
-            foreach ($reportData["roomStats"] as $row) {
-                fputcsv($handle, ["Xonalar", $row->room_number, (int) $row->orders_count, (float) $row->revenue]);
-            }
+                fputcsv($handle, []);
+                fputcsv($handle, ["Xonalar", "Xona", "Buyurtma", "Daromad"]);
+                foreach ($reportData["roomStats"] as $row) {
+                    fputcsv($handle, [
+                        "Xonalar",
+                        $row->room_number,
+                        (int) $row->orders_count,
+                        (float) $row->revenue,
+                    ]);
+                }
 
-            fputcsv($handle, []);
-            fputcsv($handle, ["Kassirlar", "Kassir", "Chek", "Daromad"]);
-            foreach ($reportData["cashierStats"] as $row) {
-                fputcsv($handle, ["Kassirlar", $row->cashier_name, (int) $row->bills_count, (float) $row->revenue]);
-            }
+                fputcsv($handle, []);
+                fputcsv($handle, ["Kassirlar", "Kassir", "Chek", "Daromad"]);
+                foreach ($reportData["cashierStats"] as $row) {
+                    fputcsv($handle, [
+                        "Kassirlar",
+                        $row->cashier_name,
+                        (int) $row->bills_count,
+                        (float) $row->revenue,
+                    ]);
+                }
 
-            fclose($handle);
-        }, $filename, [
-            "Content-Type" => "text/csv; charset=UTF-8",
-        ]);
+                fclose($handle);
+            },
+            $filename,
+            [
+                "Content-Type" => "text/csv; charset=UTF-8",
+            ],
+        );
     }
 
     public function exportXls(Request $request): Response
@@ -100,16 +137,10 @@ class ReportController extends Controller
         $validated = $this->validatedFilters($request);
         $reportData = $this->buildReportData($validated);
 
-        $html = view("reports.xls", [
-            "filters" => $validated,
-            "reportData" => $reportData,
-        ])->render();
-
-        return response($html, 200, [
-            "Content-Type" => "application/vnd.ms-excel; charset=UTF-8",
-            "Content-Disposition" =>
-                'attachment; filename="reports-' . now()->format("Ymd-His") . '.xls"',
-        ]);
+        return Excel::download(
+            new ReportExport($validated, $reportData),
+            "reports-" . now()->format("Ymd-His") . ".xlsx",
+        );
     }
 
     public function exportPdf(Request $request): Response
@@ -223,7 +254,9 @@ class ReportController extends Controller
 
                         $monthlyRevenue = $summaryRows
                             ->groupBy(
-                                fn($row) => Str::of((string) $row->day)->substr(0, 7)->toString(),
+                                fn($row) => Str::of((string) $row->day)
+                                    ->substr(0, 7)
+                                    ->toString(),
                             )
                             ->map(
                                 fn(Collection $rows, string $ym) => (object) [

@@ -24,9 +24,13 @@ class ReportExportTest extends TestCase
         $csv->assertHeader("content-type", "text/csv; charset=UTF-8");
 
         $xls->assertOk();
-        $xls->assertHeader(
-            "content-type",
-            "application/vnd.ms-excel; charset=UTF-8",
+        $this->assertStringContainsString(
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            (string) $xls->headers->get("content-type"),
+        );
+        $this->assertStringContainsString(
+            ".xlsx",
+            (string) $xls->headers->get("content-disposition"),
         );
 
         $pdf->assertOk();
