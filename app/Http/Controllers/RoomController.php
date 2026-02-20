@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Rooms\RoomStoreRequest;
+use App\Http\Requests\Rooms\RoomUpdateRequest;
 use App\Models\Order;
 use App\Models\Room;
 use App\Support\ActivityLogger;
@@ -54,14 +56,9 @@ class RoomController extends Controller
         return view("rooms.index", compact("rooms"));
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(RoomStoreRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            "number" => ["required", "string", "max:20", "unique:rooms,number"],
-            "name" => ["nullable", "string", "max:100"],
-            "capacity" => ["nullable", "integer", "min:1"],
-            "description" => ["nullable", "string"],
-        ]);
+        $validated = $request->validated();
 
         $room = Room::query()->create(
             $validated + [
@@ -76,19 +73,11 @@ class RoomController extends Controller
             ->with("status", "Xona yaratildi.");
     }
 
-    public function update(Request $request, Room $room): RedirectResponse
-    {
-        $validated = $request->validate([
-            "number" => [
-                "required",
-                "string",
-                "max:20",
-                "unique:rooms,number," . $room->id,
-            ],
-            "name" => ["nullable", "string", "max:100"],
-            "capacity" => ["nullable", "integer", "min:1"],
-            "description" => ["nullable", "string"],
-        ]);
+    public function update(
+        RoomUpdateRequest $request,
+        Room $room,
+    ): RedirectResponse {
+        $validated = $request->validated();
 
         $room->update($validated);
         ActivityLogger::log("rooms.update", $room, "Xona yangilandi.");

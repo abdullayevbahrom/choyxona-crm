@@ -2,20 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Menu\MenuIndexRequest;
+use App\Http\Requests\Menu\MenuUpsertRequest;
 use App\Models\MenuItem;
 use App\Support\ActivityLogger;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class MenuController extends Controller
 {
-    public function index(Request $request): View
+    public function index(MenuIndexRequest $request): View
     {
-        $validated = $request->validate([
-            "type" => ["nullable", "in:food,drink,bread,salad,sauce"],
-            "q" => ["nullable", "string", "max:200"],
-        ]);
+        $validated = $request->validated();
 
         $query = MenuItem::query()->orderBy("name");
 
@@ -35,16 +33,9 @@ class MenuController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(MenuUpsertRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            "name" => ["required", "string", "max:200"],
-            "type" => ["required", "in:food,drink,bread,salad,sauce"],
-            "price" => ["nullable", "numeric", "min:0"],
-            "stock_quantity" => ["nullable", "integer", "min:0"],
-            "unit" => ["nullable", "string", "max:20"],
-            "description" => ["nullable", "string"],
-        ]);
+        $validated = $request->validated();
 
         $item = MenuItem::query()->create($validated + ["is_active" => true]);
         ActivityLogger::log("menu.create", $item, "Menyu mahsuloti yaratildi.");
@@ -53,17 +44,10 @@ class MenuController extends Controller
     }
 
     public function update(
-        Request $request,
+        MenuUpsertRequest $request,
         MenuItem $menuItem,
     ): RedirectResponse {
-        $validated = $request->validate([
-            "name" => ["required", "string", "max:200"],
-            "type" => ["required", "in:food,drink,bread,salad,sauce"],
-            "price" => ["nullable", "numeric", "min:0"],
-            "stock_quantity" => ["nullable", "integer", "min:0"],
-            "unit" => ["nullable", "string", "max:20"],
-            "description" => ["nullable", "string"],
-        ]);
+        $validated = $request->validated();
 
         $menuItem->update($validated);
         ActivityLogger::log(

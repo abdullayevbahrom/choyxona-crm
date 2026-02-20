@@ -2,6 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Orders\OrderAddItemRequest;
+use App\Http\Requests\Orders\OrderCreateRequest;
+use App\Http\Requests\Orders\OrderCreateStatusRequest;
+use App\Http\Requests\Orders\OrderHistoryRequest;
+use App\Http\Requests\Orders\OrderStoreRequest;
+use App\Http\Requests\Orders\OrderUpdateItemRequest;
 use App\Models\MenuItem;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -11,7 +17,6 @@ use App\Support\ActivityLogger;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
@@ -21,13 +26,9 @@ class OrderController extends Controller
 {
     public function __construct(private readonly OrderService $orderService) {}
 
-    public function create(Request $request): View
+    public function create(OrderCreateRequest $request): View
     {
-        $validated = $request->validate([
-            "room" => ["required", "integer", "exists:rooms,id"],
-            "type" => ["nullable", "in:food,drink,bread,salad,sauce"],
-            "q" => ["nullable", "string", "max:200"],
-        ]);
+        $validated = $request->validated();
 
         $room = Room::query()->findOrFail($validated["room"]);
 
@@ -66,12 +67,9 @@ class OrderController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(OrderStoreRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            "room_id" => ["required", "integer", "exists:rooms,id"],
-            "notes" => ["nullable", "string"],
-        ]);
+        $validated = $request->validated();
 
         $room = Room::query()->findOrFail($validated["room_id"]);
 
@@ -102,8 +100,10 @@ class OrderController extends Controller
         return view("orders.show", compact("order"));
     }
 
-    public function panel(Request $request, Order $order): Response
-    {
+    public function panel(
+        \Illuminate\Http\Request $request,
+        Order $order,
+    ): Response {
         $order->load([
             "room:id,number,name,status",
             "items:id,order_id,menu_item_id,quantity,unit_price,subtotal,notes,updated_at",
@@ -130,11 +130,9 @@ class OrderController extends Controller
         ]);
     }
 
-    public function createStatus(Request $request): Response
+    public function createStatus(OrderCreateStatusRequest $request): Response
     {
-        $validated = $request->validate([
-            "room" => ["required", "integer", "exists:rooms,id"],
-        ]);
+        $validated = $request->validated();
 
         $room = Room::query()->findOrFail($validated["room"]);
         $openOrder = $room
@@ -162,11 +160,10 @@ class OrderController extends Controller
         return $response;
     }
 
-    public function createStatusFingerprint(Request $request): JsonResponse
-    {
-        $validated = $request->validate([
-            "room" => ["required", "integer", "exists:rooms,id"],
-        ]);
+    public function createStatusFingerprint(
+        OrderCreateStatusRequest $request,
+    ): JsonResponse {
+        $validated = $request->validated();
 
         $room = Room::query()->findOrFail($validated["room"]);
         $openOrder = $room->openOrder()->first();
@@ -176,13 +173,11 @@ class OrderController extends Controller
         ]);
     }
 
-    public function addItem(Request $request, Order $order): RedirectResponse
-    {
-        $validated = $request->validate([
-            "menu_item_id" => ["required", "integer", "exists:menu_items,id"],
-            "quantity" => ["nullable", "integer", "min:1", "max:1000"],
-            "notes" => ["nullable", "string", "max:500"],
-        ]);
+    public function addItem(
+        OrderAddItemRequest $request,
+        Order $order,
+    ): RedirectResponse {
+        $validated = $request->validated();
 
         $menuItem = MenuItem::query()->findOrFail($validated["menu_item_id"]);
 
@@ -221,13 +216,11 @@ class OrderController extends Controller
     }
 
     public function updateItem(
-        Request $request,
+        OrderUpdateItemRequest $request,
         Order $order,
         OrderItem $item,
     ): RedirectResponse {
-        $validated = $request->validate([
-            "quantity" => ["required", "integer", "min:1", "max:1000"],
-        ]);
+        $validated = $request->validated();
 
         try {
             $this->orderService->updateItemQuantity(
@@ -290,14 +283,9 @@ class OrderController extends Controller
             ->with("status", "Buyurtma bekor qilindi.");
     }
 
-    public function history(Request $request): View
+    public function history(OrderHistoryRequest $request): View
     {
-        $validated = $request->validate([
-            "room_id" => ["nullable", "integer", "exists:rooms,id"],
-            "date_from" => ["nullable", "date"],
-            "date_to" => ["nullable", "date"],
-            "status" => ["nullable", "in:closed,cancelled"],
-        ]);
+        $validated = $request->validated();
 
         $query = Order::query()
             ->with(["room", "user"])

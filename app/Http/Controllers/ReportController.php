@@ -3,11 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Exports\ReportExport;
+use App\Http\Requests\Reports\ReportFilterRequest;
 use App\Models\Room;
 use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Database\Query\Builder;
-use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -19,9 +19,9 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ReportController extends Controller
 {
-    public function index(Request $request): View
+    public function index(ReportFilterRequest $request): View
     {
-        $validated = $this->validatedFilters($request);
+        $validated = $request->validated();
         $reportData = $this->buildReportData($validated);
 
         return view("reports.index", [
@@ -43,9 +43,9 @@ class ReportController extends Controller
         ]);
     }
 
-    public function exportCsv(Request $request): StreamedResponse
+    public function exportCsv(ReportFilterRequest $request): StreamedResponse
     {
-        $validated = $this->validatedFilters($request);
+        $validated = $request->validated();
         $reportData = $this->buildReportData($validated);
 
         $filename = "reports-" . now()->format("Ymd-His") . ".csv";
@@ -132,9 +132,9 @@ class ReportController extends Controller
         );
     }
 
-    public function exportXls(Request $request): Response
+    public function exportXls(ReportFilterRequest $request): Response
     {
-        $validated = $this->validatedFilters($request);
+        $validated = $request->validated();
         $reportData = $this->buildReportData($validated);
 
         return Excel::download(
@@ -143,9 +143,9 @@ class ReportController extends Controller
         );
     }
 
-    public function exportPdf(Request $request): Response
+    public function exportPdf(ReportFilterRequest $request): Response
     {
-        $validated = $this->validatedFilters($request);
+        $validated = $request->validated();
         $reportData = $this->buildReportData($validated);
 
         $pdf = Pdf::loadView("reports.pdf", [
@@ -154,16 +154,6 @@ class ReportController extends Controller
         ])->setPaper("a4");
 
         return $pdf->download("reports-" . now()->format("Ymd-His") . ".pdf");
-    }
-
-    private function validatedFilters(Request $request): array
-    {
-        return $request->validate([
-            "date_from" => ["nullable", "date"],
-            "date_to" => ["nullable", "date"],
-            "room_id" => ["nullable", "integer", "exists:rooms,id"],
-            "cashier_id" => ["nullable", "integer", "exists:users,id"],
-        ]);
     }
 
     private function buildReportData(array $validated): array

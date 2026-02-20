@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Bills\BillStoreRequest;
 use App\Models\Bill;
 use App\Models\Order;
 use App\Models\Setting;
@@ -9,7 +10,6 @@ use App\Services\BillService;
 use App\Support\ActivityLogger;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use RuntimeException;
@@ -19,24 +19,11 @@ class BillController extends Controller
 {
     public function __construct(private readonly BillService $billService) {}
 
-    public function store(Request $request, Order $order): RedirectResponse
-    {
-        $validated = $request->validate([
-            "payment_method" => ["nullable", "in:cash,card,transfer"],
-            "discount_percent" => [
-                "nullable",
-                "numeric",
-                "min:0",
-                "max:100",
-                "prohibits:discount_amount",
-            ],
-            "discount_amount" => [
-                "nullable",
-                "numeric",
-                "min:0",
-                "prohibits:discount_percent",
-            ],
-        ]);
+    public function store(
+        BillStoreRequest $request,
+        Order $order,
+    ): RedirectResponse {
+        $validated = $request->validated();
 
         try {
             $bill = $this->billService->createForOrder(
