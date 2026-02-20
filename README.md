@@ -145,6 +145,24 @@ php artisan backup:database --prune-days=30
 php artisan queue:restart
 ```
 
+- Runtime service tekshiruvi (queue/scheduler):
+
+```bash
+./deploy/scripts/check-runtime-services.sh
+```
+
+- Web smoke tekshiruvi (login + dashboard + reports):
+
+```bash
+SMOKE_EMAIL=manager@choyxona.uz SMOKE_PASSWORD=password ./deploy/scripts/smoke-web.sh "$APP_URL"
+```
+
+- To'liq post-deploy verify (migrate pending + health + runtime + smoke):
+
+```bash
+./deploy/scripts/post-deploy-verify.sh "$APP_URL"
+```
+
 ## Observability
 
 - Har bir javobda `X-Request-ID` header qaytadi.

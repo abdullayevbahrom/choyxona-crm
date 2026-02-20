@@ -20,6 +20,9 @@
 ## Post-Release Smoke
 
 - [ ] `/healthz` `200` va `status=ok`
+- [ ] `php artisan migrate:status --pending --no-ansi` da pending yo'q
+- [ ] `./deploy/scripts/check-runtime-services.sh` muvaffaqiyatli
+- [ ] `./deploy/scripts/smoke-web.sh "$APP_URL"` muvaffaqiyatli
 - [ ] Login ishlaydi
 - [ ] Dashboard (`/dashboard`) ochiladi
 - [ ] Xonada buyurtma ochish va item qo'shish ishlaydi
