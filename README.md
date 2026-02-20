@@ -83,7 +83,7 @@ docker compose up -d
 
 App: `http://localhost:8080`
 
-Izoh: compose stack ichida `app`, `worker`, `scheduler`, `db`, `redis` servislar bor.
+Izoh: compose stack ichida `web` (nginx), `app` (php-fpm), `worker`, `scheduler`, `db`, `redis` servislar bor.
 
 ## Makefile tezkor buyruqlar
 

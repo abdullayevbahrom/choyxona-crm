@@ -39,7 +39,7 @@ ps:
 	docker compose ps
 
 logs:
-	docker compose logs --tail=120 app worker scheduler db redis
+	docker compose logs --tail=120 web app worker scheduler db redis
 
 verify:
 	./deploy/scripts/post-deploy-verify.sh --docker "$(APP_URL)"
