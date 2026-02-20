@@ -38,6 +38,14 @@
             <div>Chegirma: {{ $bill->discount_amount !== null ? number_format((float) $bill->discount_amount, 2) : '0.00' }}</div>
             <div class="text-lg font-bold">Jami: {{ number_format((float) $bill->total_amount, 2) }}</div>
         </div>
+
+        <div class="mt-4 border-t pt-4">
+            <p class="text-sm font-medium text-slate-700 mb-2">QR (tekshirish ma'lumoti)</p>
+            <div class="flex items-center gap-4">
+                <img src="{{ $qrImageUrl }}" alt="Bill QR" width="120" height="120" class="rounded border">
+                <p class="text-xs text-slate-600 break-all">{{ $qrPayload }}</p>
+            </div>
+        </div>
     </div>
 
     <div class="flex items-center gap-3">

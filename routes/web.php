@@ -12,6 +12,10 @@ use App\Http\Controllers\SettingController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
+Route::pattern("order", "[0-9]+");
+Route::pattern("item", "[0-9]+");
+Route::pattern("bill", "[0-9]+");
+
 Route::get("/", function () {
     return auth()->check()
         ? redirect()->route("dashboard")
@@ -31,7 +35,7 @@ Route::middleware("auth")->group(function () {
         "profile.destroy",
     );
 
-    Route::middleware("role:admin,manager,cashier")->group(function () {
+    Route::middleware("role:admin,manager,cashier,waiter")->group(function () {
         Route::get("/dashboard", [RoomController::class, "dashboard"])->name(
             "dashboard",
         );
@@ -43,11 +47,6 @@ Route::middleware("auth")->group(function () {
             RoomController::class,
             "dashboardFingerprint",
         ])->name("dashboard.fingerprint");
-        Route::get("/orders/history", [
-            OrderController::class,
-            "history",
-        ])->name("orders.history");
-
         Route::get("/orders/create", [OrderController::class, "create"])->name(
             "orders.create",
         );
@@ -85,6 +84,14 @@ Route::middleware("auth")->group(function () {
             OrderController::class,
             "removeItem",
         ])->name("orders.items.destroy");
+    });
+
+    Route::middleware("role:admin,manager,cashier")->group(function () {
+        Route::get("/orders/history", [
+            OrderController::class,
+            "history",
+        ])->name("orders.history");
+
         Route::post("/orders/{order}/cancel", [
             OrderController::class,
             "cancel",
@@ -139,6 +146,18 @@ Route::middleware("auth")->group(function () {
         Route::get("/reports", [ReportController::class, "index"])->name(
             "reports.index",
         );
+        Route::get("/reports/export.csv", [
+            ReportController::class,
+            "exportCsv",
+        ])->name("reports.export.csv");
+        Route::get("/reports/export.xls", [
+            ReportController::class,
+            "exportXls",
+        ])->name("reports.export.xls");
+        Route::get("/reports/export.pdf", [
+            ReportController::class,
+            "exportPdf",
+        ])->name("reports.export.pdf");
         Route::get("/settings", [SettingController::class, "index"])->name(
             "settings.index",
         );

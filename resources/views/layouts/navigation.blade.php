@@ -13,9 +13,11 @@
                         Dashboard
                     </x-nav-link>
 
-                    <x-nav-link :href="route('orders.history')" :active="request()->routeIs('orders.history')">
-                        Buyurtmalar Tarixi
-                    </x-nav-link>
+                    @if (in_array($role, ['admin', 'manager', 'cashier'], true))
+                        <x-nav-link :href="route('orders.history')" :active="request()->routeIs('orders.history')">
+                            Buyurtmalar Tarixi
+                        </x-nav-link>
+                    @endif
 
                     @if (in_array($role, ['admin', 'manager'], true))
                         <x-nav-link :href="route('menu.index')" :active="request()->routeIs('menu.*')">
@@ -90,9 +92,11 @@
                 Dashboard
             </x-responsive-nav-link>
 
-            <x-responsive-nav-link :href="route('orders.history')" :active="request()->routeIs('orders.history')">
-                Buyurtmalar Tarixi
-            </x-responsive-nav-link>
+            @if (in_array(Auth::user()->role, ['admin', 'manager', 'cashier'], true))
+                <x-responsive-nav-link :href="route('orders.history')" :active="request()->routeIs('orders.history')">
+                    Buyurtmalar Tarixi
+                </x-responsive-nav-link>
+            @endif
 
             @if (in_array(Auth::user()->role, ['admin', 'manager'], true))
                 <x-responsive-nav-link :href="route('menu.index')" :active="request()->routeIs('menu.*')">

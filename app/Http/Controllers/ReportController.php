@@ -4,24 +4,139 @@ namespace App\Http\Controllers;
 
 use App\Models\Room;
 use App\Models\User;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ReportController extends Controller
 {
     public function index(Request $request): View
     {
-        $validated = $request->validate([
+        $validated = $this->validatedFilters($request);
+        $reportData = $this->buildReportData($validated);
+
+        return view("reports.index", [
+            "filters" => $validated,
+            "rooms" => Room::query()
+                ->orderBy("number")
+                ->get(["id", "number"]),
+            "cashiers" => User::query()
+                ->whereIn("role", ["cashier", "manager", "admin"])
+                ->orderBy("name")
+                ->get(["id", "name"]),
+            "totalRevenue" => $reportData["totalRevenue"],
+            "ordersCount" => $reportData["ordersCount"],
+            "dailyRevenue" => $reportData["dailyRevenue"],
+            "monthlyRevenue" => $reportData["monthlyRevenue"],
+            "topItems" => $reportData["topItems"],
+            "roomStats" => $reportData["roomStats"],
+            "cashierStats" => $reportData["cashierStats"],
+        ]);
+    }
+
+    public function exportCsv(Request $request): StreamedResponse
+    {
+        $validated = $this->validatedFilters($request);
+        $reportData = $this->buildReportData($validated);
+
+        $filename = "reports-" . now()->format("Ymd-His") . ".csv";
+
+        return response()->streamDownload(function () use ($reportData): void {
+            $handle = fopen("php://output", "wb");
+
+            if ($handle === false) {
+                return;
+            }
+
+            fputcsv($handle, ["Bo'lim", "Nom", "Qiymat"]);
+            fputcsv($handle, ["Umumiy", "Jami daromad", (float) $reportData["totalRevenue"]]);
+            fputcsv($handle, ["Umumiy", "Yopilgan buyurtmalar", (int) $reportData["ordersCount"]]);
+
+            fputcsv($handle, []);
+            fputcsv($handle, ["Kunlik daromad", "Sana", "Daromad"]);
+            foreach ($reportData["dailyRevenue"] as $row) {
+                fputcsv($handle, ["Kunlik daromad", $row->day, (float) $row->revenue]);
+            }
+
+            fputcsv($handle, []);
+            fputcsv($handle, ["Oylik daromad", "Oy", "Daromad"]);
+            foreach ($reportData["monthlyRevenue"] as $row) {
+                fputcsv($handle, ["Oylik daromad", $row->ym, (float) $row->revenue]);
+            }
+
+            fputcsv($handle, []);
+            fputcsv($handle, ["TOP mahsulot", "Nomi", "Soni", "Daromad"]);
+            foreach ($reportData["topItems"] as $row) {
+                fputcsv($handle, ["TOP mahsulot", $row->item_name, (int) $row->total_qty, (float) $row->revenue]);
+            }
+
+            fputcsv($handle, []);
+            fputcsv($handle, ["Xonalar", "Xona", "Buyurtma", "Daromad"]);
+            foreach ($reportData["roomStats"] as $row) {
+                fputcsv($handle, ["Xonalar", $row->room_number, (int) $row->orders_count, (float) $row->revenue]);
+            }
+
+            fputcsv($handle, []);
+            fputcsv($handle, ["Kassirlar", "Kassir", "Chek", "Daromad"]);
+            foreach ($reportData["cashierStats"] as $row) {
+                fputcsv($handle, ["Kassirlar", $row->cashier_name, (int) $row->bills_count, (float) $row->revenue]);
+            }
+
+            fclose($handle);
+        }, $filename, [
+            "Content-Type" => "text/csv; charset=UTF-8",
+        ]);
+    }
+
+    public function exportXls(Request $request): Response
+    {
+        $validated = $this->validatedFilters($request);
+        $reportData = $this->buildReportData($validated);
+
+        $html = view("reports.xls", [
+            "filters" => $validated,
+            "reportData" => $reportData,
+        ])->render();
+
+        return response($html, 200, [
+            "Content-Type" => "application/vnd.ms-excel; charset=UTF-8",
+            "Content-Disposition" =>
+                'attachment; filename="reports-' . now()->format("Ymd-His") . '.xls"',
+        ]);
+    }
+
+    public function exportPdf(Request $request): Response
+    {
+        $validated = $this->validatedFilters($request);
+        $reportData = $this->buildReportData($validated);
+
+        $pdf = Pdf::loadView("reports.pdf", [
+            "filters" => $validated,
+            "reportData" => $reportData,
+        ])->setPaper("a4");
+
+        return $pdf->download("reports-" . now()->format("Ymd-His") . ".pdf");
+    }
+
+    private function validatedFilters(Request $request): array
+    {
+        return $request->validate([
             "date_from" => ["nullable", "date"],
             "date_to" => ["nullable", "date"],
             "room_id" => ["nullable", "integer", "exists:rooms,id"],
             "cashier_id" => ["nullable", "integer", "exists:users,id"],
         ]);
+    }
 
+    private function buildReportData(array $validated): array
+    {
         $driver = DB::connection()->getDriverName();
         $monthExpr = match ($driver) {
             "mysql" => "date_format(orders.closed_at, '%Y-%m')",
@@ -31,7 +146,7 @@ class ReportController extends Controller
 
         $cacheTtlSeconds = (int) config("performance.report_cache_seconds", 30);
         $cacheKey =
-            "reports:v1:" .
+            "reports:v2:" .
             md5(
                 json_encode(
                     [$driver, $monthExpr, $validated],
@@ -39,7 +154,7 @@ class ReportController extends Controller
                 ),
             );
 
-        $reportData = Cache::remember(
+        return Cache::remember(
             $cacheKey,
             now()->addSeconds($cacheTtlSeconds),
             function () use ($validated, $monthExpr) {
@@ -108,7 +223,7 @@ class ReportController extends Controller
 
                         $monthlyRevenue = $summaryRows
                             ->groupBy(
-                                fn($row) => substr((string) $row->day, 0, 7),
+                                fn($row) => Str::of((string) $row->day)->substr(0, 7)->toString(),
                             )
                             ->map(
                                 fn(Collection $rows, string $ym) => (object) [
@@ -249,24 +364,6 @@ class ReportController extends Controller
                 ];
             },
         );
-
-        return view("reports.index", [
-            "filters" => $validated,
-            "rooms" => Room::query()
-                ->orderBy("number")
-                ->get(["id", "number"]),
-            "cashiers" => User::query()
-                ->whereIn("role", ["cashier", "manager", "admin"])
-                ->orderBy("name")
-                ->get(["id", "name"]),
-            "totalRevenue" => $reportData["totalRevenue"],
-            "ordersCount" => $reportData["ordersCount"],
-            "dailyRevenue" => $reportData["dailyRevenue"],
-            "monthlyRevenue" => $reportData["monthlyRevenue"],
-            "topItems" => $reportData["topItems"],
-            "roomStats" => $reportData["roomStats"],
-            "cashierStats" => $reportData["cashierStats"],
-        ]);
     }
 
     private function applyFilters(Builder $query, array $filters): void

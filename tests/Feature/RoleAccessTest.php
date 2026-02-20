@@ -200,4 +200,53 @@ class RoleAccessTest extends TestCase
 
         $response->assertOk();
     }
+
+    public function test_waiter_can_open_operational_order_pages(): void
+    {
+        $waiter = User::factory()->create([
+            "role" => User::ROLE_WAITER,
+        ]);
+
+        $room = \App\Models\Room::query()->create([
+            "number" => "402",
+            "status" => \App\Models\Room::STATUS_EMPTY,
+            "is_active" => true,
+        ]);
+
+        $createResponse = $this->actingAs($waiter)->get(
+            "/orders/create?room={$room->id}",
+        );
+
+        $this->actingAs($waiter)->post("/orders", [
+            "room_id" => $room->id,
+        ]);
+
+        $order = \App\Models\Order::query()
+            ->where("room_id", $room->id)
+            ->firstOrFail();
+
+        $showResponse = $this->actingAs($waiter)->get("/orders/{$order->id}");
+
+        $createResponse->assertOk();
+        $showResponse->assertOk();
+    }
+
+    public function test_waiter_cannot_open_restricted_pages(): void
+    {
+        $waiter = User::factory()->create([
+            "role" => User::ROLE_WAITER,
+        ]);
+
+        $reportsResponse = $this->actingAs($waiter)->get("/reports");
+        $menuResponse = $this->actingAs($waiter)->get("/menu");
+        $roomsResponse = $this->actingAs($waiter)->get("/rooms");
+        $settingsResponse = $this->actingAs($waiter)->get("/settings");
+        $historyResponse = $this->actingAs($waiter)->get("/orders/history");
+
+        $reportsResponse->assertForbidden();
+        $menuResponse->assertForbidden();
+        $roomsResponse->assertForbidden();
+        $settingsResponse->assertForbidden();
+        $historyResponse->assertForbidden();
+    }
 }

@@ -70,6 +70,8 @@
         <div class="mb-6">To'lov: {{ $bill->payment_method }}</div>
     @endif
 
+    <div class="mb-6">QR ma'lumot: {{ $qrPayload }}</div>
+
     @if($setting->receipt_footer)
         <div class="center">{{ $setting->receipt_footer }}</div>
     @endif

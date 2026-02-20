@@ -63,18 +63,28 @@ class BillController extends Controller
     {
         $bill->load(["order.room", "order.user", "order.items.menuItem"]);
         $setting = Setting::current();
+        $qrPayload = $this->buildQrPayload($bill);
 
-        return view("bills.show", compact("bill", "setting"));
+        return view("bills.show", [
+            "bill" => $bill,
+            "setting" => $setting,
+            "qrPayload" => $qrPayload,
+            "qrImageUrl" =>
+                "https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=" .
+                rawurlencode($qrPayload),
+        ]);
     }
 
     public function pdf(Bill $bill): Response
     {
         $bill->load(["order.room", "order.user", "order.items.menuItem"]);
         $setting = Setting::current();
+        $qrPayload = $this->buildQrPayload($bill);
 
         $pdf = Pdf::loadView("bills.pdf", [
             "bill" => $bill,
             "setting" => $setting,
+            "qrPayload" => $qrPayload,
         ])->setPaper("a6");
 
         return $pdf->stream($bill->bill_number . ".pdf");
@@ -88,5 +98,18 @@ class BillController extends Controller
         return redirect()
             ->route("dashboard")
             ->with("status", 'Chek chop etildi, xona bo\'shatildi.');
+    }
+
+    private function buildQrPayload(Bill $bill): string
+    {
+        return implode("|", [
+            "bill=" . $bill->bill_number,
+            "order=" . $bill->order->order_number,
+            "room=" . $bill->room->number,
+            "total=" . number_format((float) $bill->total_amount, 2, ".", ""),
+            "date=" .
+            ($bill->created_at?->format("Y-m-d H:i") ??
+                now()->format("Y-m-d H:i")),
+        ]);
     }
 }
