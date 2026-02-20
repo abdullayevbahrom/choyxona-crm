@@ -31,6 +31,7 @@
     <div class="mb-6">Sana: {{ $bill->created_at?->format('Y-m-d H:i') }}</div>
     <div class="mb-6">Xona: {{ $bill->room->number }}</div>
     <div class="mb-6">Buyurtma: {{ $bill->order->order_number }}</div>
+    <div class="mb-6">Kassir: {{ $bill->order->user?->name ?? 'Noma\'lum' }}</div>
 
     <div class="line"></div>
 

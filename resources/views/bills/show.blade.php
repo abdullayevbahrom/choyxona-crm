@@ -9,6 +9,7 @@
     @endif
     <h2 class="text-xl font-semibold mb-2">Chek: {{ $bill->bill_number }}</h2>
     <p class="text-slate-600 mb-4">Buyurtma: {{ $bill->order->order_number }} | Xona: {{ $bill->room->number }}</p>
+    <p class="text-slate-600 mb-4">Kassir: {{ $bill->order->user?->name ?? 'Noma\'lum' }}</p>
 
     <div class="bg-white rounded-xl border p-4 mb-6">
         <table class="min-w-full text-sm mb-4">

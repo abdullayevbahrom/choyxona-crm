@@ -61,7 +61,7 @@ class BillController extends Controller
 
     public function show(Bill $bill): View
     {
-        $bill->load(["order.room", "order.items.menuItem"]);
+        $bill->load(["order.room", "order.user", "order.items.menuItem"]);
         $setting = Setting::current();
 
         return view("bills.show", compact("bill", "setting"));
@@ -69,7 +69,7 @@ class BillController extends Controller
 
     public function pdf(Bill $bill): Response
     {
-        $bill->load(["order.room", "order.items.menuItem"]);
+        $bill->load(["order.room", "order.user", "order.items.menuItem"]);
         $setting = Setting::current();
 
         $pdf = Pdf::loadView("bills.pdf", [
