@@ -36,6 +36,10 @@
                     @endif
 
                     @if ($role === 'admin')
+                        <x-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')">
+                            Foydalanuvchilar
+                        </x-nav-link>
+
                         <x-nav-link :href="route('activity-logs.index')" :active="request()->routeIs('activity-logs.*')">
                             Activity Log
                         </x-nav-link>
@@ -109,6 +113,10 @@
             @endif
 
             @if (Auth::user()->role === 'admin')
+                <x-responsive-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')">
+                    Foydalanuvchilar
+                </x-responsive-nav-link>
+
                 <x-responsive-nav-link :href="route('activity-logs.index')" :active="request()->routeIs('activity-logs.*')">
                     Activity Log
                 </x-responsive-nav-link>

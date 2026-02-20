@@ -178,4 +178,26 @@ class RoleAccessTest extends TestCase
 
         $response->assertOk();
     }
+
+    public function test_manager_cannot_open_users_page(): void
+    {
+        $manager = User::factory()->create([
+            "role" => User::ROLE_MANAGER,
+        ]);
+
+        $response = $this->actingAs($manager)->get("/users");
+
+        $response->assertForbidden();
+    }
+
+    public function test_admin_can_open_users_page(): void
+    {
+        $admin = User::factory()->create([
+            "role" => User::ROLE_ADMIN,
+        ]);
+
+        $response = $this->actingAs($admin)->get("/users");
+
+        $response->assertOk();
+    }
 }
