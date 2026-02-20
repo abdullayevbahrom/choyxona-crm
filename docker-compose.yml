@@ -21,6 +21,7 @@ services:
       CACHE_STORE: database
       SESSION_DRIVER: database
     volumes:
+      - ./public:/var/www/html/public:ro
       - storage_data:/var/www/html/storage
     depends_on:
       db:
