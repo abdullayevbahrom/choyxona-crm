@@ -33,11 +33,23 @@ echo "Migrations check: no pending migrations"
 HEALTH_JSON="$(curl -fsS --max-time 10 "${APP_URL%/}/healthz")"
 echo "Health: $HEALTH_JSON"
 
-echo "$HEALTH_JSON" | grep -q '"status":"ok"'
-echo "$HEALTH_JSON" | grep -q '"database":true'
-echo "$HEALTH_JSON" | grep -q '"storage":true'
-echo "$HEALTH_JSON" | grep -q '"queue_backlog":'
-echo "$HEALTH_JSON" | grep -q '"disk_free":'
+HEALTH_JSON="$HEALTH_JSON" php -r '
+$json = getenv("HEALTH_JSON");
+$data = json_decode($json, true);
+if (!is_array($data)) {
+    fwrite(STDERR, "Health parse failed: invalid JSON\n");
+    exit(1);
+}
+$statusOk = ($data["status"] ?? null) === "ok";
+$databaseOk = ($data["checks"]["database"] ?? null) === true;
+$storageOk = ($data["checks"]["storage"] ?? null) === true;
+$hasQueueBacklog = array_key_exists("queue_backlog", $data["checks"] ?? []);
+$hasDiskFree = array_key_exists("disk_free", $data["checks"] ?? []);
+if (!($statusOk && $databaseOk && $storageOk && $hasQueueBacklog && $hasDiskFree)) {
+    fwrite(STDERR, "Health validation failed\n");
+    exit(1);
+}
+'
 
 if [[ "$DOCKER_MODE" == "true" ]]; then
   ./deploy/scripts/check-runtime-services.sh --docker
