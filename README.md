@@ -159,6 +159,8 @@ php artisan queue:restart
 
 - Hisobotlar (`/reports`) qisqa muddatli cache bilan ishlaydi.
 - Sozlama: `REPORT_CACHE_SECONDS=30`
+- Katta hisobotlar uchun kunlik summary jadval ishlatiladi.
+- Summary refresh buyrug'i: `php artisan reports:refresh-daily-summaries --days=400`
 
 ## Security
 
