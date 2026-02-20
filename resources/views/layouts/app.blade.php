@@ -15,6 +15,12 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="font-sans antialiased">
+        <a
+            href="#main-content"
+            class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-white focus:px-3 focus:py-2 focus:text-sm focus:font-semibold focus:text-slate-900"
+        >
+            Asosiy kontentga o'tish
+        </a>
         <div class="min-h-screen bg-gray-100">
             @include('layouts.navigation')
 
@@ -28,7 +34,7 @@
             @endisset
 
             <!-- Page Content -->
-            <main>
+            <main id="main-content" tabindex="-1">
                 <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 pt-4">
                     @if (session('status'))
                         <div class="mb-4 rounded border border-green-300 bg-green-100 p-3 text-sm text-green-800">

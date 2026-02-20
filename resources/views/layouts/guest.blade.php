@@ -15,6 +15,12 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="font-sans text-gray-900 antialiased">
+        <a
+            href="#main-content"
+            class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-white focus:px-3 focus:py-2 focus:text-sm focus:font-semibold focus:text-slate-900"
+        >
+            Asosiy kontentga o'tish
+        </a>
         <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100">
             <div>
                 <a href="/">
@@ -22,9 +28,9 @@
                 </a>
             </div>
 
-            <div class="w-full sm:max-w-md mt-6 px-6 py-4 bg-white shadow-md overflow-hidden sm:rounded-lg">
+            <main id="main-content" tabindex="-1" class="w-full sm:max-w-md mt-6 px-6 py-4 bg-white shadow-md overflow-hidden sm:rounded-lg">
                 {{ $slot }}
-            </div>
+            </main>
         </div>
     </body>
 </html>
