@@ -155,6 +155,11 @@ php artisan queue:restart
   - `LOG_PERFORMANCE_LEVEL=warning`
   - `LOG_PERFORMANCE_DAYS=14`
 
+## Performance
+
+- Hisobotlar (`/reports`) qisqa muddatli cache bilan ishlaydi.
+- Sozlama: `REPORT_CACHE_SECONDS=30`
+
 ## Security
 
 - Global response security headerlar yoqilgan:

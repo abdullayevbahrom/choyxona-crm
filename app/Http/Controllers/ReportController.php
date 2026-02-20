@@ -6,6 +6,7 @@ use App\Models\Room;
 use App\Models\User;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
@@ -27,85 +28,113 @@ class ReportController extends Controller
             default => "strftime('%Y-%m', orders.closed_at)",
         };
 
-        $baseBills = DB::table("bills")
-            ->join("orders", "orders.id", "=", "bills.order_id")
-            ->where("orders.status", "closed");
+        $cacheTtlSeconds = (int) config("performance.report_cache_seconds", 30);
+        $cacheKey =
+            "reports:v1:" .
+            md5(
+                json_encode(
+                    [$driver, $monthExpr, $validated],
+                    JSON_THROW_ON_ERROR,
+                ),
+            );
 
-        $this->applyFilters($baseBills, $validated);
+        $reportData = Cache::remember(
+            $cacheKey,
+            now()->addSeconds($cacheTtlSeconds),
+            function () use ($validated, $monthExpr) {
+                $baseBills = DB::table("bills")
+                    ->join("orders", "orders.id", "=", "bills.order_id")
+                    ->where("orders.status", "closed");
 
-        $totalRevenue = (float) (clone $baseBills)->sum("bills.total_amount");
-        $ordersCount = (int) (clone $baseBills)->count("orders.id");
+                $this->applyFilters($baseBills, $validated);
 
-        $dailyRevenue = (clone $baseBills)
-            ->selectRaw(
-                "date(orders.closed_at) as day, sum(bills.total_amount) as revenue",
-            )
-            ->groupBy("day")
-            ->orderByDesc("day")
-            ->limit(31)
-            ->get();
+                $totalRevenue = (float) (clone $baseBills)->sum(
+                    "bills.total_amount",
+                );
+                $ordersCount = (int) (clone $baseBills)->count("orders.id");
 
-        $monthlyRevenue = (clone $baseBills)
-            ->selectRaw(
-                "{$monthExpr} as ym, sum(bills.total_amount) as revenue",
-            )
-            ->groupBy("ym")
-            ->orderByDesc("ym")
-            ->limit(12)
-            ->get();
+                $dailyRevenue = (clone $baseBills)
+                    ->selectRaw(
+                        "date(orders.closed_at) as day, sum(bills.total_amount) as revenue",
+                    )
+                    ->groupBy("day")
+                    ->orderByDesc("day")
+                    ->limit(31)
+                    ->get();
 
-        $topItems = DB::table("order_items")
-            ->join("orders", "orders.id", "=", "order_items.order_id")
-            ->join(
-                "menu_items",
-                "menu_items.id",
-                "=",
-                "order_items.menu_item_id",
-            )
-            ->where("orders.status", "closed");
+                $monthlyRevenue = (clone $baseBills)
+                    ->selectRaw(
+                        "{$monthExpr} as ym, sum(bills.total_amount) as revenue",
+                    )
+                    ->groupBy("ym")
+                    ->orderByDesc("ym")
+                    ->limit(12)
+                    ->get();
 
-        $this->applyFilters($topItems, $validated);
+                $topItems = DB::table("order_items")
+                    ->join("orders", "orders.id", "=", "order_items.order_id")
+                    ->join(
+                        "menu_items",
+                        "menu_items.id",
+                        "=",
+                        "order_items.menu_item_id",
+                    )
+                    ->where("orders.status", "closed");
 
-        $topItems = $topItems
-            ->selectRaw(
-                "menu_items.name as item_name, sum(order_items.quantity) as total_qty, sum(order_items.subtotal) as revenue",
-            )
-            ->groupBy("menu_items.id", "menu_items.name")
-            ->orderByDesc("total_qty")
-            ->limit(10)
-            ->get();
+                $this->applyFilters($topItems, $validated);
 
-        $roomStats = DB::table("bills")
-            ->join("orders", "orders.id", "=", "bills.order_id")
-            ->join("rooms", "rooms.id", "=", "orders.room_id")
-            ->where("orders.status", "closed");
+                $topItems = $topItems
+                    ->selectRaw(
+                        "menu_items.name as item_name, sum(order_items.quantity) as total_qty, sum(order_items.subtotal) as revenue",
+                    )
+                    ->groupBy("menu_items.id", "menu_items.name")
+                    ->orderByDesc("total_qty")
+                    ->limit(10)
+                    ->get();
 
-        $this->applyFilters($roomStats, $validated);
+                $roomStats = DB::table("bills")
+                    ->join("orders", "orders.id", "=", "bills.order_id")
+                    ->join("rooms", "rooms.id", "=", "orders.room_id")
+                    ->where("orders.status", "closed");
 
-        $roomStats = $roomStats
-            ->selectRaw(
-                "rooms.number as room_number, count(orders.id) as orders_count, sum(bills.total_amount) as revenue",
-            )
-            ->groupBy("rooms.id", "rooms.number")
-            ->orderByDesc("orders_count")
-            ->limit(20)
-            ->get();
+                $this->applyFilters($roomStats, $validated);
 
-        $cashierStats = DB::table("bills")
-            ->join("orders", "orders.id", "=", "bills.order_id")
-            ->leftJoin("users", "users.id", "=", "orders.user_id")
-            ->where("orders.status", "closed");
+                $roomStats = $roomStats
+                    ->selectRaw(
+                        "rooms.number as room_number, count(orders.id) as orders_count, sum(bills.total_amount) as revenue",
+                    )
+                    ->groupBy("rooms.id", "rooms.number")
+                    ->orderByDesc("orders_count")
+                    ->limit(20)
+                    ->get();
 
-        $this->applyFilters($cashierStats, $validated);
+                $cashierStats = DB::table("bills")
+                    ->join("orders", "orders.id", "=", "bills.order_id")
+                    ->leftJoin("users", "users.id", "=", "orders.user_id")
+                    ->where("orders.status", "closed");
 
-        $cashierStats = $cashierStats
-            ->selectRaw(
-                "coalesce(users.name, 'Nomalum') as cashier_name, count(orders.id) as bills_count, sum(bills.total_amount) as revenue",
-            )
-            ->groupBy("users.id", "users.name")
-            ->orderByDesc("bills_count")
-            ->limit(20)
-            ->get();
+                $this->applyFilters($cashierStats, $validated);
+
+                $cashierStats = $cashierStats
+                    ->selectRaw(
+                        "coalesce(users.name, 'Nomalum') as cashier_name, count(orders.id) as bills_count, sum(bills.total_amount) as revenue",
+                    )
+                    ->groupBy("users.id", "users.name")
+                    ->orderByDesc("bills_count")
+                    ->limit(20)
+                    ->get();
+
+                return [
+                    "totalRevenue" => $totalRevenue,
+                    "ordersCount" => $ordersCount,
+                    "dailyRevenue" => $dailyRevenue,
+                    "monthlyRevenue" => $monthlyRevenue,
+                    "topItems" => $topItems,
+                    "roomStats" => $roomStats,
+                    "cashierStats" => $cashierStats,
+                ];
+            },
+        );
 
         return view("reports.index", [
             "filters" => $validated,
@@ -116,13 +145,13 @@ class ReportController extends Controller
                 ->whereIn("role", ["cashier", "manager", "admin"])
                 ->orderBy("name")
                 ->get(["id", "name"]),
-            "totalRevenue" => $totalRevenue,
-            "ordersCount" => $ordersCount,
-            "dailyRevenue" => $dailyRevenue,
-            "monthlyRevenue" => $monthlyRevenue,
-            "topItems" => $topItems,
-            "roomStats" => $roomStats,
-            "cashierStats" => $cashierStats,
+            "totalRevenue" => $reportData["totalRevenue"],
+            "ordersCount" => $reportData["ordersCount"],
+            "dailyRevenue" => $reportData["dailyRevenue"],
+            "monthlyRevenue" => $reportData["monthlyRevenue"],
+            "topItems" => $reportData["topItems"],
+            "roomStats" => $reportData["roomStats"],
+            "cashierStats" => $reportData["cashierStats"],
         ]);
     }
 

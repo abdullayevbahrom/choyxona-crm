@@ -8,6 +8,7 @@ use App\Models\OrderItem;
 use App\Models\Room;
 use App\Services\OrderService;
 use App\Support\ActivityLogger;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -304,8 +305,22 @@ class OrderController extends Controller
 
     private function orderPanelEtag(Order $order): string
     {
-        $itemsMaxUpdated = (string) ($order->items()->max("updated_at") ?? "0");
-        $itemsCount = (string) $order->items()->count();
+        if ($order->relationLoaded("items")) {
+            /** @var Collection<int, OrderItem> $items */
+            $items = $order->items;
+            $itemsCount = (string) $items->count();
+            $itemsMaxUpdated = (string) ($items->max("updated_at") ?? "0");
+        } else {
+            $aggregate = $order
+                ->items()
+                ->selectRaw(
+                    "count(*) as items_count, max(updated_at) as items_max_updated",
+                )
+                ->first();
+            $itemsCount = (string) ((int) ($aggregate?->items_count ?? 0));
+            $itemsMaxUpdated = (string) ($aggregate?->items_max_updated ?? "0");
+        }
+
         $orderUpdated = (string) ($order->updated_at?->timestamp ?? 0);
 
         return sha1(

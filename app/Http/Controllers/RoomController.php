@@ -115,21 +115,28 @@ class RoomController extends Controller
 
     private function dashboardCardsEtag(): string
     {
-        $roomsUpdatedAt =
-            (string) (Room::query()
-                ->where("is_active", true)
-                ->max("updated_at") ?? "0");
-        $occupiedRoomsCount = (string) Room::query()
+        $roomAggregate = Room::query()
             ->where("is_active", true)
-            ->where("status", Room::STATUS_OCCUPIED)
-            ->count();
-        $openOrdersUpdatedAt =
-            (string) (Order::query()
-                ->where("status", Order::STATUS_OPEN)
-                ->max("updated_at") ?? "0");
-        $openOrdersCount = (string) Order::query()
+            ->selectRaw(
+                "max(updated_at) as rooms_updated_at, sum(case when status = ? then 1 else 0 end) as occupied_rooms_count",
+                [Room::STATUS_OCCUPIED],
+            )
+            ->first();
+
+        $orderAggregate = Order::query()
             ->where("status", Order::STATUS_OPEN)
-            ->count();
+            ->selectRaw(
+                "max(updated_at) as open_orders_updated_at, count(*) as open_orders_count",
+            )
+            ->first();
+
+        $roomsUpdatedAt = (string) ($roomAggregate?->rooms_updated_at ?? "0");
+        $occupiedRoomsCount = (string) ((int) ($roomAggregate?->occupied_rooms_count ??
+            0));
+        $openOrdersUpdatedAt =
+            (string) ($orderAggregate?->open_orders_updated_at ?? "0");
+        $openOrdersCount = (string) ((int) ($orderAggregate?->open_orders_count ??
+            0));
 
         return sha1(
             $roomsUpdatedAt .
