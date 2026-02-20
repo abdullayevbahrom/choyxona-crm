@@ -1,0 +1,274 @@
+CHOYXONA CRM TIZIMI
+TEXNIK TOPSHIRIQ
+Restaurant Order Management System
+
+
+Loyiha nomi	Choyxona CRM — Xona va Buyurtma Boshqaruv Tizimi
+Texnologiya	PHP 8.3+ / Laravel 12, MySQL 8, Blade + Alpine.js / Livewire
+Versiya	v1.0
+Holat	Ishlab chiqish
+Maqsad	Choyxona xonalarini, buyurtmalarni va to'lovlarni boshqarish
+
+
+1. LOYIHA MAQSADI
+Ushbu CRM tizimi choyxona korxonalari uchun mo'ljallangan bo'lib, quyidagi asosiy muammolarni hal qiladi:
+Xonalar band/bo'sh holatini real vaqtda vizual kuzatish
+Har bir xona uchun alohida buyurtmalar yaratish va boshqarish
+Menyu elementlarini (taom, ichimlik, non, salat, sous) tezkor qo'shish
+Xona yopilmasdan oldin chek chiqarish va to'lov qayd etish
+Kassir va menejer uchun qulay interfeys
+
+2. TIZIM ARXITEKTURASI
+2.1 Texnologiyalar steki
+Qatlam	Texnologiya	Maqsad
+Backend	Laravel 12 (PHP 8.3+)	MVC, API, Biznes mantiq
+Frontend	Blade + Alpine.js / Livewire+bootstrap5	Reaktiv UI, real-time yangilanish
+Ma'lumotlar bazasi	MySQL 8.0	Asosiy saqlash
+Autentifikatsiya	Laravel Breeze / Fortify	Foydalanuvchi tizimi
+Chek chiqarish	Blade PDF view + DomPDF	Print/PDF chek
+Real-time	Laravel Echo + Pusher yoki Polling	Xona holati yangilanishi
+2.2 Papka tuzilmasi
+app/Models/          — Room, MenuItem, Order, OrderItem, Bill
+app/Http/Controllers/ — RoomController, OrderController, MenuController, BillController
+app/Services/        — OrderService, BillService
+resources/views/     — rooms/, orders/, menu/, bills/
+database/migrations/ — Barcha jadval migratsiyalari
+
+3. MA'LUMOTLAR BAZASI STRUKTURASI
+3.1 rooms — Xonalar jadvali
+Ustun	Tur	Default	Tavsif
+id	bigint PK	auto	Birlamchi kalit
+number	varchar(20) UNIQUE	—	Xona raqami (101, 202...)
+name	varchar(100) nullable	null	Xona nomi (ixtiyoriy)
+capacity	int nullable	null	Nechta kishi sig'ishi
+status	enum	'empty'	empty | occupied
+description	text nullable	null	Xona tavsifi
+created_at / updated_at	timestamp	auto	Laravel standart
+Xona holati faqat 2 ta qiymat oladi: 'empty' (sariq) va 'occupied' (yashil). Chek print qilinganida avtomatik 'empty' ga o'tadi.
+3.2 menu_items — Menyu elementlari jadvali
+Ustun	Tur	Default	Tavsif
+id	bigint PK	auto	Birlamchi kalit
+name	varchar(200)	—	Mahsulot nomi
+type	enum	—	food | drink | bread | salad | sauce
+price	decimal(10,2) nullable	null	Narx (so'm)
+stock_quantity	int nullable	null	Ombordagi miqdor
+unit	varchar(20) nullable	null	Dona, litr, kg, porsiya...
+description	text nullable	null	Tavsif
+is_active	boolean	true	Aktiv/nofaol
+created_at / updated_at	timestamp	auto	Laravel standart
+Kategoriya yo'q — barcha mahsulotlar bir jadvilda, 'type' field orqali ajratiladi. Narx va miqdor nullable: yangi mahsulot qo'shilganda bo'sh qolishi mumkin.
+3.3 orders — Buyurtmalar jadvali
+Ustun	Tur	Default	Tavsif
+id	bigint PK	auto	Birlamchi kalit
+room_id	bigint FK	—	rooms.id ga bog'liq
+order_number	varchar(50) UNIQUE	—	Buyurtma raqami (ORD-2025-001)
+status	enum	'open'	open | closed | cancelled
+total_amount	decimal(12,2)	0.00	Jami summa (hisoblangan)
+notes	text nullable	null	Qo'shimcha izoh
+opened_at	timestamp	now()	Buyurtma ochilgan vaqt
+closed_at	timestamp nullable	null	Yopilgan vaqt
+user_id	bigint FK nullable	null	Kassir ID
+created_at / updated_at	timestamp	auto	Laravel standart
+Bir xonada bir vaqtda faqat 1 ta 'open' statusli buyurtma bo'lishi mumkin. Bu constraint database level (unique partial index) va application level (validation) da ta'minlanadi.
+3.4 order_items — Buyurtma tarkibi
+Ustun	Tur	Default	Tavsif
+id	bigint PK	auto	Birlamchi kalit
+order_id	bigint FK	—	orders.id ga bog'liq
+menu_item_id	bigint FK	—	menu_items.id ga bog'liq
+quantity	int	1	Soni
+unit_price	decimal(10,2)	—	Buyurtma paytidagi narx (snapshot)
+subtotal	decimal(12,2)	—	quantity * unit_price
+notes	varchar(500) nullable	null	Maxsus talab (masalan: shirin qiling)
+created_at / updated_at	timestamp	auto	Laravel standart
+3.5 bills — Cheklar jadvali
+Ustun	Tur	Default	Tavsif
+id	bigint PK	auto	Birlamchi kalit
+order_id	bigint FK UNIQUE	—	Bir buyurtma = bir chek
+room_id	bigint FK	—	rooms.id (tezkor so'rov uchun)
+bill_number	varchar(50) UNIQUE	—	CHK-2025-001
+subtotal	decimal(12,2)	—	Chegirmasiz summa
+discount_percent	decimal(5,2) nullable	null	Chegirma foizi
+discount_amount	decimal(12,2) nullable	null	Chegirma summasi
+total_amount	decimal(12,2)	—	To'lanadigan jami summa
+payment_method	enum nullable	null	cash | card | transfer
+is_printed	boolean	false	Chek print qilinganmi
+printed_at	timestamp nullable	null	Print vaqti
+created_at / updated_at	timestamp	auto	Laravel standart
+
+4. FUNKSIONAL MODULLAR
+4.1 Xonalar paneli (Asosiy ekran)
+Bu tizimning bosh sahifasi bo'lib, barcha xonalar karta ko'rinishida grid tarzida chiqariladi.
+Xona kartasida ko'rsatiladigan ma'lumotlar:
+Xona raqami (yirik, markazda)
+Xona nomi (agar mavjud bo'lsa)
+Holat badge: BAND | BO'SH
+Agar buyurtma ochilib bo'lsa: joriy buyurtma raqami va jami summa
+Vaqt ko'rsatkichi: buyurtma qilinganidan qancha vaqt o'tgani
+Rang kodlari:
+Sariq (#FBBF24 / amber-400): Xona bo'sh — yangi mijoz kutilmoqda
+Yashil (#22C55E / green-500): Xona band — faol buyurtma mavjud
+Hover effekti: shadow-lg va border highlight
+Xona kartalari harakati:
+Bo'sh xona kartasini bosish: Yangi buyurtma yaratish oynasi ochiladi
+Band xona kartasini bosish: Mavjud buyurtmaga o'tib qo'shimcha taom qo'shish yoki chek chiqarish
+Har 30 soniyada avtomatik yangilanish (polling yoki WebSocket)
+4.2 Buyurtma yaratish va boshqarish
+Yangi buyurtma yaratish:
+1.Foydalanuvchi bo'sh xona kartasini bosadi
+2.Tizim shu xonada 'open' statusli buyurtma yo'qligini tekshiradi
+3.Yangi order yaratiladi, xona holati 'occupied' ga o'tadi
+4.Buyurtma oynasi ochiladi: menyu qidirish va qo'shish interfeysi
+Menyu interfeysi:
+Qidiruv qatori: mahsulot nomi bo'yicha real-time qidiruv
+Filtr tugmalari: Barchasi | Taom | Ichimlik | Non | Salat | Sous (type bo'yicha)
+Har bir mahsulot kartasida: nomi, narxi, tezkor + va - tugmalari
+Tanlangan mahsulotlar o'ng panel yoki sidebar da ro'yxat ko'rinishida
+Jami summa real-time yangilanib turadi
+Buyurtmaga mahsulot qo'shish qoidalari:
+Narxi null bo'lgan mahsulotni buyurtmaga qo'shish uchun ogohlantirish chiqadi
+Xuddi shu mahsulot qayta qo'shilsa: miqdor oshiriladi (duplicate emas)
+Har bir mahsulot uchun ixtiyoriy izoh qo'shish mumkin
+4.3 Buyurtma holati va cheklovlar
+Tizimning eng muhim qoidasi: bir xonada bir vaqtda faqat bitta ochiq buyurtma bo'lishi mumkin.
+Bu qoida quyidagicha ta'minlanadi:
+Migration darajasi: unique partial index (WHERE status = 'open') — room_id bo'yicha
+Service darajasi: OrderService::canCreateOrder($room) — har doim tekshiriladi
+UI darajasi: band xona kartasi 'Yangi buyurtma' tugmasini ko'rsatmaydi
+API darajasi: validation qaytaradi 422 agar xona band bo'lsa
+4.4 Chek chiqarish moduli
+Chek yaratish jarayoni:
+5.Kassir 'Chek chiqarish' tugmasini bosadi
+6.Chek sahifasi ochiladi: barcha buyurtma elementlari, summalar
+7.Ixtiyoriy: chegirma qo'shish (foiz yoki summa)
+8.To'lov usulini tanlash: Naqd | Karta | O'tkazma
+9.'Chek print' tugmasi bosiladi
+10.Tizim avtomatik: order.status = 'closed', bill.is_printed = true, room.status = 'empty'
+Chek tarkibi (print ko'rinish):
+Choyxona nomi va manzili (sozlamalardan)
+Chek raqami va sana-vaqt
+Xona raqami va buyurtma raqami
+Mahsulotlar jadvali: nomi, soni, narxi, jami
+Yig'indi, chegirma (agar bo'lsa), umumiy summa
+To'lov usuli
+Kassir ismi
+QR kod (ixtiyoriy, kelajak uchun)
+
+5. MENYU BOSHQARUV MODULI
+Barcha mahsulotlar (taom, ichimlik, non, salat, sous) bitta menu_items jadvalida saqlanadi. Kategoriya tuzilmasi yo'q — soddalik uchun.
+5.1 Menyu CRUD operatsiyalari
+Yangi mahsulot qo'shish: nom, tur (type), narx (nullable), miqdor (nullable), birlik
+Mahsulot tahrirlash: barcha maydonlar tahrirlanadi
+Mahsulotni faol/nofaol qilish: o'chirish o'rniga is_active = false
+Narxni keyinroq kiritish imkoniyati: nullable bo'lgani uchun bo'sh saqlanadi
+5.2 Tur (type) qiymatlari
+Tur qiymati	Ko'rsatilishi	Misol
+food	Taomlar	Palov, Lagmon, Shurva, Kabob
+drink	Ichimliklar	Choy, Kofe, Sharbat, Suv
+bread	Nonlar	Non, Lochira, Kulcha, Patir
+salad	Salatlar	Toshkent salati, Achichuk, Ko'k salat
+sauce	Souslar	Guruch sosi, Do'lma sousi, Pomidor sosi
+
+6. FOYDALANUVCHILAR VA RUXSATLAR
+6.1 Rol tizimi
+Rol	Vakolatlar	Izoh
+admin	Hamma narsa: xona, menyu, foydalanuvchi, hisobot	Tizim egasi
+manager	Menyu boshqarish, hisobotlar ko'rish, xonalar	Menejer
+cashier	Xonalar, buyurtmalar, chek chiqarish	Kassir
+waiter	Faqat buyurtma ko'rish va qo'shish (ixtiyoriy)	Ofitsiant (kelajak)
+6.2 Autentifikatsiya
+Laravel Breeze (session based) — veb interfeys uchun
+Login/logout, parolni o'zgartirish
+Har bir sessiya timeout: 8 soat (sozlanadi)
+
+7. INTERFEYS TALABLARI
+7.1 Umumiy dizayn tamoyillari
+Responsive: mobil (planshet, telefon) va desktop uchun
+Tailwind CSS asosida minimal, toza dizayn
+Choyxona muhitiga mos: iliq ranglar (amber, green, navy)
+Katta tugmalar: teginish orqali ishlash uchun (planshet bilan ishlash)
+O'zbek tili interfeys (asosiy), ingliz tili (texnik joylar)
+7.2 Sahifalar ro'yxati
+Sahifa	URL	Tavsif
+Asosiy panel	/dashboard	Xonalar grid ko'rinishi
+Buyurtma yaratish	/orders/create?room={id}	Menyu va buyurtma oynasi
+Buyurtmani ko'rish	/orders/{id}	Aktiv buyurtma ma'lumotlari
+Chek	/bills/{id}	Print sahifasi
+Menyu boshqarish	/menu	CRUD - menyu elementlari
+Xonalar boshqarish	/rooms	CRUD - xonalar
+Buyurtmalar tarixi	/orders/history	Yopilgan buyurtmalar
+Hisobotlar	/reports	Kunlik/oylik daromad
+Sozlamalar	/settings	Choyxona ma'lumotlari
+
+8. BIZNES QOIDALARI (BUSINESS RULES)
+8.1 Xona qoidalari
+11.Bir xonada bir vaqtda faqat bitta ochiq buyurtma bo'lishi mumkin
+12.Xona holati faqat ikki qiymat: 'empty' yoki 'occupied'
+13.Chek print qilinganda xona avtomatik 'empty' ga o'tadi
+14.Xona o'chirilmaydi — faqat nofaol qilinadi (is_active)
+8.2 Buyurtma qoidalari
+15.Yopilgan buyurtmaga mahsulot qo'shib bo'lmaydi
+16.Kamida bitta mahsulot bo'lmasa, buyurtma yopilmaydi
+17.Buyurtma raqami avtomatik: ORD-YYYY-NNNN formatida
+18.O'chirilgan buyurtma 'cancelled' statusida saqlanadi (fizik o'chirilmaydi)
+8.3 Chek qoidalari
+19.Chek faqat 'open' statusli buyurtma uchun yaratiladi
+20.Bir buyurtmaga faqat bitta chek (unique constraint)
+21.Chek print qilingandan so'ng buyurtma va xona holati o'zgaradi
+22.Chek raqami: CHK-YYYY-NNNN formatida
+23.Chegirma 0% dan 100% gacha, summa yoki foiz sifatida
+8.4 Menyu qoidalari
+24.Narxi null bo'lgan mahsulotni qo'shish mumkin, lekin chiqarishda ogohlantirish
+25.Nofaol mahsulotlar buyurtmada ko'rinmaydi, lekin tarixda saqlanadi
+26.Mahsulot o'chirilmaydi — is_active = false qilinadi
+
+9. HISOBOTLAR VA STATISTIKA
+Kunlik daromad: sana bo'yicha yopilgan buyurtmalar jami summasi
+Oylik daromad: oylar bo'yicha grafik va jadval
+Eng ko'p buyurtma qilingan mahsulotlar TOP-10
+Xonalar faollik hisoboti: qaysi xona ko'proq ishlatilgan
+Kassirlar bo'yicha hisobot: kim qancha chek yopgan
+Saralash: sana oralig'i, xona, kassir bo'yicha filter
+
+10. KELAJAK UCHUN REJALAR (v2.0+)
+Ofitsiant app (mobil): QR code orqali xona buyurtmasiga kirish
+Oshpaz panel (Kitchen Display): yangi buyurtmalar real-time ko'rinishi
+Inventar boshqaruvi: mahsulot kelishi, sarfi, qoldig'i
+Mijozlar bazasi: doimiy mijozlar uchun chegirmalar
+Online menyu: QR kod orqali mijoz telefoni bilan ko'rish
+Hisobotlarni Excel/PDF eksport
+Ko'p filial qo'llab-quvvatlash
+
+11. TEXNIK TALABLAR
+11.1 Server talablari
+PHP 8.3+
+MySQL 8.0+ yoki MariaDB 10.6+
+Composer 2.x
+Node.js 20+ (frontend build)
+Web server: Nginx yoki Apache
+11.2 Performance talablari
+Xonalar paneli yuklash vaqti: 1 soniyadan kam
+Buyurtmaga mahsulot qo'shish: 500ms dan kam
+Bir vaqtda 10 ta kassir ishlashi mumkin
+11.3 Xavfsizlik talablari
+CSRF himoya (Laravel standart)
+SQL injection himoya (Eloquent ORM)
+XSS himoya (Blade escaping)
+Rate limiting: login uchun
+Barcha actionlar log qilinadi (activity log)
+
+12. LOYIHALASH BOSQICHLARI
+#	Bosqich	Muddat	Natija
+1	Database va migratsiyalar	2-3 kun	Barcha jadvallar tayyor
+2	Model va relationship lar	1-2 kun	Eloquent modellari
+3	Xonalar paneli (UI)	3-4 kun	Grid, rang, karta
+4	Buyurtma yaratish moduli	4-5 kun	To'liq buyurtma flow
+5	Menyu CRUD	2-3 kun	Mahsulot boshqaruvi
+6	Chek chiqarish va print	3-4 kun	PDF/print funksiya
+7	Autentifikatsiya va rollar	2-3 kun	Login, rol tizimi
+8	Hisobotlar	3-4 kun	Statistika sahifalari
+9	Test va tuzatish	3-4 kun	Xato tuzatish
+10	Deploy va sozlash	1-2 kun	Ishga tushirish
+Jami taxminiy muddat: 24-34 ish kuni (1-1.5 oy)
+
+
+— Hujjat oxiri —
