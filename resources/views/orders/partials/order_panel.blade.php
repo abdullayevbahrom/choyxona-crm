@@ -19,7 +19,13 @@
                 <td class="p-3">{{ $item->menuItem->name }}</td>
                 <td class="p-3">
                     @if ($order->status === 'open')
-                        <form method="POST" action="{{ route('orders.items.update', [$order, $item]) }}" class="flex items-center gap-2">
+                        <form
+                            method="POST"
+                            action="{{ route('orders.items.update', [$order, $item]) }}"
+                            class="flex items-center gap-2"
+                            data-disable-on-submit
+                            data-pending-text="Saqlanmoqda..."
+                        >
                             @csrf
                             @method('PATCH')
                             <input name="quantity" type="number" min="1" max="1000" value="{{ $item->quantity }}" class="w-20 rounded border p-1">
@@ -63,7 +69,13 @@
 </div>
 
 @if ($order->status === 'open')
-    <form method="POST" action="{{ route('orders.bill.store', $order) }}" class="grid grid-cols-1 gap-3 rounded-xl border bg-white p-4 md:grid-cols-4">
+    <form
+        method="POST"
+        action="{{ route('orders.bill.store', $order) }}"
+        class="grid grid-cols-1 gap-3 rounded-xl border bg-white p-4 md:grid-cols-4"
+        data-disable-on-submit
+        data-pending-text="Chek yaratilmoqda..."
+    >
         @csrf
         <select name="payment_method" class="rounded border p-2">
             <option value="">To'lov usuli</option>

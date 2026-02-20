@@ -54,6 +54,8 @@
                         action="{{ $openOrder ? route('orders.items.store', $openOrder) : '#' }}"
                         class="flex gap-2"
                         data-menu-item-form
+                        data-disable-on-submit
+                        data-pending-text="Qo'shilmoqda..."
                     >
                         @csrf
                         <input type="hidden" name="menu_item_id" value="{{ $item->id }}">

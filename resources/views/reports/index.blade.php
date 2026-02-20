@@ -13,7 +13,12 @@
                     <a href="{{ route('reports.export.pdf', request()->query()) }}" class="inline-flex items-center rounded border border-rose-300 bg-rose-50 px-3 py-2 text-sm font-medium text-rose-700 hover:bg-rose-100">
                         PDF export
                     </a>
-                    <form method="POST" action="{{ route('reports.exports.request', request()->query()) }}">
+                    <form
+                        method="POST"
+                        action="{{ route('reports.exports.request', request()->query()) }}"
+                        data-disable-on-submit
+                        data-pending-text="Navbatga qo'yilmoqda..."
+                    >
                         @csrf
                         <button class="inline-flex items-center rounded border border-blue-300 bg-blue-50 px-3 py-2 text-sm font-medium text-blue-700 hover:bg-blue-100">
                             Background CSV

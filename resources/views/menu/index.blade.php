@@ -14,7 +14,13 @@
                 <button class="bg-slate-900 text-white rounded p-2">Filter</button>
             </form>
 
-            <form method="POST" action="{{ route('menu.store') }}" class="bg-white rounded-xl border p-4 mb-6 grid grid-cols-1 md:grid-cols-4 gap-3">
+            <form
+                method="POST"
+                action="{{ route('menu.store') }}"
+                class="bg-white rounded-xl border p-4 mb-6 grid grid-cols-1 md:grid-cols-4 gap-3"
+                data-disable-on-submit
+                data-pending-text="Saqlanmoqda..."
+            >
                 @csrf
                 <input name="name" placeholder="Nomi" class="border rounded p-2" required>
                 <select name="type" class="border rounded p-2" required>
@@ -46,7 +52,13 @@
                     @foreach ($items as $item)
                         <tr class="border-t">
                             <td class="p-3">
-                                <form method="POST" action="{{ route('menu.update', $item) }}" class="grid grid-cols-1 gap-2 min-w-56">
+                                <form
+                                    method="POST"
+                                    action="{{ route('menu.update', $item) }}"
+                                    class="grid grid-cols-1 gap-2 min-w-56"
+                                    data-disable-on-submit
+                                    data-pending-text="Saqlanmoqda..."
+                                >
                                     @csrf
                                     @method('PATCH')
                                     <input name="name" value="{{ $item->name }}" class="border rounded p-2" required>
