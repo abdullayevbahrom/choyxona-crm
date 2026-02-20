@@ -66,6 +66,32 @@
                         @endforelse
                         </tbody>
                     </table>
+
+                    @php
+                        $monthlyChart = collect($monthlyRevenue)->reverse()->values();
+                        $maxRevenue = max(1, (float) $monthlyChart->max('revenue'));
+                    @endphp
+                    <div class="border-t p-4">
+                        <h3 class="mb-3 text-sm font-semibold text-slate-700">Oylik grafik</h3>
+                        <div class="flex h-40 items-end gap-2">
+                            @forelse ($monthlyChart as $row)
+                                @php
+                                    $value = (float) $row->revenue;
+                                    $heightPercent = max(3, (int) round(($value / $maxRevenue) * 100));
+                                @endphp
+                                <div class="group relative flex-1">
+                                    <div
+                                        class="w-full rounded-t bg-emerald-500 transition group-hover:bg-emerald-600"
+                                        style="height: {{ $heightPercent }}%; min-height: 8px;"
+                                        title="{{ $row->ym }}: {{ number_format($value, 2) }}"
+                                    ></div>
+                                    <div class="mt-1 text-center text-[10px] text-slate-600">{{ $row->ym }}</div>
+                                </div>
+                            @empty
+                                <div class="text-sm text-slate-500">Grafik uchun ma'lumot yo'q.</div>
+                            @endforelse
+                        </div>
+                    </div>
                 </div>
             </div>
 
