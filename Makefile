@@ -3,7 +3,7 @@ SMOKE_EMAIL ?= manager@choyxona.uz
 SMOKE_PASSWORD ?= password
 PRUNE_DAYS ?= 30
 
-.PHONY: help up down restart rebuild ps logs verify smoke runtime test backup restore-smoke backup-list backup-prune
+.PHONY: help up down restart rebuild ps logs verify verify-rebuild smoke runtime test backup restore-smoke backup-list backup-prune
 
 help:
 	@echo "Targets:"
@@ -14,6 +14,7 @@ help:
 	@echo "  make ps       - Container holatini ko'rsatish"
 	@echo "  make logs     - Asosiy servis loglarini ko'rsatish"
 	@echo "  make verify   - Docker post-deploy verify"
+	@echo "  make verify-rebuild - Rebuild + verify (kod o'zgarganda tavsiya)"
 	@echo "  make smoke    - Web smoke check"
 	@echo "  make runtime  - Runtime process check"
 	@echo "  make test     - Feature sanity testlar"
@@ -42,6 +43,8 @@ logs:
 
 verify:
 	./deploy/scripts/post-deploy-verify.sh --docker "$(APP_URL)"
+
+verify-rebuild: rebuild verify
 
 smoke:
 	SMOKE_EMAIL="$(SMOKE_EMAIL)" SMOKE_PASSWORD="$(SMOKE_PASSWORD)" ./deploy/scripts/smoke-web.sh "$(APP_URL)"

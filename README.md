@@ -212,6 +212,12 @@ SMOKE_EMAIL=manager@choyxona.uz SMOKE_PASSWORD=password ./deploy/scripts/smoke-w
 ./deploy/scripts/post-deploy-verify.sh --docker "$APP_URL"
 ```
 
+- Kod o'zgargandan keyin image ham yangilanishi uchun:
+
+```bash
+make verify-rebuild
+```
+
 ## Observability
 
 - Har bir javobda `X-Request-ID` header qaytadi.
