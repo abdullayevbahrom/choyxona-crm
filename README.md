@@ -83,6 +83,20 @@ App: `http://localhost:8080`
 
 Izoh: compose stack ichida `app`, `worker`, `scheduler`, `db`, `redis` servislar bor.
 
+## Makefile tezkor buyruqlar
+
+```bash
+make up
+make ps
+make verify
+make smoke
+make runtime
+make down
+```
+
+Default URL: `APP_URL=http://localhost:8080`  
+Alohida URL bilan: `make verify APP_URL=http://127.0.0.1:8080`
+
 ## CI/CD
 
 - CI workflow: `.github/workflows/ci.yml`
