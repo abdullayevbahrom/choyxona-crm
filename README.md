@@ -93,7 +93,15 @@ make smoke
 make runtime
 make backup
 make restore-smoke
+make backup-list
+make backup-prune
 make down
+```
+
+Prune days override misol:
+
+```bash
+make backup-prune PRUNE_DAYS=7
 ```
 
 Default URL: `APP_URL=http://localhost:8080`  
