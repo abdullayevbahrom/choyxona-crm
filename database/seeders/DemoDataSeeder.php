@@ -27,7 +27,7 @@ class DemoDataSeeder extends Seeder
 
     private const DEFAULT_CANCELLED_ORDERS_COUNT = 40;
 
-    private const DEFAULT_OPEN_ORDERS_COUNT = 8;
+    private const DEFAULT_OPEN_ORDERS_COUNT = 12;
 
     public function run(): void
     {
@@ -64,7 +64,7 @@ class DemoDataSeeder extends Seeder
         $openOrdersCount = $this->intEnv(
             'DEMO_SEED_OPEN_ORDERS',
             self::DEFAULT_OPEN_ORDERS_COUNT,
-            0,
+            1,
             $roomsCount,
         );
 

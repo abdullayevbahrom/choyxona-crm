@@ -6,7 +6,9 @@
                 <span id="order-panel-syncing" role="status" aria-live="polite" class="hidden text-xs font-medium text-amber-700">Yangilanmoqda...</span>
             </div>
 
-            <a href="{{ route('orders.create', ['room' => $order->room_id]) }}" class="inline-block mb-4 text-blue-700 underline">Menyu orqali mahsulot qo'shish</a>
+            @if ($order->status === \App\Models\Order::STATUS_OPEN)
+                <a href="{{ route('orders.create', ['room' => $order->room_id]) }}" class="inline-block mb-4 text-blue-700 underline">Menyu orqali mahsulot qo'shish</a>
+            @endif
 
             <div id="order-panel" data-url="{{ route('orders.panel', $order) }}">
                 @include('orders.partials.order_panel', ['order' => $order])
