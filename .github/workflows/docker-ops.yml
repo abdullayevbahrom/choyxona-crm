@@ -1,0 +1,40 @@
+name: Docker Ops Verify
+
+on:
+  pull_request:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+jobs:
+  docker-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Start stack
+        run: docker compose up -d --build
+
+      - name: Seed demo data
+        run: docker compose exec -T app php artisan db:seed --force
+
+      - name: Verify runtime and smoke
+        run: make verify
+
+      - name: Verify backup restore-smoke
+        run: make restore-smoke
+
+      - name: Show compose status
+        if: always()
+        run: docker compose ps
+
+      - name: Show service logs
+        if: failure()
+        run: docker compose logs --tail=200 app worker scheduler db redis
+
+      - name: Tear down
+        if: always()
+        run: docker compose down -v

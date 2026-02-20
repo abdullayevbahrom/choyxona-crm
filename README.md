@@ -114,6 +114,10 @@ Alohida URL bilan: `make verify APP_URL=http://127.0.0.1:8080`
   - Node build
   - migrate
   - `php artisan test`
+- Docker ops workflow: `.github/workflows/docker-ops.yml`
+  - `docker compose up -d --build`
+  - `make verify`
+  - `make restore-smoke`
 - Deploy workflow: `.github/workflows/deploy.yml`
   - `main` branch push yoki manual trigger
   - SSH orqali serverda `deploy/scripts/deploy.sh` ni ishga tushiradi
