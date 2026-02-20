@@ -2,10 +2,24 @@
 set -euo pipefail
 
 DOCKER_MODE=false
-if [[ "${1:-}" == "--docker" ]]; then
-  DOCKER_MODE=true
-  shift
-fi
+BACKUP_ONLY=false
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --docker)
+      DOCKER_MODE=true
+      shift
+      ;;
+    --backup-only)
+      BACKUP_ONLY=true
+      shift
+      ;;
+    *)
+      echo "Unknown argument: $1" >&2
+      echo "Usage: $0 [--docker] [--backup-only]" >&2
+      exit 1
+      ;;
+  esac
+done
 
 PRUNE_DAYS="${PRUNE_DAYS:-30}"
 
@@ -54,8 +68,8 @@ create_docker_backup() {
   tmp_file="$(mktemp)"
   trap 'rm -f "$tmp_file"' RETURN
 
-  docker compose exec -T db sh -lc \
-    "mysqldump --host='${db_host}' --port='${db_port}' --user='${db_user}' --password='${db_password}' --single-transaction --quick --lock-tables=false --no-tablespaces '${db_name}'" \
+  docker compose exec -T -e MYSQL_PWD="$db_password" db sh -lc \
+    "mysqldump --host='${db_host}' --port='${db_port}' --user='${db_user}' --single-transaction --quick --lock-tables=false --no-tablespaces '${db_name}'" \
     | gzip -9 > "$tmp_file"
 
   docker compose exec -T app sh -lc \
@@ -115,6 +129,12 @@ if [[ -z "$LATEST_BACKUP" ]]; then
 fi
 
 echo "Latest backup: ${LATEST_BACKUP}"
+
+if [[ "$BACKUP_ONLY" == "true" ]]; then
+  echo "Backup-only mode finished"
+  exit 0
+fi
+
 test_backup_archive "$LATEST_BACKUP"
 echo "Archive integrity check: OK"
 

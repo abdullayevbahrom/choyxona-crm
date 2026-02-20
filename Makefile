@@ -53,7 +53,7 @@ test:
 	php artisan test --testsuite=Feature --filter='HealthCheckTest|LocalizationValidationTest|ReportBackgroundExportTest'
 
 backup:
-	./deploy/scripts/backup-restore-smoke.sh --docker
+	./deploy/scripts/backup-restore-smoke.sh --docker --backup-only
 
 restore-smoke:
 	./deploy/scripts/backup-restore-smoke.sh --docker

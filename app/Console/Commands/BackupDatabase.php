@@ -105,7 +105,6 @@ class BackupDatabase extends Command
             "--host={$host}",
             "--port={$port}",
             "--user={$username}",
-            "--password={$password}",
             "--single-transaction",
             "--quick",
             "--lock-tables=false",
@@ -120,7 +119,11 @@ class BackupDatabase extends Command
 
         $command[] = $database;
 
-        $result = Process::timeout(120)->run($command);
+        $result = Process::env([
+            "MYSQL_PWD" => $password,
+        ])
+            ->timeout(120)
+            ->run($command);
 
         if ($result->failed()) {
             throw new RuntimeException(

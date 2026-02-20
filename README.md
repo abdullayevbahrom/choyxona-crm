@@ -174,6 +174,12 @@ php artisan backup:database --prune-days=30
 ./deploy/scripts/backup-restore-smoke.sh --docker
 ```
 
+- Faqat backup olish (smoke tekshiruvisiz):
+
+```bash
+./deploy/scripts/backup-restore-smoke.sh --docker --backup-only
+```
+
 - Queue worker restart:
 
 ```bash
