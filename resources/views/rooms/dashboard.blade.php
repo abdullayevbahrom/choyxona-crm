@@ -4,7 +4,7 @@
             <div class="mb-4 flex items-center justify-between">
                 <h1 class="text-2xl font-bold">Xonalar Paneli</h1>
                 <div class="flex items-center gap-3">
-                    <span id="room-cards-syncing" class="hidden text-xs font-medium text-amber-700">
+                    <span id="room-cards-syncing" role="status" aria-live="polite" class="hidden text-xs font-medium text-amber-700">
                         Yangilanmoqda...
                     </span>
                     <span class="text-sm text-slate-600">30 soniyada avtomatik yangilanadi</span>

@@ -21,10 +21,13 @@ window.setupHtmlPolling = function setupHtmlPolling({
     let fingerprint = null;
     let disposed = false;
 
+    container.setAttribute("aria-busy", "false");
+
     const poll = async () => {
         if (document.hidden || inFlight) return;
 
         inFlight = true;
+        container.setAttribute("aria-busy", "true");
         if (typeof onStateChange === "function") {
             onStateChange({ inFlight: true });
         }
@@ -85,6 +88,7 @@ window.setupHtmlPolling = function setupHtmlPolling({
             // Polling xatosi bo'lsa keyingi intervalda qayta uriniladi.
         } finally {
             inFlight = false;
+            container.setAttribute("aria-busy", "false");
             if (typeof onStateChange === "function") {
                 onStateChange({ inFlight: false });
             }

@@ -5,13 +5,13 @@
                 <h1 class="text-2xl font-bold">Hisobotlar</h1>
                 <div class="flex flex-wrap gap-2">
                     <a href="{{ route('reports.export.csv', request()->query()) }}" class="inline-flex items-center rounded border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
-                        CSV export
+                        CSV yuklab olish
                     </a>
                     <a href="{{ route('reports.export.xls', request()->query()) }}" class="inline-flex items-center rounded border border-emerald-300 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-700 hover:bg-emerald-100">
-                        XLSX export
+                        XLSX yuklab olish
                     </a>
                     <a href="{{ route('reports.export.pdf', request()->query()) }}" class="inline-flex items-center rounded border border-rose-300 bg-rose-50 px-3 py-2 text-sm font-medium text-rose-700 hover:bg-rose-100">
-                        PDF export
+                        PDF yuklab olish
                     </a>
                     <form
                         method="POST"
@@ -21,7 +21,7 @@
                     >
                         @csrf
                         <button class="inline-flex items-center rounded border border-blue-300 bg-blue-50 px-3 py-2 text-sm font-medium text-blue-700 hover:bg-blue-100">
-                            Background CSV
+                            Fon rejimida CSV
                         </button>
                     </form>
                 </div>
