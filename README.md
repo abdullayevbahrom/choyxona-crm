@@ -91,6 +91,8 @@ make ps
 make verify
 make smoke
 make runtime
+make backup
+make restore-smoke
 make down
 ```
 
@@ -152,6 +154,12 @@ php artisan activity-logs:prune --days=90
 
 ```bash
 php artisan backup:database --prune-days=30
+```
+
+- Backup + restore smoke tekshiruv (docker compose):
+
+```bash
+./deploy/scripts/backup-restore-smoke.sh --docker
 ```
 
 - Queue worker restart:

@@ -2,7 +2,7 @@ APP_URL ?= http://localhost:8080
 SMOKE_EMAIL ?= manager@choyxona.uz
 SMOKE_PASSWORD ?= password
 
-.PHONY: help up down restart rebuild ps logs verify smoke runtime test
+.PHONY: help up down restart rebuild ps logs verify smoke runtime test backup restore-smoke
 
 help:
 	@echo "Targets:"
@@ -16,6 +16,8 @@ help:
 	@echo "  make smoke    - Web smoke check"
 	@echo "  make runtime  - Runtime process check"
 	@echo "  make test     - Feature sanity testlar"
+	@echo "  make backup   - DB backup olish (container ichida)"
+	@echo "  make restore-smoke - Backup archive/dump smoke check"
 
 up:
 	docker compose up -d
@@ -46,3 +48,9 @@ runtime:
 
 test:
 	php artisan test --testsuite=Feature --filter='HealthCheckTest|LocalizationValidationTest|ReportBackgroundExportTest'
+
+backup:
+	./deploy/scripts/backup-restore-smoke.sh --docker
+
+restore-smoke:
+	./deploy/scripts/backup-restore-smoke.sh --docker

@@ -89,6 +89,7 @@ class BackupDatabase extends Command
 
     private function backupMysql(array $connection): string
     {
+        $dumpBinary = $this->resolveMysqlDumpBinary();
         $database = (string) ($connection["database"] ?? "");
         $host = (string) ($connection["host"] ?? "127.0.0.1");
         $port = (string) ($connection["port"] ?? "3306");
@@ -99,8 +100,8 @@ class BackupDatabase extends Command
             throw new RuntimeException("MySQL credentials are incomplete.");
         }
 
-        $result = Process::timeout(120)->run([
-            "mysqldump",
+        $command = [
+            $dumpBinary,
             "--host={$host}",
             "--port={$port}",
             "--user={$username}",
@@ -108,8 +109,18 @@ class BackupDatabase extends Command
             "--single-transaction",
             "--quick",
             "--lock-tables=false",
-            $database,
-        ]);
+        ];
+
+        $sslMode = (string) env("DB_DUMP_SSL_MODE", "DISABLED");
+        if (strtoupper($sslMode) === "DISABLED") {
+            $command[] = "--skip-ssl";
+        } elseif (strtoupper($sslMode) === "REQUIRED") {
+            $command[] = "--ssl";
+        }
+
+        $command[] = $database;
+
+        $result = Process::timeout(120)->run($command);
 
         if ($result->failed()) {
             throw new RuntimeException(
@@ -130,6 +141,24 @@ class BackupDatabase extends Command
         File::put($targetPath, $compressed);
 
         return $targetPath;
+    }
+
+    private function resolveMysqlDumpBinary(): string
+    {
+        $result = Process::run([
+            "sh",
+            "-lc",
+            "command -v mysqldump || command -v mariadb-dump",
+        ]);
+
+        if ($result->successful()) {
+            $binary = trim($result->output());
+            if ($binary !== "") {
+                return $binary;
+            }
+        }
+
+        return "mysqldump";
     }
 
     private function backupDirectory(): string
