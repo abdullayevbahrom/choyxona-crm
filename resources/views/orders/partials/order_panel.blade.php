@@ -1,4 +1,11 @@
-<p class="mb-4 text-slate-600">Xona: {{ $order->room->number }} | Holat: {{ $order->status }}</p>
+@php
+    $statusLabels = [
+        'open' => 'Ochiq',
+        'closed' => 'Yopilgan',
+        'cancelled' => 'Bekor qilingan',
+    ];
+@endphp
+<p class="mb-4 text-slate-600">Xona: {{ $order->room->number }} | Holat: {{ $statusLabels[$order->status] ?? $order->status }}</p>
 
 <div class="mb-6 overflow-x-auto rounded-xl border bg-white">
     <table class="min-w-[680px] w-full text-sm">
