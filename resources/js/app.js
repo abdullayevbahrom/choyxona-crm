@@ -10,6 +10,7 @@ window.setupHtmlPolling = function setupHtmlPolling({
     fingerprintUrl = null,
     intervalMs = 30000,
     afterUpdate = null,
+    onStateChange = null,
 }) {
     const container = document.getElementById(containerId);
     if (!container || !url) return;
@@ -24,6 +25,9 @@ window.setupHtmlPolling = function setupHtmlPolling({
         if (document.hidden || inFlight) return;
 
         inFlight = true;
+        if (typeof onStateChange === "function") {
+            onStateChange({ inFlight: true });
+        }
 
         try {
             if (fingerprintUrl) {
@@ -81,6 +85,9 @@ window.setupHtmlPolling = function setupHtmlPolling({
             // Polling xatosi bo'lsa keyingi intervalda qayta uriniladi.
         } finally {
             inFlight = false;
+            if (typeof onStateChange === "function") {
+                onStateChange({ inFlight: false });
+            }
         }
     };
 

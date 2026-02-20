@@ -28,7 +28,7 @@
                 </div>
             @endif
 
-            <form method="GET" class="bg-white rounded-xl border p-4 grid grid-cols-1 md:grid-cols-5 gap-3">
+            <form method="GET" class="sticky top-2 z-20 bg-white/95 backdrop-blur rounded-xl border p-4 grid grid-cols-1 md:grid-cols-5 gap-3">
                 <input type="date" name="date_from" value="{{ $filters['date_from'] ?? '' }}" class="border rounded p-2">
                 <input type="date" name="date_to" value="{{ $filters['date_to'] ?? '' }}" class="border rounded p-2">
 
