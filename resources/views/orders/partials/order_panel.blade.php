@@ -68,7 +68,7 @@
         </tbody>
         <tfoot>
         <tr class="border-t bg-slate-50">
-            <td colspan="{{ $order->status === 'open' ? 4 : 3 }}" class="p-3 text-right font-bold">{{ $order->bill ? 'Subtotal' : 'Jami' }}</td>
+            <td colspan="{{ $order->status === 'open' ? 4 : 3 }}" class="p-3 text-right font-bold">{{ $order->bill ? "Jami (chegirmasiz)" : 'Jami' }}</td>
             <td class="p-3 font-bold">{{ number_format((float) $order->total_amount, 2) }}</td>
         </tr>
         </tfoot>
@@ -79,9 +79,20 @@
     <div class="mb-6 rounded-xl border bg-white p-4">
         <div class="text-sm text-slate-700">
             <p class="font-semibold">Chek: {{ $order->bill->bill_number }}</p>
-            <p class="mt-1">Chegirma foizi: {{ $order->bill->discount_percent !== null ? number_format((float) $order->bill->discount_percent, 2).'%' : '0.00%' }}</p>
-            <p>Chegirma summasi: {{ number_format((float) ($order->bill->discount_amount ?? 0), 2) }}</p>
-            <p class="mt-1 text-base font-semibold">To'lov jami: {{ number_format((float) $order->bill->total_amount, 2) }}</p>
+            <div class="mt-2 max-w-md space-y-1">
+                <div class="flex items-center justify-between">
+                    <span>Jami (chegirmasiz)</span>
+                    <span class="font-medium">{{ number_format((float) $order->bill->subtotal, 2) }}</span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span>Chegirma ({{ $order->bill->discount_percent !== null ? number_format((float) $order->bill->discount_percent, 2).'%' : '0.00%' }})</span>
+                    <span class="font-medium text-red-600">-{{ number_format((float) ($order->bill->discount_amount ?? 0), 2) }}</span>
+                </div>
+                <div class="border-t pt-2 mt-2 flex items-center justify-between text-base font-semibold text-slate-900">
+                    <span>To'lov jami</span>
+                    <span>{{ number_format((float) $order->bill->total_amount, 2) }}</span>
+                </div>
+            </div>
         </div>
     </div>
 @endif
