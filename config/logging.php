@@ -79,6 +79,14 @@ return [
             "replace_placeholders" => true,
         ],
 
+        "alerts" => [
+            "driver" => "daily",
+            "path" => storage_path("logs/alerts.log"),
+            "level" => env("LOG_ALERTS_LEVEL", "warning"),
+            "days" => env("LOG_ALERTS_DAYS", 14),
+            "replace_placeholders" => true,
+        ],
+
         "slack" => [
             "driver" => "slack",
             "url" => env("LOG_SLACK_WEBHOOK_URL"),
