@@ -23,7 +23,17 @@ class BillService
             );
         }
 
-        if ($order->items()->count() === 0) {
+        $itemsSummary = $order
+            ->items()
+            ->selectRaw(
+                "count(*) as items_count, coalesce(sum(subtotal), 0) as subtotal",
+            )
+            ->first();
+
+        $itemsCount = (int) ($itemsSummary?->items_count ?? 0);
+        $subtotal = (float) ($itemsSummary?->subtotal ?? 0);
+
+        if ($itemsCount === 0) {
             throw new RuntimeException(
                 'Kamida bitta mahsulot bo\'lmasa, buyurtmani yopib bo\'lmaydi.',
             );
@@ -34,8 +44,6 @@ class BillService
                 "Bu buyurtma uchun chek allaqachon yaratilgan.",
             );
         }
-
-        $subtotal = (float) $order->items()->sum("subtotal");
 
         [$finalPercent, $finalAmount] = $this->resolveDiscounts(
             $subtotal,

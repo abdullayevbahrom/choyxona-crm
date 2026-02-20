@@ -113,7 +113,7 @@ class OrderService
                 ]);
             }
 
-            $this->recalculateTotal($order->fresh());
+            $this->recalculateTotal($order);
 
             return $item;
         });
@@ -138,7 +138,7 @@ class OrderService
                 "subtotal" => $quantity * (float) $item->unit_price,
             ]);
 
-            $this->recalculateTotal($order->fresh());
+            $this->recalculateTotal($order);
         });
     }
 
@@ -152,7 +152,7 @@ class OrderService
 
         DB::transaction(function () use ($order, $item) {
             $item->delete();
-            $this->recalculateTotal($order->fresh());
+            $this->recalculateTotal($order);
         });
     }
 

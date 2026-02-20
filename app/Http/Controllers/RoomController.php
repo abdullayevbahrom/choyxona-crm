@@ -22,16 +22,22 @@ class RoomController extends Controller
 
     public function dashboardCards(Request $request): Response
     {
-        $rooms = $this->dashboardRooms();
-
-        $response = response()->view("rooms.partials.cards", compact("rooms"));
-        $response->setEtag($this->dashboardCardsEtag());
+        $etag = $this->dashboardCardsEtag();
+        $response = response("", 200);
+        $response->setEtag($etag);
 
         if ($response->isNotModified($request)) {
             return $response;
         }
 
-        return $response;
+        $rooms = $this->dashboardRooms();
+        $freshResponse = response()->view(
+            "rooms.partials.cards",
+            compact("rooms"),
+        );
+        $freshResponse->setEtag($etag);
+
+        return $freshResponse;
     }
 
     public function dashboardFingerprint(): JsonResponse
