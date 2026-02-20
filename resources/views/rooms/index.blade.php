@@ -1,4 +1,10 @@
 <x-app-layout>
+    @php
+        $roomStatusLabels = [
+            'empty' => "Bo'sh",
+            'occupied' => 'Band',
+        ];
+    @endphp
     <div class="py-8">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h1 class="text-2xl font-bold mb-4">Xonalar boshqaruvi</h1>
@@ -43,7 +49,7 @@
                             <td class="p-3">
                                     <input name="description" value="{{ $room->description }}" class="border rounded p-2" placeholder="Izoh">
                             </td>
-                            <td class="p-3">{{ $room->status }}</td>
+                            <td class="p-3">{{ $roomStatusLabels[$room->status] ?? $room->status }}</td>
                             <td class="p-3">{{ $room->is_active ? 'ha' : 'yo\'q' }}</td>
                             <td class="p-3 align-top">
                                     <button class="bg-blue-700 text-white rounded px-3 py-2 text-xs mb-2 w-full">Saqlash</button>

@@ -1,4 +1,11 @@
 <x-app-layout>
+    @php
+        $paymentLabels = [
+            'cash' => 'Naqd',
+            'card' => 'Karta',
+            'transfer' => "O'tkazma",
+        ];
+    @endphp
     <div class="py-8">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h1 class="text-2xl font-bold mb-2">{{ $setting->company_name }}</h1>
@@ -12,6 +19,9 @@
             <h2 class="text-xl font-semibold mb-2">Chek: {{ $bill->bill_number }}</h2>
             <p class="text-slate-600 mb-4">Buyurtma: {{ $bill->order->order_number }} | Xona: {{ $bill->room->number }}</p>
             <p class="text-slate-600 mb-4">Kassir: {{ $bill->order->user?->name ?? 'Noma\'lum' }}</p>
+            @if($bill->payment_method)
+                <p class="text-slate-600 mb-4">To'lov usuli: {{ $paymentLabels[$bill->payment_method] ?? $bill->payment_method }}</p>
+            @endif
 
             <div class="bg-white rounded-xl border p-4 mb-6">
         <div class="overflow-x-auto">
@@ -38,8 +48,8 @@
         </div>
 
         <div class="text-right space-y-1">
-            <div>Subtotal: {{ number_format((float) $bill->subtotal, 2) }}</div>
-            <div>Chegirma: {{ $bill->discount_amount !== null ? number_format((float) $bill->discount_amount, 2) : '0.00' }}</div>
+            <div>Jami (chegirmasiz): {{ number_format((float) $bill->subtotal, 2) }}</div>
+            <div>Chegirma: -{{ $bill->discount_amount !== null ? number_format((float) $bill->discount_amount, 2) : '0.00' }}</div>
             <div class="text-lg font-bold">Jami: {{ number_format((float) $bill->total_amount, 2) }}</div>
         </div>
 

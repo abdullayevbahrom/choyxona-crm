@@ -1,4 +1,13 @@
 <x-app-layout>
+    @php
+        $typeLabels = [
+            'food' => 'Taom',
+            'drink' => 'Ichimlik',
+            'bread' => 'Non',
+            'salad' => 'Salat',
+            'sauce' => 'Sous',
+        ];
+    @endphp
     <div class="py-8">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h1 class="text-2xl font-bold mb-4">Menyu boshqaruvi</h1>
@@ -7,7 +16,7 @@
                 <input name="q" value="{{ $filters['q'] ?? '' }}" placeholder="Qidirish" class="border rounded p-2">
                 <select name="type" class="border rounded p-2">
                     <option value="">Barchasi</option>
-                    @foreach (['food' => 'Taom', 'drink' => 'Ichimlik', 'bread' => 'Non', 'salad' => 'Salat', 'sauce' => 'Sous'] as $key => $label)
+                    @foreach ($typeLabels as $key => $label)
                         <option value="{{ $key }}" @selected(($filters['type'] ?? '') === $key)>{{ $label }}</option>
                     @endforeach
                 </select>
@@ -27,8 +36,8 @@
                 @csrf
                 <input name="name" placeholder="Nomi" class="border rounded p-2" required>
                 <select name="type" class="border rounded p-2" required>
-                    @foreach (['food', 'drink', 'bread', 'salad', 'sauce'] as $type)
-                        <option value="{{ $type }}">{{ $type }}</option>
+                    @foreach ($typeLabels as $type => $label)
+                        <option value="{{ $type }}">{{ $label }}</option>
                     @endforeach
                 </select>
                 <input name="price" type="number" step="0.01" min="0" placeholder="Narx" class="border rounded p-2">
@@ -68,8 +77,8 @@
                             </td>
                             <td class="w-[11rem] min-w-[11rem] p-3">
                                     <select name="type" class="w-full min-w-[9rem] border rounded p-2" required>
-                                        @foreach (['food', 'drink', 'bread', 'salad', 'sauce'] as $type)
-                                            <option value="{{ $type }}" @selected($item->type === $type)>{{ $type }}</option>
+                                        @foreach ($typeLabels as $type => $label)
+                                            <option value="{{ $type }}" @selected($item->type === $type)>{{ $label }}</option>
                                         @endforeach
                                     </select>
                             </td>

@@ -17,6 +17,13 @@
     </style>
 </head>
 <body>
+    @php
+        $paymentLabels = [
+            'cash' => 'Naqd',
+            'card' => 'Karta',
+            'transfer' => "O'tkazma",
+        ];
+    @endphp
     <div class="center mb-10">
         <div class="bold">{{ $setting->company_name }}</div>
         @if($setting->company_address)
@@ -59,15 +66,15 @@
     <div class="line"></div>
 
     <table class="totals">
-        <tr><td>Subtotal</td><td>{{ number_format((float) $bill->subtotal, 2) }}</td></tr>
-        <tr><td>Chegirma</td><td>{{ number_format((float) ($bill->discount_amount ?? 0), 2) }}</td></tr>
+        <tr><td>Jami (chegirmasiz)</td><td>{{ number_format((float) $bill->subtotal, 2) }}</td></tr>
+        <tr><td>Chegirma</td><td>-{{ number_format((float) ($bill->discount_amount ?? 0), 2) }}</td></tr>
         <tr><td class="bold">Jami</td><td class="bold">{{ number_format((float) $bill->total_amount, 2) }}</td></tr>
     </table>
 
     <div class="line"></div>
 
     @if($bill->payment_method)
-        <div class="mb-6">To'lov: {{ $bill->payment_method }}</div>
+        <div class="mb-6">To'lov: {{ $paymentLabels[$bill->payment_method] ?? $bill->payment_method }}</div>
     @endif
 
     <div class="mb-6">QR ma'lumot: {{ $qrPayload }}</div>

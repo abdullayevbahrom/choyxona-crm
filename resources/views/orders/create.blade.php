@@ -1,4 +1,13 @@
 <x-app-layout>
+    @php
+        $typeLabels = [
+            'food' => 'Taom',
+            'drink' => 'Ichimlik',
+            'bread' => 'Non',
+            'salad' => 'Salat',
+            'sauce' => 'Sous',
+        ];
+    @endphp
     <div class="py-8">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h1 class="mb-4 text-2xl font-bold">Xona {{ $room->number }} uchun buyurtma</h1>
@@ -20,7 +29,7 @@
                     >
                     <select id="menu-type-select" name="type" class="border rounded p-2">
                         <option value="">Barchasi</option>
-                        @foreach (['food' => 'Taom', 'drink' => 'Ichimlik', 'bread' => 'Non', 'salad' => 'Salat', 'sauce' => 'Sous'] as $key => $label)
+                        @foreach ($typeLabels as $key => $label)
                             <option value="{{ $key }}" @selected(($filters['type'] ?? '') === $key)>{{ $label }}</option>
                         @endforeach
                     </select>
@@ -30,7 +39,7 @@
                     @php
                         $currentQ = $filters['q'] ?? '';
                         $currentType = $filters['type'] ?? '';
-                        $typeLinks = ['' => 'Barchasi', 'food' => 'Taom', 'drink' => 'Ichimlik', 'bread' => 'Non', 'salat' => 'Salat', 'sauce' => 'Sous'];
+                        $typeLinks = ['' => 'Barchasi'] + $typeLabels;
                     @endphp
                     @foreach ($typeLinks as $typeKey => $typeLabel)
                         <a
@@ -48,7 +57,7 @@
                     @foreach ($menuItems as $item)
                         <div class="border rounded-lg p-3">
                             <div class="font-semibold">{{ $item->name }}</div>
-                            <div class="text-sm text-slate-600">{{ $item->type }}</div>
+                            <div class="text-sm text-slate-600">{{ $typeLabels[$item->type] ?? $item->type }}</div>
                             <div class="mb-2">{{ $item->price !== null ? number_format((float) $item->price, 2) : 'Narx yo\'q' }}</div>
 
                             <form

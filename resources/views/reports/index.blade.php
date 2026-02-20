@@ -1,4 +1,12 @@
 <x-app-layout>
+    @php
+        $exportStatusLabels = [
+            'pending' => 'Kutilmoqda',
+            'processing' => 'Jarayonda',
+            'ready' => 'Tayyor',
+            'failed' => 'Xato',
+        ];
+    @endphp
     <div class="py-8">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
             <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -84,7 +92,7 @@
                     @forelse($exports as $export)
                         <tr class="border-t" data-export-row="{{ $export->id }}">
                             <td class="p-3">{{ $export->id }}</td>
-                            <td class="p-3" data-export-status>{{ $export->status }}</td>
+                            <td class="p-3" data-export-status data-export-status-code="{{ $export->status }}">{{ $exportStatusLabels[$export->status] ?? $export->status }}</td>
                             <td class="p-3">{{ strtoupper($export->format) }}</td>
                             <td class="p-3">{{ $export->created_at?->format('Y-m-d H:i') }}</td>
                             <td class="p-3">
@@ -220,6 +228,12 @@
             let timerId = null;
             let inFlight = false;
             let statusesEtag = null;
+            const statusLabels = {
+                pending: "Kutilmoqda",
+                processing: "Jarayonda",
+                ready: "Tayyor",
+                failed: "Xato",
+            };
 
             const poll = () => {
                 if (document.hidden || inFlight) return;
@@ -227,7 +241,8 @@
                 const rows = Array.from(document.querySelectorAll('[data-export-row]'));
                 const pendingRows = rows.filter((row) => {
                     const statusNode = row.querySelector('[data-export-status]');
-                    return statusNode && statusNode.textContent.trim() !== 'ready' && statusNode.textContent.trim() !== 'failed';
+                    const code = statusNode?.getAttribute('data-export-status-code');
+                    return statusNode && code !== 'ready' && code !== 'failed';
                 });
 
                 if (!pendingRows.length) {
@@ -286,7 +301,8 @@
                             const downloadNode = row.querySelector('[data-export-download]');
                             if (!statusNode || !pendingNode || !downloadNode) return;
 
-                            statusNode.textContent = item.status;
+                            statusNode.setAttribute('data-export-status-code', item.status);
+                            statusNode.textContent = statusLabels[item.status] ?? item.status;
 
                             if (item.status === 'ready' && item.download_url) {
                                 downloadNode.href = item.download_url;

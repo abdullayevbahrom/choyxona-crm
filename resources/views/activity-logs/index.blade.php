@@ -1,4 +1,12 @@
 <x-app-layout>
+    @php
+        $exportStatusLabels = [
+            \App\Models\ActivityLogExport::STATUS_PENDING => 'Kutilmoqda',
+            \App\Models\ActivityLogExport::STATUS_PROCESSING => 'Jarayonda',
+            \App\Models\ActivityLogExport::STATUS_READY => 'Tayyor',
+            \App\Models\ActivityLogExport::STATUS_FAILED => 'Xato',
+        ];
+    @endphp
     <div class="py-8">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h1 class="text-2xl font-bold mb-4">Faoliyat jurnali</h1>
@@ -76,10 +84,10 @@
                                 @foreach($exports as $export)
                                     <tr class="border-t">
                                         <td class="p-2">#{{ $export->id }}</td>
-                                        <td class="p-2">{{ $export->status }}</td>
+                                        <td class="p-2">{{ $exportStatusLabels[$export->status] ?? $export->status }}</td>
                                         <td class="p-2">{{ $export->created_at?->format('Y-m-d H:i:s') }}</td>
                                         <td class="p-2">{{ $export->finished_at?->format('Y-m-d H:i:s') ?? '-' }}</td>
-                                        <td class="p-2">{{ $export->file_size ? number_format($export->file_size) . ' bytes' : '-' }}</td>
+                                        <td class="p-2">{{ $export->file_size ? number_format($export->file_size) . ' bayt' : '-' }}</td>
                                         <td class="p-2">
                                             @if($export->status === \App\Models\ActivityLogExport::STATUS_READY)
                                                 <a href="{{ route('activity-logs.exports.download', $export) }}" class="text-blue-700 underline">Yuklash</a>
