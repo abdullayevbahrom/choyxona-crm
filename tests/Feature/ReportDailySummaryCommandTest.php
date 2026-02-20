@@ -54,6 +54,18 @@ class ReportDailySummaryCommandTest extends TestCase
             "day" => now()->toDateString(),
             "orders_count" => 1,
         ]);
+
+        $this->assertDatabaseHas("report_daily_room_summaries", [
+            "day" => now()->toDateString(),
+            "room_id" => $room->id,
+            "orders_count" => 1,
+        ]);
+
+        $this->assertDatabaseHas("report_daily_cashier_summaries", [
+            "day" => now()->toDateString(),
+            "cashier_id" => $cashier->id,
+            "orders_count" => 1,
+        ]);
     }
 
     public function test_reports_page_reads_from_summary_table_without_room_or_cashier_filters(): void
@@ -125,5 +137,63 @@ class ReportDailySummaryCommandTest extends TestCase
         config()->set("performance.report_summary_days", 123);
 
         $this->assertSame(123, config("performance.report_summary_days"));
+    }
+
+    public function test_reports_page_reads_from_room_summary_with_room_filter(): void
+    {
+        $room = Room::query()->create([
+            "number" => "703",
+            "status" => Room::STATUS_EMPTY,
+            "is_active" => true,
+        ]);
+
+        DB::table("report_daily_room_summaries")->insert([
+            "day" => now()->toDateString(),
+            "room_id" => $room->id,
+            "orders_count" => 4,
+            "total_revenue" => 22222.22,
+            "created_at" => now(),
+            "updated_at" => now(),
+        ]);
+
+        $manager = User::factory()->create([
+            "role" => User::ROLE_MANAGER,
+        ]);
+
+        $response = $this->actingAs($manager)->get(
+            "/reports?room_id={$room->id}",
+        );
+
+        $response->assertOk();
+        $response->assertSee("22,222.22");
+        $response->assertSee("4");
+    }
+
+    public function test_reports_page_reads_from_cashier_summary_with_cashier_filter(): void
+    {
+        $cashier = User::factory()->create([
+            "role" => User::ROLE_CASHIER,
+        ]);
+
+        DB::table("report_daily_cashier_summaries")->insert([
+            "day" => now()->toDateString(),
+            "cashier_id" => $cashier->id,
+            "orders_count" => 2,
+            "total_revenue" => 11111.11,
+            "created_at" => now(),
+            "updated_at" => now(),
+        ]);
+
+        $manager = User::factory()->create([
+            "role" => User::ROLE_MANAGER,
+        ]);
+
+        $response = $this->actingAs($manager)->get(
+            "/reports?cashier_id={$cashier->id}",
+        );
+
+        $response->assertOk();
+        $response->assertSee("11,111.11");
+        $response->assertSee("2");
     }
 }

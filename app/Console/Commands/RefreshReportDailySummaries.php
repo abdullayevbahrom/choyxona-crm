@@ -39,18 +39,89 @@ class RefreshReportDailySummaries extends Command
             )
             ->all();
 
-        DB::transaction(function () use ($fromDate, $rows) {
+        $roomRows = DB::table("bills")
+            ->join("orders", "orders.id", "=", "bills.order_id")
+            ->where("orders.status", "closed")
+            ->where("orders.closed_at", ">=", $fromDateTime)
+            ->selectRaw(
+                "date(orders.closed_at) as day, orders.room_id as room_id, count(orders.id) as orders_count, sum(bills.total_amount) as total_revenue",
+            )
+            ->groupByRaw("date(orders.closed_at), orders.room_id")
+            ->get()
+            ->map(
+                fn($row) => [
+                    "day" => $row->day,
+                    "room_id" => (int) $row->room_id,
+                    "orders_count" => (int) $row->orders_count,
+                    "total_revenue" => (float) $row->total_revenue,
+                    "created_at" => now(),
+                    "updated_at" => now(),
+                ],
+            )
+            ->all();
+
+        $cashierRows = DB::table("bills")
+            ->join("orders", "orders.id", "=", "bills.order_id")
+            ->where("orders.status", "closed")
+            ->where("orders.closed_at", ">=", $fromDateTime)
+            ->whereNotNull("orders.user_id")
+            ->selectRaw(
+                "date(orders.closed_at) as day, orders.user_id as cashier_id, count(orders.id) as orders_count, sum(bills.total_amount) as total_revenue",
+            )
+            ->groupByRaw("date(orders.closed_at), orders.user_id")
+            ->get()
+            ->map(
+                fn($row) => [
+                    "day" => $row->day,
+                    "cashier_id" => (int) $row->cashier_id,
+                    "orders_count" => (int) $row->orders_count,
+                    "total_revenue" => (float) $row->total_revenue,
+                    "created_at" => now(),
+                    "updated_at" => now(),
+                ],
+            )
+            ->all();
+
+        DB::transaction(function () use (
+            $fromDate,
+            $rows,
+            $roomRows,
+            $cashierRows,
+        ) {
             DB::table("report_daily_summaries")
+                ->where("day", ">=", $fromDate)
+                ->delete();
+
+            DB::table("report_daily_room_summaries")
+                ->where("day", ">=", $fromDate)
+                ->delete();
+
+            DB::table("report_daily_cashier_summaries")
                 ->where("day", ">=", $fromDate)
                 ->delete();
 
             if ($rows !== []) {
                 DB::table("report_daily_summaries")->insert($rows);
             }
+
+            if ($roomRows !== []) {
+                DB::table("report_daily_room_summaries")->insert($roomRows);
+            }
+
+            if ($cashierRows !== []) {
+                DB::table("report_daily_cashier_summaries")->insert(
+                    $cashierRows,
+                );
+            }
         });
 
         $this->info(
-            "Daily summaries refreshed from {$fromDate}. Rows: " . count($rows),
+            "Daily summaries refreshed from {$fromDate}. Rows: " .
+                count($rows) .
+                ", room rows: " .
+                count($roomRows) .
+                ", cashier rows: " .
+                count($cashierRows),
         );
 
         return self::SUCCESS;

@@ -43,16 +43,33 @@ class ReportController extends Controller
             $cacheKey,
             now()->addSeconds($cacheTtlSeconds),
             function () use ($validated, $monthExpr) {
-                $useSummary =
-                    empty($validated["room_id"]) &&
-                    empty($validated["cashier_id"]);
+                $roomId = !empty($validated["room_id"])
+                    ? (int) $validated["room_id"]
+                    : null;
+                $cashierId = !empty($validated["cashier_id"])
+                    ? (int) $validated["cashier_id"]
+                    : null;
+                $summaryMode = match (true) {
+                    $roomId === null && $cashierId === null => "global",
+                    $roomId !== null && $cashierId === null => "room",
+                    $roomId === null && $cashierId !== null => "cashier",
+                    default => "none",
+                };
 
-                if ($useSummary) {
-                    $summaryBase = DB::table("report_daily_summaries")->select([
-                        "day",
-                        "orders_count",
-                        "total_revenue",
-                    ]);
+                if ($summaryMode !== "none") {
+                    $summaryBase = match ($summaryMode) {
+                        "room" => DB::table("report_daily_room_summaries")
+                            ->where("room_id", $roomId)
+                            ->select(["day", "orders_count", "total_revenue"]),
+                        "cashier" => DB::table("report_daily_cashier_summaries")
+                            ->where("cashier_id", $cashierId)
+                            ->select(["day", "orders_count", "total_revenue"]),
+                        default => DB::table("report_daily_summaries")->select([
+                            "day",
+                            "orders_count",
+                            "total_revenue",
+                        ]),
+                    };
 
                     if (!empty($validated["date_from"])) {
                         $summaryBase->whereDate(
