@@ -149,15 +149,33 @@ Route::middleware("auth")->group(function () {
         Route::get("/reports/export.csv", [
             ReportController::class,
             "exportCsv",
-        ])->name("reports.export.csv");
+        ])
+            ->middleware("throttle:reports-export")
+            ->name("reports.export.csv");
         Route::get("/reports/export.xls", [
             ReportController::class,
             "exportXls",
-        ])->name("reports.export.xls");
+        ])
+            ->middleware("throttle:reports-export")
+            ->name("reports.export.xls");
         Route::get("/reports/export.pdf", [
             ReportController::class,
             "exportPdf",
-        ])->name("reports.export.pdf");
+        ])
+            ->middleware("throttle:reports-export")
+            ->name("reports.export.pdf");
+        Route::post("/reports/exports", [
+            ReportController::class,
+            "requestExport",
+        ])
+            ->middleware("throttle:reports-export")
+            ->name("reports.exports.request");
+        Route::get("/reports/exports/{export}", [
+            ReportController::class,
+            "downloadExport",
+        ])
+            ->middleware("throttle:reports-export")
+            ->name("reports.exports.download");
         Route::get("/settings", [SettingController::class, "index"])->name(
             "settings.index",
         );
@@ -184,15 +202,21 @@ Route::middleware("auth")->group(function () {
         Route::post("/activity-logs/exports", [
             ActivityLogController::class,
             "requestExport",
-        ])->name("activity-logs.exports.request");
+        ])
+            ->middleware("throttle:activity-export")
+            ->name("activity-logs.exports.request");
         Route::get("/activity-logs/exports/{export}", [
             ActivityLogController::class,
             "downloadExport",
-        ])->name("activity-logs.exports.download");
+        ])
+            ->middleware("throttle:activity-export")
+            ->name("activity-logs.exports.download");
         Route::get("/activity-logs/export.csv", [
             ActivityLogController::class,
             "exportCsv",
-        ])->name("activity-logs.export");
+        ])
+            ->middleware("throttle:activity-export")
+            ->name("activity-logs.export");
     });
 });
 

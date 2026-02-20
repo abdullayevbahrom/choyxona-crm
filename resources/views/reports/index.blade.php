@@ -13,8 +13,20 @@
                     <a href="{{ route('reports.export.pdf', request()->query()) }}" class="inline-flex items-center rounded border border-rose-300 bg-rose-50 px-3 py-2 text-sm font-medium text-rose-700 hover:bg-rose-100">
                         PDF export
                     </a>
+                    <form method="POST" action="{{ route('reports.exports.request', request()->query()) }}">
+                        @csrf
+                        <button class="inline-flex items-center rounded border border-blue-300 bg-blue-50 px-3 py-2 text-sm font-medium text-blue-700 hover:bg-blue-100">
+                            Background CSV
+                        </button>
+                    </form>
                 </div>
             </div>
+
+            @if ($errors->has('export'))
+                <div class="rounded border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+                    {{ $errors->first('export') }}
+                </div>
+            @endif
 
             <form method="GET" class="bg-white rounded-xl border p-4 grid grid-cols-1 md:grid-cols-5 gap-3">
                 <input type="date" name="date_from" value="{{ $filters['date_from'] ?? '' }}" class="border rounded p-2">
@@ -46,6 +58,40 @@
                     <p class="text-sm text-slate-500">Yopilgan buyurtmalar</p>
                     <p class="text-3xl font-bold">{{ $ordersCount }}</p>
                 </div>
+            </div>
+
+            <div class="bg-white rounded-xl border overflow-x-auto">
+                <h2 class="font-semibold p-4 border-b">Background exportlar</h2>
+                <table class="min-w-full text-sm">
+                    <thead class="bg-slate-50">
+                        <tr>
+                            <th class="p-3 text-left">ID</th>
+                            <th class="p-3 text-left">Holat</th>
+                            <th class="p-3 text-left">Format</th>
+                            <th class="p-3 text-left">Yaratilgan</th>
+                            <th class="p-3 text-left">Yuklab olish</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @forelse($exports as $export)
+                        <tr class="border-t">
+                            <td class="p-3">{{ $export->id }}</td>
+                            <td class="p-3">{{ $export->status }}</td>
+                            <td class="p-3">{{ strtoupper($export->format) }}</td>
+                            <td class="p-3">{{ $export->created_at?->format('Y-m-d H:i') }}</td>
+                            <td class="p-3">
+                                @if($export->status === 'ready')
+                                    <a href="{{ route('reports.exports.download', $export) }}" class="text-blue-700 underline">Yuklab olish</a>
+                                @else
+                                    <span class="text-slate-500">Tayyor emas</span>
+                                @endif
+                            </td>
+                        </tr>
+                    @empty
+                        <tr class="border-t"><td colspan="5" class="p-3">Exportlar yo'q.</td></tr>
+                    @endforelse
+                    </tbody>
+                </table>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
