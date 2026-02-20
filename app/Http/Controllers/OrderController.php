@@ -31,7 +31,10 @@ class OrderController extends Controller
 
         $room = Room::query()->findOrFail($validated["room"]);
 
-        $query = MenuItem::query()->where("is_active", true)->orderBy("name");
+        $query = MenuItem::query()
+            ->select(["id", "name", "type", "price", "is_active"])
+            ->where("is_active", true)
+            ->orderBy("name");
 
         if (!empty($validated["type"])) {
             $query->where("type", $validated["type"]);
@@ -43,7 +46,17 @@ class OrderController extends Controller
 
         $menuItems = $query->limit(100)->get();
 
-        $openOrder = $room->openOrder()->with("items.menuItem")->first();
+        $openOrder = $room
+            ->openOrder()
+            ->first([
+                "id",
+                "room_id",
+                "order_number",
+                "status",
+                "total_amount",
+                "opened_at",
+                "updated_at",
+            ]);
 
         return view("orders.create", [
             "room" => $room,
@@ -80,14 +93,22 @@ class OrderController extends Controller
 
     public function show(Order $order): View
     {
-        $order->load(["room", "items.menuItem"]);
+        $order->load([
+            "room:id,number,name,status",
+            "items:id,order_id,menu_item_id,quantity,unit_price,subtotal,notes,updated_at",
+            "items.menuItem:id,name,type,is_active",
+        ]);
 
         return view("orders.show", compact("order"));
     }
 
     public function panel(Request $request, Order $order): Response
     {
-        $order->load(["room", "items.menuItem"]);
+        $order->load([
+            "room:id,number,name,status",
+            "items:id,order_id,menu_item_id,quantity,unit_price,subtotal,notes,updated_at",
+            "items.menuItem:id,name,type,is_active",
+        ]);
 
         $response = response()->view(
             "orders.partials.order_panel",
@@ -116,7 +137,17 @@ class OrderController extends Controller
         ]);
 
         $room = Room::query()->findOrFail($validated["room"]);
-        $openOrder = $room->openOrder()->with("items.menuItem")->first();
+        $openOrder = $room
+            ->openOrder()
+            ->first([
+                "id",
+                "room_id",
+                "order_number",
+                "status",
+                "total_amount",
+                "opened_at",
+                "updated_at",
+            ]);
 
         $response = response()->view("orders.partials.create_status", [
             "room" => $room,

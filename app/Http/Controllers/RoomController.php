@@ -107,8 +107,18 @@ class RoomController extends Controller
     private function dashboardRooms()
     {
         return Room::query()
+            ->select([
+                "id",
+                "number",
+                "name",
+                "status",
+                "is_active",
+                "updated_at",
+            ])
             ->where("is_active", true)
-            ->with(["openOrder"])
+            ->with([
+                "openOrder:id,room_id,order_number,status,total_amount,opened_at,updated_at",
+            ])
             ->orderBy("number")
             ->get();
     }
