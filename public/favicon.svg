@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <linearGradient id="teaPotBody64" x1="32" y1="18" x2="32" y2="44" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F59E0B" />
+      <stop offset="1" stop-color="#D97706" />
+    </linearGradient>
+    <linearGradient id="teaCupBody64" x1="32" y1="40" x2="32" y2="54" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1F9D5B" />
+      <stop offset="1" stop-color="#166534" />
+    </linearGradient>
+  </defs>
+  <circle cx="32" cy="32" r="30" fill="#F8FAFC" stroke="#0F172A" stroke-width="2.5" />
+  <path d="M14 27C18 18 24 14 32 14C40 14 46 18 50 27" stroke="#0F172A" stroke-width="2.5" stroke-linecap="round" />
+  <path d="M20 27H44C45 27 46 28 46 29V34C46 40 39 46 32 46C25 46 18 40 18 34V29C18 28 19 27 20 27Z" fill="url(#teaPotBody64)" />
+  <path d="M46 30H50C53 30 55 32 55 35C55 38 53 40 50 40H46" stroke="#0F172A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M22 24H42" stroke="#0F172A" stroke-width="2.5" stroke-linecap="round" />
+  <circle cx="32" cy="21" r="3" fill="#0F172A" />
+  <path d="M22 43H42V47C42 51 39 54 35 54H29C25 54 22 51 22 47V43Z" fill="url(#teaCupBody64)" />
+  <path d="M41 46H45C47 46 49 48 49 50C49 52 47 54 45 54H41" stroke="#0F172A" stroke-width="2" stroke-linecap="round" />
+  <path d="M23 47H41" stroke="#0F172A" stroke-width="2" stroke-linecap="round" />
+</svg>

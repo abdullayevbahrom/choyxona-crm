@@ -3,7 +3,10 @@
         <div class="flex justify-between h-16">
             <div class="flex">
                 <div class="shrink-0 flex items-center">
-                    <a href="{{ route('dashboard') }}" class="text-lg font-bold text-amber-700">Choyxona CRM</a>
+                    <a href="{{ route('dashboard') }}" class="flex items-center gap-2 text-lg font-bold text-amber-700">
+                        <x-application-logo class="h-8 w-8" />
+                        <span>Choyxona CRM</span>
+                    </a>
                 </div>
 
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
