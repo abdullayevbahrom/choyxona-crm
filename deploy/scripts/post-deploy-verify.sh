@@ -20,6 +20,7 @@ run_artisan() {
 
 run_artisan about --only=environment
 run_artisan queue:monitor default --max=100 || true
+run_artisan monitor:system-health
 
 PENDING_MIGRATIONS="$(run_artisan migrate:status --pending --no-ansi || true)"
 if grep -q "Pending" <<<"$PENDING_MIGRATIONS"; then
