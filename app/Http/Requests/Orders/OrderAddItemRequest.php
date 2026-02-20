@@ -14,9 +14,9 @@ class OrderAddItemRequest extends FormRequest
     public function rules(): array
     {
         return [
-            "menu_item_id" => ["required", "integer", "exists:menu_items,id"],
-            "quantity" => ["nullable", "integer", "min:1", "max:1000"],
-            "notes" => ["nullable", "string", "max:500"],
+            'menu_item_id' => ['required', 'integer', 'exists:menu_items,id'],
+            'quantity' => ['nullable', 'integer', 'min:1', 'max:1000'],
+            'notes' => ['nullable', 'string', 'max:500'],
         ];
     }
 }

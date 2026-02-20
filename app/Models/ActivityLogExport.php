@@ -11,8 +11,11 @@ class ActivityLogExport extends Model
     use HasFactory;
 
     public const STATUS_PENDING = 'pending';
+
     public const STATUS_PROCESSING = 'processing';
+
     public const STATUS_READY = 'ready';
+
     public const STATUS_FAILED = 'failed';
 
     protected $fillable = [

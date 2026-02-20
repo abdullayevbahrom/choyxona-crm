@@ -15,21 +15,21 @@ class MenuController extends Controller
     {
         $validated = $request->validated();
 
-        $query = MenuItem::query()->orderBy("name");
+        $query = MenuItem::query()->orderBy('name');
 
-        if (!empty($validated["type"])) {
-            $query->where("type", $validated["type"]);
+        if (! empty($validated['type'])) {
+            $query->where('type', $validated['type']);
         }
 
-        if (!empty($validated["q"])) {
-            $query->where("name", "like", "%" . $validated["q"] . "%");
+        if (! empty($validated['q'])) {
+            $query->where('name', 'like', '%'.$validated['q'].'%');
         }
 
         $items = $query->paginate(30)->withQueryString();
 
-        return view("menu.index", [
-            "items" => $items,
-            "filters" => $validated,
+        return view('menu.index', [
+            'items' => $items,
+            'filters' => $validated,
         ]);
     }
 
@@ -37,10 +37,10 @@ class MenuController extends Controller
     {
         $validated = $request->validated();
 
-        $item = MenuItem::query()->create($validated + ["is_active" => true]);
-        ActivityLogger::log("menu.create", $item, "Menyu mahsuloti yaratildi.");
+        $item = MenuItem::query()->create($validated + ['is_active' => true]);
+        ActivityLogger::log('menu.create', $item, 'Menyu mahsuloti yaratildi.');
 
-        return back()->with("status", 'Mahsulot qo\'shildi.');
+        return back()->with('status', 'Mahsulot qo\'shildi.');
     }
 
     public function update(
@@ -51,23 +51,23 @@ class MenuController extends Controller
 
         $menuItem->update($validated);
         ActivityLogger::log(
-            "menu.update",
+            'menu.update',
             $menuItem,
-            "Menyu mahsuloti yangilandi.",
+            'Menyu mahsuloti yangilandi.',
         );
 
-        return back()->with("status", "Mahsulot yangilandi.");
+        return back()->with('status', 'Mahsulot yangilandi.');
     }
 
     public function toggleActive(MenuItem $menuItem): RedirectResponse
     {
-        $menuItem->update(["is_active" => !$menuItem->is_active]);
+        $menuItem->update(['is_active' => ! $menuItem->is_active]);
         ActivityLogger::log(
-            "menu.toggle_active",
+            'menu.toggle_active',
             $menuItem,
-            "Menyu mahsuloti faolligi almashtirildi.",
+            'Menyu mahsuloti faolligi almashtirildi.',
         );
 
-        return back()->with("status", "Mahsulot holati yangilandi.");
+        return back()->with('status', 'Mahsulot holati yangilandi.');
     }
 }

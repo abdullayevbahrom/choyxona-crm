@@ -13,54 +13,54 @@ class MonitorSystemHealthCommandTest extends TestCase
 
     public function test_monitor_command_returns_success_when_metrics_are_healthy(): void
     {
-        config()->set("monitoring.failed_jobs_threshold", 5);
-        config()->set("monitoring.queue_backlog_threshold", 200);
-        config()->set("monitoring.summary_stale_hours", 48);
-        config()->set("monitoring.min_disk_free_percent", 0);
+        config()->set('monitoring.failed_jobs_threshold', 5);
+        config()->set('monitoring.queue_backlog_threshold', 200);
+        config()->set('monitoring.summary_stale_hours', 48);
+        config()->set('monitoring.min_disk_free_percent', 0);
 
-        $this->artisan("monitor:system-health")
-            ->expectsOutputToContain("HEALTHY")
+        $this->artisan('monitor:system-health')
+            ->expectsOutputToContain('HEALTHY')
             ->assertExitCode(0);
     }
 
     public function test_monitor_command_returns_failure_when_thresholds_are_exceeded(): void
     {
-        DB::table("failed_jobs")->insert([
-            "uuid" => (string) Str::uuid(),
-            "connection" => "database",
-            "queue" => "default",
-            "payload" => "{}",
-            "exception" => "Test exception",
-            "failed_at" => now(),
+        DB::table('failed_jobs')->insert([
+            'uuid' => (string) Str::uuid(),
+            'connection' => 'database',
+            'queue' => 'default',
+            'payload' => '{}',
+            'exception' => 'Test exception',
+            'failed_at' => now(),
         ]);
 
-        DB::table("jobs")->insert([
-            "queue" => "default",
-            "payload" => "{}",
-            "attempts" => 0,
-            "reserved_at" => null,
-            "available_at" => now()->timestamp,
-            "created_at" => now()->timestamp,
+        DB::table('jobs')->insert([
+            'queue' => 'default',
+            'payload' => '{}',
+            'attempts' => 0,
+            'reserved_at' => null,
+            'available_at' => now()->timestamp,
+            'created_at' => now()->timestamp,
         ]);
 
-        config()->set("monitoring.failed_jobs_threshold", 0);
-        config()->set("monitoring.queue_backlog_threshold", 0);
-        config()->set("monitoring.min_disk_free_percent", 0);
+        config()->set('monitoring.failed_jobs_threshold', 0);
+        config()->set('monitoring.queue_backlog_threshold', 0);
+        config()->set('monitoring.min_disk_free_percent', 0);
 
-        $this->artisan("monitor:system-health")
-            ->expectsOutputToContain("DEGRADED")
+        $this->artisan('monitor:system-health')
+            ->expectsOutputToContain('DEGRADED')
             ->assertExitCode(1);
     }
 
     public function test_monitor_command_returns_failure_when_disk_free_is_below_threshold(): void
     {
-        config()->set("monitoring.failed_jobs_threshold", 999999);
-        config()->set("monitoring.queue_backlog_threshold", 999999);
-        config()->set("monitoring.summary_stale_hours", 999999);
-        config()->set("monitoring.min_disk_free_percent", 101);
+        config()->set('monitoring.failed_jobs_threshold', 999999);
+        config()->set('monitoring.queue_backlog_threshold', 999999);
+        config()->set('monitoring.summary_stale_hours', 999999);
+        config()->set('monitoring.min_disk_free_percent', 101);
 
-        $this->artisan("monitor:system-health")
-            ->expectsOutputToContain("DEGRADED")
+        $this->artisan('monitor:system-health')
+            ->expectsOutputToContain('DEGRADED')
             ->assertExitCode(1);
     }
 }

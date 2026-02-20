@@ -14,10 +14,10 @@ class ReportFilterRequest extends FormRequest
     public function rules(): array
     {
         return [
-            "date_from" => ["nullable", "date"],
-            "date_to" => ["nullable", "date"],
-            "room_id" => ["nullable", "integer", "exists:rooms,id"],
-            "cashier_id" => ["nullable", "integer", "exists:users,id"],
+            'date_from' => ['nullable', 'date'],
+            'date_to' => ['nullable', 'date'],
+            'room_id' => ['nullable', 'integer', 'exists:rooms,id'],
+            'cashier_id' => ['nullable', 'integer', 'exists:users,id'],
         ];
     }
 }

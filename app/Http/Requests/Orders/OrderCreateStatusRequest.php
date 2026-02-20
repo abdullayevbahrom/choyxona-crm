@@ -14,7 +14,7 @@ class OrderCreateStatusRequest extends FormRequest
     public function rules(): array
     {
         return [
-            "room" => ["required", "integer", "exists:rooms,id"],
+            'room' => ['required', 'integer', 'exists:rooms,id'],
         ];
     }
 }

@@ -18,7 +18,7 @@ class RegisteredUserController extends Controller
      */
     public function create(): View
     {
-        return view("auth.register");
+        return view('auth.register');
     }
 
     /**
@@ -29,15 +29,15 @@ class RegisteredUserController extends Controller
         $validated = $request->validated();
 
         $user = User::create([
-            "name" => $validated["name"],
-            "email" => $validated["email"],
-            "password" => Hash::make($validated["password"]),
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
         ]);
 
         event(new Registered($user));
 
         Auth::login($user);
 
-        return redirect(route("dashboard", absolute: false));
+        return redirect(route('dashboard', absolute: false));
     }
 }

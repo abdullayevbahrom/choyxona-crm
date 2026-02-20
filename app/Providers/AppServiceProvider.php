@@ -22,13 +22,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        RateLimiter::for("reports-export", function (Request $request) {
+        RateLimiter::for('reports-export', function (Request $request) {
             $key = (string) ($request->user()?->id ?? $request->ip());
 
             return Limit::perMinute(20)->by($key);
         });
 
-        RateLimiter::for("activity-export", function (Request $request) {
+        RateLimiter::for('activity-export', function (Request $request) {
             $key = (string) ($request->user()?->id ?? $request->ip());
 
             return Limit::perMinute(10)->by($key);

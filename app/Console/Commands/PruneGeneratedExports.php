@@ -28,7 +28,7 @@ class PruneGeneratedExports extends Command
         $activityResult = $this->pruneActivityExports($activityDays);
 
         $this->info(
-            "Pruned report exports: {$reportResult['rows']} rows, {$reportResult['files']} files. " .
+            "Pruned report exports: {$reportResult['rows']} rows, {$reportResult['files']} files. ".
             "Pruned activity exports: {$activityResult['rows']} rows, {$activityResult['files']} files.",
         );
 

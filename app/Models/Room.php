@@ -12,6 +12,7 @@ class Room extends Model
     use HasFactory;
 
     public const STATUS_EMPTY = 'empty';
+
     public const STATUS_OCCUPIED = 'occupied';
 
     protected $fillable = [

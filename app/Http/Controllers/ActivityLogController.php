@@ -9,8 +9,8 @@ use App\Models\ActivityLogExport;
 use App\Models\User;
 use App\Services\ActivityLogQueryService;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\View\View;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -27,40 +27,41 @@ class ActivityLogController extends Controller
         $query = $this->queryService->build($validated);
 
         $subjectTypes = ActivityLog::query()
-            ->select("subject_type")
-            ->whereNotNull("subject_type")
+            ->select('subject_type')
+            ->whereNotNull('subject_type')
             ->distinct()
-            ->orderBy("subject_type")
-            ->pluck("subject_type");
+            ->orderBy('subject_type')
+            ->pluck('subject_type');
 
         $quickActions = ActivityLog::query()
-            ->select("action")
-            ->groupBy("action")
-            ->orderByRaw("max(id) desc")
+            ->select('action')
+            ->groupBy('action')
+            ->orderByRaw('max(id) desc')
             ->limit(12)
-            ->pluck("action");
+            ->pluck('action');
 
         $exports = ActivityLogExport::query()
-            ->where("user_id", auth()->id())
-            ->latest("id")
+            ->where('user_id', auth()->id())
+            ->latest('id')
             ->limit(10)
             ->get();
 
-        return view("activity-logs.index", [
-            "logs" => $query
+        return view('activity-logs.index', [
+            'logs' => $query
                 ->paginate(40)
                 ->withQueryString()
                 ->through(function (ActivityLog $log) {
                     $log->subject_url = $this->resolveSubjectUrl($log);
+
                     return $log;
                 }),
-            "users" => User::query()
-                ->orderBy("name")
-                ->get(["id", "name"]),
-            "subjectTypes" => $subjectTypes,
-            "quickActions" => $quickActions,
-            "exports" => $exports,
-            "filters" => $validated,
+            'users' => User::query()
+                ->orderBy('name')
+                ->get(['id', 'name']),
+            'subjectTypes' => $subjectTypes,
+            'quickActions' => $quickActions,
+            'exports' => $exports,
+            'filters' => $validated,
         ]);
     }
 
@@ -69,31 +70,31 @@ class ActivityLogController extends Controller
     ): StreamedResponse {
         $validated = $request->validated();
 
-        $filename = "activity-logs-" . now()->format("Ymd-His") . ".csv";
+        $filename = 'activity-logs-'.now()->format('Ymd-His').'.csv';
 
         return response()->streamDownload(
             function () use ($validated) {
-                $handle = fopen("php://output", "wb");
+                $handle = fopen('php://output', 'wb');
 
                 if ($handle === false) {
                     return;
                 }
 
                 fputcsv($handle, [
-                    "id",
-                    "created_at",
-                    "user",
-                    "action",
-                    "subject_type",
-                    "subject_id",
-                    "description",
-                    "ip_address",
-                    "properties",
+                    'id',
+                    'created_at',
+                    'user',
+                    'action',
+                    'subject_type',
+                    'subject_id',
+                    'description',
+                    'ip_address',
+                    'properties',
                 ]);
 
                 $this->queryService
                     ->build($validated)
-                    ->reorder("id")
+                    ->reorder('id')
                     ->chunkById(
                         500,
                         function ($logs) use ($handle) {
@@ -103,7 +104,7 @@ class ActivityLogController extends Controller
                                     $this->sanitizeCsvRow([
                                         $log->id,
                                         $log->created_at?->format(
-                                            "Y-m-d H:i:s",
+                                            'Y-m-d H:i:s',
                                         ),
                                         $log->user?->name,
                                         $log->action,
@@ -119,14 +120,14 @@ class ActivityLogController extends Controller
                                 );
                             }
                         },
-                        "id",
+                        'id',
                     );
 
                 fclose($handle);
             },
             $filename,
             [
-                "Content-Type" => "text/csv; charset=UTF-8",
+                'Content-Type' => 'text/csv; charset=UTF-8',
             ],
         );
     }
@@ -137,14 +138,14 @@ class ActivityLogController extends Controller
         $validated = $request->validated();
 
         $export = ActivityLogExport::query()->create([
-            "user_id" => (int) auth()->id(),
-            "status" => ActivityLogExport::STATUS_PENDING,
-            "filters" => $validated,
+            'user_id' => (int) auth()->id(),
+            'status' => ActivityLogExport::STATUS_PENDING,
+            'filters' => $validated,
         ]);
 
         GenerateActivityLogExport::dispatch($export->id);
 
-        return back()->with("status", 'Export navbatga qo\'yildi.');
+        return back()->with('status', 'Export navbatga qo\'yildi.');
     }
 
     public function downloadExport(
@@ -156,38 +157,38 @@ class ActivityLogController extends Controller
 
         if (
             $export->status !== ActivityLogExport::STATUS_READY ||
-            !$export->file_path
+            ! $export->file_path
         ) {
             return back()->withErrors([
-                "export" => "Fayl hali tayyor emas.",
+                'export' => 'Fayl hali tayyor emas.',
             ]);
         }
 
-        if (!Storage::disk("local")->exists($export->file_path)) {
+        if (! Storage::disk('local')->exists($export->file_path)) {
             return back()->withErrors([
-                "export" => "Fayl topilmadi.",
+                'export' => 'Fayl topilmadi.',
             ]);
         }
 
         return response()->download(
-            Storage::disk("local")->path($export->file_path),
+            Storage::disk('local')->path($export->file_path),
             basename($export->file_path),
-            ["Content-Type" => "text/csv; charset=UTF-8"],
+            ['Content-Type' => 'text/csv; charset=UTF-8'],
         );
     }
 
     private function resolveSubjectUrl(ActivityLog $log): ?string
     {
-        if (!$log->subject_type || !$log->subject_id) {
+        if (! $log->subject_type || ! $log->subject_id) {
             return null;
         }
 
         return match ($log->subject_type) {
-            \App\Models\Order::class => route("orders.show", $log->subject_id),
-            \App\Models\Bill::class => route("bills.show", $log->subject_id),
-            \App\Models\Room::class => route("rooms.index"),
-            \App\Models\MenuItem::class => route("menu.index"),
-            \App\Models\Setting::class => route("settings.index"),
+            \App\Models\Order::class => route('orders.show', $log->subject_id),
+            \App\Models\Bill::class => route('bills.show', $log->subject_id),
+            \App\Models\Room::class => route('rooms.index'),
+            \App\Models\MenuItem::class => route('menu.index'),
+            \App\Models\Setting::class => route('settings.index'),
             default => null,
         };
     }
@@ -195,12 +196,12 @@ class ActivityLogController extends Controller
     private function sanitizeCsvRow(array $row): array
     {
         return array_map(function ($value) {
-            if (!is_string($value) || $value === "") {
+            if (! is_string($value) || $value === '') {
                 return $value;
             }
 
-            if (in_array($value[0], ["=", "+", "-", "@"], true)) {
-                return "'" . $value;
+            if (in_array($value[0], ['=', '+', '-', '@'], true)) {
+                return "'".$value;
             }
 
             return $value;

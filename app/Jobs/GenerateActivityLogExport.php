@@ -13,9 +13,7 @@ class GenerateActivityLogExport implements ShouldQueue
 {
     use Queueable;
 
-    public function __construct(private readonly int $exportId)
-    {
-    }
+    public function __construct(private readonly int $exportId) {}
 
     public function handle(ActivityLogQueryService $queryService): void
     {

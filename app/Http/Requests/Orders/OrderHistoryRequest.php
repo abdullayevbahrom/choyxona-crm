@@ -14,10 +14,10 @@ class OrderHistoryRequest extends FormRequest
     public function rules(): array
     {
         return [
-            "room_id" => ["nullable", "integer", "exists:rooms,id"],
-            "date_from" => ["nullable", "date"],
-            "date_to" => ["nullable", "date"],
-            "status" => ["nullable", "in:closed,cancelled"],
+            'room_id' => ['nullable', 'integer', 'exists:rooms,id'],
+            'date_from' => ['nullable', 'date'],
+            'date_to' => ['nullable', 'date'],
+            'status' => ['nullable', 'in:closed,cancelled'],
         ];
     }
 }

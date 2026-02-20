@@ -19,9 +19,9 @@ class OrderService
     public function canCreateOrder(Room $room): bool
     {
         return $room->is_active &&
-            !Order::query()
-                ->where("room_id", $room->id)
-                ->where("status", Order::STATUS_OPEN)
+            ! Order::query()
+                ->where('room_id', $room->id)
+                ->where('status', Order::STATUS_OPEN)
                 ->exists();
     }
 
@@ -30,9 +30,9 @@ class OrderService
         ?int $userId = null,
         ?string $notes = null,
     ): Order {
-        if (!$this->canCreateOrder($room)) {
+        if (! $this->canCreateOrder($room)) {
             throw new RuntimeException(
-                "Bu xonada allaqachon ochiq buyurtma mavjud.",
+                'Bu xonada allaqachon ochiq buyurtma mavjud.',
             );
         }
 
@@ -44,28 +44,28 @@ class OrderService
                     $notes,
                 ) {
                     $order = Order::query()->create([
-                        "room_id" => $room->id,
-                        "order_number" => $this->nextOrderNumber(),
-                        "status" => Order::STATUS_OPEN,
-                        "total_amount" => 0,
-                        "notes" => $notes,
-                        "opened_at" => now(),
-                        "user_id" => $userId,
+                        'room_id' => $room->id,
+                        'order_number' => $this->nextOrderNumber(),
+                        'status' => Order::STATUS_OPEN,
+                        'total_amount' => 0,
+                        'notes' => $notes,
+                        'opened_at' => now(),
+                        'user_id' => $userId,
                     ]);
 
-                    $room->update(["status" => Room::STATUS_OCCUPIED]);
+                    $room->update(['status' => Room::STATUS_OCCUPIED]);
 
                     return $order;
                 });
             } catch (QueryException $e) {
-                if (!$this->isDuplicateOrderNumberError($e) || $attempt === 4) {
+                if (! $this->isDuplicateOrderNumberError($e) || $attempt === 4) {
                     throw $e;
                 }
             }
         }
 
         throw new RuntimeException(
-            "Buyurtma raqami yaratishda xatolik yuz berdi.",
+            'Buyurtma raqami yaratishda xatolik yuz berdi.',
         );
     }
 
@@ -77,7 +77,7 @@ class OrderService
     ): OrderItem {
         $this->ensureOrderIsOpen($order);
 
-        if (!$menuItem->is_active) {
+        if (! $menuItem->is_active) {
             throw new RuntimeException(
                 'Nofaol mahsulotni buyurtmaga qo\'shib bo\'lmaydi.',
             );
@@ -94,8 +94,8 @@ class OrderService
             $notes,
         ) {
             $item = OrderItem::query()
-                ->where("order_id", $order->id)
-                ->where("menu_item_id", $menuItem->id)
+                ->where('order_id', $order->id)
+                ->where('menu_item_id', $menuItem->id)
                 ->first();
 
             if ($item) {
@@ -108,12 +108,12 @@ class OrderService
                 $item->save();
             } else {
                 $item = OrderItem::query()->create([
-                    "order_id" => $order->id,
-                    "menu_item_id" => $menuItem->id,
-                    "quantity" => $quantity,
-                    "unit_price" => $priceSnapshot,
-                    "subtotal" => $priceSnapshot * $quantity,
-                    "notes" => $notes,
+                    'order_id' => $order->id,
+                    'menu_item_id' => $menuItem->id,
+                    'quantity' => $quantity,
+                    'unit_price' => $priceSnapshot,
+                    'subtotal' => $priceSnapshot * $quantity,
+                    'notes' => $notes,
                 ]);
             }
 
@@ -131,15 +131,15 @@ class OrderService
         $this->ensureOrderIsOpen($order);
 
         if ($item->order_id !== $order->id) {
-            throw new RuntimeException("Mahsulot bu buyurtmaga tegishli emas.");
+            throw new RuntimeException('Mahsulot bu buyurtmaga tegishli emas.');
         }
 
         $quantity = max(1, $quantity);
 
         DB::transaction(function () use ($order, $item, $quantity) {
             $item->update([
-                "quantity" => $quantity,
-                "subtotal" => $quantity * (float) $item->unit_price,
+                'quantity' => $quantity,
+                'subtotal' => $quantity * (float) $item->unit_price,
             ]);
 
             $this->recalculateTotal($order);
@@ -151,7 +151,7 @@ class OrderService
         $this->ensureOrderIsOpen($order);
 
         if ($item->order_id !== $order->id) {
-            throw new RuntimeException("Mahsulot bu buyurtmaga tegishli emas.");
+            throw new RuntimeException('Mahsulot bu buyurtmaga tegishli emas.');
         }
 
         DB::transaction(function () use ($order, $item) {
@@ -166,31 +166,31 @@ class OrderService
 
         DB::transaction(function () use ($order) {
             $order->update([
-                "status" => Order::STATUS_CANCELLED,
-                "closed_at" => now(),
+                'status' => Order::STATUS_CANCELLED,
+                'closed_at' => now(),
             ]);
 
             Room::query()
                 ->whereKey($order->room_id)
                 ->update([
-                    "status" => Room::STATUS_EMPTY,
+                    'status' => Room::STATUS_EMPTY,
                 ]);
         });
     }
 
     public function recalculateTotal(Order $order): void
     {
-        $sum = (float) $order->items()->sum("subtotal");
-        $order->update(["total_amount" => $sum]);
+        $sum = (float) $order->items()->sum('subtotal');
+        $order->update(['total_amount' => $sum]);
     }
 
     public function nextOrderNumber(): string
     {
-        $year = (int) now()->format("Y");
+        $year = (int) now()->format('Y');
         $prefix = "ORD-{$year}-";
-        $next = $this->numberSequenceService->next("ORD", $year);
+        $next = $this->numberSequenceService->next('ORD', $year);
 
-        return $prefix . str_pad((string) $next, 4, "0", STR_PAD_LEFT);
+        return $prefix.str_pad((string) $next, 4, '0', STR_PAD_LEFT);
     }
 
     private function ensureOrderIsOpen(Order $order): void
@@ -204,11 +204,11 @@ class OrderService
 
     private function isDuplicateOrderNumberError(QueryException $e): bool
     {
-        return str_contains($e->getMessage(), "orders.order_number") ||
-            str_contains($e->getMessage(), "orders_order_number_unique") ||
+        return str_contains($e->getMessage(), 'orders.order_number') ||
+            str_contains($e->getMessage(), 'orders_order_number_unique') ||
             str_contains(
                 $e->getMessage(),
-                "UNIQUE constraint failed: orders.order_number",
+                'UNIQUE constraint failed: orders.order_number',
             );
     }
 }

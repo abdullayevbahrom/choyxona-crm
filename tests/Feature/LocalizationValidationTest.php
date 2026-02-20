@@ -12,17 +12,17 @@ class LocalizationValidationTest extends TestCase
 
     public function test_validation_errors_are_localized_in_uzbek(): void
     {
-        app()->setLocale("uz");
+        app()->setLocale('uz');
 
         $manager = User::factory()->create([
-            "role" => User::ROLE_MANAGER,
+            'role' => User::ROLE_MANAGER,
         ]);
 
-        $response = $this->actingAs($manager)->post("/menu", []);
-        $response->assertSessionHasErrors(["name"]);
+        $response = $this->actingAs($manager)->post('/menu', []);
+        $response->assertSessionHasErrors(['name']);
 
-        $message = session("errors")?->first("name");
+        $message = session('errors')?->first('name');
         $this->assertIsString($message);
-        $this->assertStringContainsString("to‘ldirilishi shart", $message);
+        $this->assertStringContainsString('to‘ldirilishi shart', $message);
     }
 }

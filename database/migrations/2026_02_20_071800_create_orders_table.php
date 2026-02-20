@@ -32,6 +32,7 @@ return new class extends Migration
 
         if ($driver === 'sqlite' || $driver === 'pgsql') {
             DB::statement("CREATE UNIQUE INDEX orders_one_open_per_room_unique ON orders (room_id) WHERE status = 'open'");
+
             return;
         }
 

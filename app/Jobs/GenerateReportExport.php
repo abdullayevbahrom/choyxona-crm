@@ -19,61 +19,61 @@ class GenerateReportExport implements ShouldQueue
     {
         $export = ReportExport::query()->find($this->exportId);
 
-        if (!$export || $export->status !== ReportExport::STATUS_PENDING) {
+        if (! $export || $export->status !== ReportExport::STATUS_PENDING) {
             return;
         }
 
         $export->update([
-            "status" => ReportExport::STATUS_PROCESSING,
-            "started_at" => now(),
-            "error_message" => null,
+            'status' => ReportExport::STATUS_PROCESSING,
+            'started_at' => now(),
+            'error_message' => null,
         ]);
 
-        $tmpPath = tempnam(sys_get_temp_dir(), "report-export-");
+        $tmpPath = tempnam(sys_get_temp_dir(), 'report-export-');
 
         if ($tmpPath === false) {
             $export->update([
-                "status" => ReportExport::STATUS_FAILED,
-                "error_message" => "Temp fayl yaratilmadi.",
-                "finished_at" => now(),
+                'status' => ReportExport::STATUS_FAILED,
+                'error_message' => 'Temp fayl yaratilmadi.',
+                'finished_at' => now(),
             ]);
 
             return;
         }
 
         try {
-            $tmpHandle = fopen($tmpPath, "w");
+            $tmpHandle = fopen($tmpPath, 'w');
 
             if ($tmpHandle === false) {
-                throw new \RuntimeException("Temp fayl ochilmadi.");
+                throw new \RuntimeException('Temp fayl ochilmadi.');
             }
 
             $reportService->streamCsv($export->filters ?? [], $tmpHandle);
             fclose($tmpHandle);
 
-            $path = "exports/reports-{$export->id}-" . now()->format("Ymd-His") . ".csv";
-            $readHandle = fopen($tmpPath, "r");
+            $path = "exports/reports-{$export->id}-".now()->format('Ymd-His').'.csv';
+            $readHandle = fopen($tmpPath, 'r');
 
             if ($readHandle === false) {
                 throw new \RuntimeException("Temp fayl o'qilmadi.");
             }
 
-            Storage::disk("local")->writeStream($path, $readHandle);
+            Storage::disk('local')->writeStream($path, $readHandle);
             fclose($readHandle);
 
             $fileSize = filesize($tmpPath) ?: null;
 
             $export->update([
-                "status" => ReportExport::STATUS_READY,
-                "file_path" => $path,
-                "file_size" => $fileSize,
-                "finished_at" => now(),
+                'status' => ReportExport::STATUS_READY,
+                'file_path' => $path,
+                'file_size' => $fileSize,
+                'finished_at' => now(),
             ]);
         } catch (Throwable $e) {
             $export->update([
-                "status" => ReportExport::STATUS_FAILED,
-                "error_message" => $e->getMessage(),
-                "finished_at" => now(),
+                'status' => ReportExport::STATUS_FAILED,
+                'error_message' => $e->getMessage(),
+                'finished_at' => now(),
             ]);
 
             throw $e;

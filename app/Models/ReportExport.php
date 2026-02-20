@@ -10,29 +10,32 @@ class ReportExport extends Model
 {
     use HasFactory;
 
-    public const STATUS_PENDING = "pending";
-    public const STATUS_PROCESSING = "processing";
-    public const STATUS_READY = "ready";
-    public const STATUS_FAILED = "failed";
+    public const STATUS_PENDING = 'pending';
+
+    public const STATUS_PROCESSING = 'processing';
+
+    public const STATUS_READY = 'ready';
+
+    public const STATUS_FAILED = 'failed';
 
     protected $fillable = [
-        "user_id",
-        "status",
-        "filters",
-        "format",
-        "file_path",
-        "file_size",
-        "error_message",
-        "started_at",
-        "finished_at",
+        'user_id',
+        'status',
+        'filters',
+        'format',
+        'file_path',
+        'file_size',
+        'error_message',
+        'started_at',
+        'finished_at',
     ];
 
     protected function casts(): array
     {
         return [
-            "filters" => "array",
-            "started_at" => "datetime",
-            "finished_at" => "datetime",
+            'filters' => 'array',
+            'started_at' => 'datetime',
+            'finished_at' => 'datetime',
         ];
     }
 

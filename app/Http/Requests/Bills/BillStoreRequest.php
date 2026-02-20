@@ -14,19 +14,19 @@ class BillStoreRequest extends FormRequest
     public function rules(): array
     {
         return [
-            "payment_method" => ["nullable", "in:cash,card,transfer"],
-            "discount_percent" => [
-                "nullable",
-                "numeric",
-                "min:0",
-                "max:100",
-                "prohibits:discount_amount",
+            'payment_method' => ['nullable', 'in:cash,card,transfer'],
+            'discount_percent' => [
+                'nullable',
+                'numeric',
+                'min:0',
+                'max:100',
+                'prohibits:discount_amount',
             ],
-            "discount_amount" => [
-                "nullable",
-                "numeric",
-                "min:0",
-                "prohibits:discount_percent",
+            'discount_amount' => [
+                'nullable',
+                'numeric',
+                'min:0',
+                'prohibits:discount_percent',
             ],
         ];
     }

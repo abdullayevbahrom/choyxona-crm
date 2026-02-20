@@ -9,15 +9,15 @@ use RuntimeException;
 
 class BackupDatabase extends Command
 {
-    protected $signature = "backup:database {--prune-days=30 : Remove old backups after successful run}";
+    protected $signature = 'backup:database {--prune-days=30 : Remove old backups after successful run}';
 
-    protected $description = "Create a compressed database backup in storage/app/backups/databases";
+    protected $description = 'Create a compressed database backup in storage/app/backups/databases';
 
     public function handle(): int
     {
         try {
             $backupPath = $this->createBackup();
-            $this->pruneOldBackups((int) $this->option("prune-days"));
+            $this->pruneOldBackups((int) $this->option('prune-days'));
         } catch (\Throwable $e) {
             $this->error("Backup failed: {$e->getMessage()}");
 
@@ -31,20 +31,20 @@ class BackupDatabase extends Command
 
     private function createBackup(): string
     {
-        $driver = config("database.default");
+        $driver = config('database.default');
         $connection = config("database.connections.{$driver}");
 
-        if (!is_array($connection)) {
+        if (! is_array($connection)) {
             throw new RuntimeException(
                 "Unknown database connection [{$driver}].",
             );
         }
 
-        $connectionDriver = $connection["driver"] ?? "unknown";
+        $connectionDriver = $connection['driver'] ?? 'unknown';
 
         return match ($connectionDriver) {
-            "sqlite" => $this->backupSqlite($connection),
-            "mysql", "mariadb" => $this->backupMysql($connection),
+            'sqlite' => $this->backupSqlite($connection),
+            'mysql', 'mariadb' => $this->backupMysql($connection),
             default => throw new RuntimeException(
                 "Unsupported driver [{$connectionDriver}].",
             ),
@@ -53,11 +53,11 @@ class BackupDatabase extends Command
 
     private function backupSqlite(array $connection): string
     {
-        $database = $connection["database"] ?? null;
+        $database = $connection['database'] ?? null;
 
-        if (!is_string($database) || $database === "") {
+        if (! is_string($database) || $database === '') {
             throw new RuntimeException(
-                "SQLite database path is not configured.",
+                'SQLite database path is not configured.',
             );
         }
 
@@ -65,7 +65,7 @@ class BackupDatabase extends Command
             ? $database
             : base_path($database);
 
-        if (!File::exists($sourcePath)) {
+        if (! File::exists($sourcePath)) {
             throw new RuntimeException(
                 "SQLite database file not found at [{$sourcePath}].",
             );
@@ -75,13 +75,13 @@ class BackupDatabase extends Command
         $compressed = gzencode($content, 9);
 
         if ($compressed === false) {
-            throw new RuntimeException("Failed to compress sqlite database.");
+            throw new RuntimeException('Failed to compress sqlite database.');
         }
 
         $targetPath =
-            $this->backupDirectory() .
-            DIRECTORY_SEPARATOR .
-            $this->backupFilename("sqlite");
+            $this->backupDirectory().
+            DIRECTORY_SEPARATOR.
+            $this->backupFilename('sqlite');
         File::put($targetPath, $compressed);
 
         return $targetPath;
@@ -90,14 +90,14 @@ class BackupDatabase extends Command
     private function backupMysql(array $connection): string
     {
         $dumpBinary = $this->resolveMysqlDumpBinary();
-        $database = (string) ($connection["database"] ?? "");
-        $host = (string) ($connection["host"] ?? "127.0.0.1");
-        $port = (string) ($connection["port"] ?? "3306");
-        $username = (string) ($connection["username"] ?? "");
-        $password = (string) ($connection["password"] ?? "");
+        $database = (string) ($connection['database'] ?? '');
+        $host = (string) ($connection['host'] ?? '127.0.0.1');
+        $port = (string) ($connection['port'] ?? '3306');
+        $username = (string) ($connection['username'] ?? '');
+        $password = (string) ($connection['password'] ?? '');
 
-        if ($database === "" || $username === "") {
-            throw new RuntimeException("MySQL credentials are incomplete.");
+        if ($database === '' || $username === '') {
+            throw new RuntimeException('MySQL credentials are incomplete.');
         }
 
         $command = [
@@ -105,42 +105,42 @@ class BackupDatabase extends Command
             "--host={$host}",
             "--port={$port}",
             "--user={$username}",
-            "--single-transaction",
-            "--quick",
-            "--lock-tables=false",
+            '--single-transaction',
+            '--quick',
+            '--lock-tables=false',
         ];
 
-        $sslMode = (string) env("DB_DUMP_SSL_MODE", "DISABLED");
-        if (strtoupper($sslMode) === "DISABLED") {
-            $command[] = "--skip-ssl";
-        } elseif (strtoupper($sslMode) === "REQUIRED") {
-            $command[] = "--ssl";
+        $sslMode = (string) env('DB_DUMP_SSL_MODE', 'DISABLED');
+        if (strtoupper($sslMode) === 'DISABLED') {
+            $command[] = '--skip-ssl';
+        } elseif (strtoupper($sslMode) === 'REQUIRED') {
+            $command[] = '--ssl';
         }
 
         $command[] = $database;
 
         $result = Process::env([
-            "MYSQL_PWD" => $password,
+            'MYSQL_PWD' => $password,
         ])
             ->timeout(120)
             ->run($command);
 
         if ($result->failed()) {
             throw new RuntimeException(
-                trim($result->errorOutput()) ?: "mysqldump failed.",
+                trim($result->errorOutput()) ?: 'mysqldump failed.',
             );
         }
 
         $compressed = gzencode($result->output(), 9);
 
         if ($compressed === false) {
-            throw new RuntimeException("Failed to compress mysql dump.");
+            throw new RuntimeException('Failed to compress mysql dump.');
         }
 
         $targetPath =
-            $this->backupDirectory() .
-            DIRECTORY_SEPARATOR .
-            $this->backupFilename("mysql");
+            $this->backupDirectory().
+            DIRECTORY_SEPARATOR.
+            $this->backupFilename('mysql');
         File::put($targetPath, $compressed);
 
         return $targetPath;
@@ -149,26 +149,26 @@ class BackupDatabase extends Command
     private function resolveMysqlDumpBinary(): string
     {
         $result = Process::run([
-            "sh",
-            "-lc",
-            "command -v mysqldump || command -v mariadb-dump",
+            'sh',
+            '-lc',
+            'command -v mysqldump || command -v mariadb-dump',
         ]);
 
         if ($result->successful()) {
             $binary = trim($result->output());
-            if ($binary !== "") {
+            if ($binary !== '') {
                 return $binary;
             }
         }
 
-        return "mysqldump";
+        return 'mysqldump';
     }
 
     private function backupDirectory(): string
     {
-        $path = storage_path("app/backups/databases");
+        $path = storage_path('app/backups/databases');
 
-        if (!File::isDirectory($path)) {
+        if (! File::isDirectory($path)) {
             File::makeDirectory($path, 0755, true);
         }
 
@@ -177,7 +177,7 @@ class BackupDatabase extends Command
 
     private function backupFilename(string $driver): string
     {
-        return sprintf("db-%s-%s.sql.gz", $driver, now()->format("Ymd-His"));
+        return sprintf('db-%s-%s.sql.gz', $driver, now()->format('Ymd-His'));
     }
 
     private function pruneOldBackups(int $days): void
@@ -190,9 +190,8 @@ class BackupDatabase extends Command
 
         foreach (
             File::glob(
-                $this->backupDirectory() . DIRECTORY_SEPARATOR . "db-*.sql.gz",
-            )
-            as $file
+                $this->backupDirectory().DIRECTORY_SEPARATOR.'db-*.sql.gz',
+            ) as $file
         ) {
             if (File::lastModified($file) < $cutoff->getTimestamp()) {
                 File::delete($file);

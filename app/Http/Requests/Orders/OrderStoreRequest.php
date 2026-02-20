@@ -14,8 +14,8 @@ class OrderStoreRequest extends FormRequest
     public function rules(): array
     {
         return [
-            "room_id" => ["required", "integer", "exists:rooms,id"],
-            "notes" => ["nullable", "string"],
+            'room_id' => ['required', 'integer', 'exists:rooms,id'],
+            'notes' => ['nullable', 'string'],
         ];
     }
 }

@@ -19,19 +19,19 @@ class ReportBackgroundExportTest extends TestCase
         Queue::fake();
 
         $manager = User::factory()->create([
-            "role" => User::ROLE_MANAGER,
+            'role' => User::ROLE_MANAGER,
         ]);
 
-        $response = $this->actingAs($manager)->post("/reports/exports", [
-            "date_from" => now()->toDateString(),
+        $response = $this->actingAs($manager)->post('/reports/exports', [
+            'date_from' => now()->toDateString(),
         ]);
 
         $response->assertRedirect();
 
-        $this->assertDatabaseHas("report_exports", [
-            "user_id" => $manager->id,
-            "status" => ReportExport::STATUS_PENDING,
-            "format" => "csv",
+        $this->assertDatabaseHas('report_exports', [
+            'user_id' => $manager->id,
+            'status' => ReportExport::STATUS_PENDING,
+            'format' => 'csv',
         ]);
 
         Queue::assertPushed(GenerateReportExport::class);
@@ -42,10 +42,10 @@ class ReportBackgroundExportTest extends TestCase
         Queue::fake();
 
         $cashier = User::factory()->create([
-            "role" => User::ROLE_CASHIER,
+            'role' => User::ROLE_CASHIER,
         ]);
 
-        $response = $this->actingAs($cashier)->post("/reports/exports");
+        $response = $this->actingAs($cashier)->post('/reports/exports');
 
         $response->assertForbidden();
         Queue::assertNothingPushed();
@@ -53,76 +53,76 @@ class ReportBackgroundExportTest extends TestCase
 
     public function test_owner_can_download_ready_report_export_file(): void
     {
-        Storage::fake("local");
+        Storage::fake('local');
 
         $manager = User::factory()->create([
-            "role" => User::ROLE_MANAGER,
+            'role' => User::ROLE_MANAGER,
         ]);
 
-        $path = "exports/reports-ready.csv";
-        Storage::disk("local")->put($path, "a,b,c\n1,2,3");
+        $path = 'exports/reports-ready.csv';
+        Storage::disk('local')->put($path, "a,b,c\n1,2,3");
 
         $export = ReportExport::query()->create([
-            "user_id" => $manager->id,
-            "status" => ReportExport::STATUS_READY,
-            "filters" => [],
-            "format" => "csv",
-            "file_path" => $path,
-            "file_size" => 11,
-            "finished_at" => now(),
+            'user_id' => $manager->id,
+            'status' => ReportExport::STATUS_READY,
+            'filters' => [],
+            'format' => 'csv',
+            'file_path' => $path,
+            'file_size' => 11,
+            'finished_at' => now(),
         ]);
 
         $response = $this->actingAs($manager)->get(
-            route("reports.exports.download", $export),
+            route('reports.exports.download', $export),
         );
 
         $response->assertOk();
-        $response->assertHeader("content-type", "text/csv; charset=UTF-8");
+        $response->assertHeader('content-type', 'text/csv; charset=UTF-8');
     }
 
     public function test_owner_can_view_report_export_status_json(): void
     {
         $manager = User::factory()->create([
-            "role" => User::ROLE_MANAGER,
+            'role' => User::ROLE_MANAGER,
         ]);
 
         $export = ReportExport::query()->create([
-            "user_id" => $manager->id,
-            "status" => ReportExport::STATUS_PROCESSING,
-            "filters" => [],
-            "format" => "csv",
+            'user_id' => $manager->id,
+            'status' => ReportExport::STATUS_PROCESSING,
+            'filters' => [],
+            'format' => 'csv',
         ]);
 
         $response = $this->actingAs($manager)->getJson(
-            route("reports.exports.status", $export),
+            route('reports.exports.status', $export),
         );
 
         $response->assertOk();
         $response->assertJson([
-            "id" => $export->id,
-            "status" => ReportExport::STATUS_PROCESSING,
-            "download_url" => null,
+            'id' => $export->id,
+            'status' => ReportExport::STATUS_PROCESSING,
+            'download_url' => null,
         ]);
     }
 
     public function test_non_owner_cannot_view_report_export_status_json(): void
     {
         $owner = User::factory()->create([
-            "role" => User::ROLE_MANAGER,
+            'role' => User::ROLE_MANAGER,
         ]);
         $other = User::factory()->create([
-            "role" => User::ROLE_MANAGER,
+            'role' => User::ROLE_MANAGER,
         ]);
 
         $export = ReportExport::query()->create([
-            "user_id" => $owner->id,
-            "status" => ReportExport::STATUS_PENDING,
-            "filters" => [],
-            "format" => "csv",
+            'user_id' => $owner->id,
+            'status' => ReportExport::STATUS_PENDING,
+            'filters' => [],
+            'format' => 'csv',
         ]);
 
         $response = $this->actingAs($other)->getJson(
-            route("reports.exports.status", $export),
+            route('reports.exports.status', $export),
         );
 
         $response->assertForbidden();
@@ -131,20 +131,20 @@ class ReportBackgroundExportTest extends TestCase
     public function test_owner_can_view_batch_report_export_statuses_json(): void
     {
         $manager = User::factory()->create([
-            "role" => User::ROLE_MANAGER,
+            'role' => User::ROLE_MANAGER,
         ]);
 
         $first = ReportExport::query()->create([
-            "user_id" => $manager->id,
-            "status" => ReportExport::STATUS_PENDING,
-            "filters" => [],
-            "format" => "csv",
+            'user_id' => $manager->id,
+            'status' => ReportExport::STATUS_PENDING,
+            'filters' => [],
+            'format' => 'csv',
         ]);
         $second = ReportExport::query()->create([
-            "user_id" => $manager->id,
-            "status" => ReportExport::STATUS_PROCESSING,
-            "filters" => [],
-            "format" => "csv",
+            'user_id' => $manager->id,
+            'status' => ReportExport::STATUS_PROCESSING,
+            'filters' => [],
+            'format' => 'csv',
         ]);
 
         $response = $this->actingAs($manager)->getJson(
@@ -152,20 +152,20 @@ class ReportBackgroundExportTest extends TestCase
         );
 
         $response->assertOk();
-        $response->assertJsonCount(2, "exports");
+        $response->assertJsonCount(2, 'exports');
     }
 
     public function test_batch_export_statuses_support_conditional_etag(): void
     {
         $manager = User::factory()->create([
-            "role" => User::ROLE_MANAGER,
+            'role' => User::ROLE_MANAGER,
         ]);
 
         $export = ReportExport::query()->create([
-            "user_id" => $manager->id,
-            "status" => ReportExport::STATUS_PENDING,
-            "filters" => [],
-            "format" => "csv",
+            'user_id' => $manager->id,
+            'status' => ReportExport::STATUS_PENDING,
+            'filters' => [],
+            'format' => 'csv',
         ]);
 
         $firstResponse = $this->actingAs($manager)->get(
@@ -173,12 +173,12 @@ class ReportBackgroundExportTest extends TestCase
         );
 
         $firstResponse->assertOk();
-        $etag = $firstResponse->headers->get("etag");
+        $etag = $firstResponse->headers->get('etag');
         $this->assertNotNull($etag);
 
         $secondResponse = $this->actingAs($manager)->get(
             "/reports/exports/statuses?ids[]={$export->id}",
-            ["If-None-Match" => $etag],
+            ['If-None-Match' => $etag],
         );
 
         $secondResponse->assertStatus(304);

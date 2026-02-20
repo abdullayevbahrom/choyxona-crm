@@ -11,14 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create("report_daily_summaries", function (Blueprint $table) {
+        Schema::create('report_daily_summaries', function (Blueprint $table) {
             $table->id();
-            $table->date("day")->unique();
-            $table->unsignedInteger("orders_count")->default(0);
-            $table->decimal("total_revenue", 14, 2)->default(0);
+            $table->date('day')->unique();
+            $table->unsignedInteger('orders_count')->default(0);
+            $table->decimal('total_revenue', 14, 2)->default(0);
             $table->timestamps();
 
-            $table->index("day", "report_daily_summaries_day_idx");
+            $table->index('day', 'report_daily_summaries_day_idx');
         });
     }
 
@@ -27,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists("report_daily_summaries");
+        Schema::dropIfExists('report_daily_summaries');
     }
 };

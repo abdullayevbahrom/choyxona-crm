@@ -11,9 +11,13 @@ class MenuItem extends Model
     use HasFactory;
 
     public const TYPE_FOOD = 'food';
+
     public const TYPE_DRINK = 'drink';
+
     public const TYPE_BREAD = 'bread';
+
     public const TYPE_SALAD = 'salad';
+
     public const TYPE_SAUCE = 'sauce';
 
     protected $fillable = [

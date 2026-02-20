@@ -13,9 +13,9 @@ class UserController extends Controller
 {
     public function index(): View
     {
-        return view("users.index", [
-            "users" => User::query()->orderBy("name")->paginate(20),
-            "roles" => User::availableRoles(),
+        return view('users.index', [
+            'users' => User::query()->orderBy('name')->paginate(20),
+            'roles' => User::availableRoles(),
         ]);
     }
 
@@ -24,9 +24,9 @@ class UserController extends Controller
         $validated = $request->validated();
 
         $user = User::query()->create($validated);
-        ActivityLogger::log("users.create", $user, "Foydalanuvchi yaratildi.");
+        ActivityLogger::log('users.create', $user, 'Foydalanuvchi yaratildi.');
 
-        return back()->with("status", 'Foydalanuvchi qo\'shildi.');
+        return back()->with('status', 'Foydalanuvchi qo\'shildi.');
     }
 
     public function update(
@@ -35,13 +35,13 @@ class UserController extends Controller
     ): RedirectResponse {
         $validated = $request->validated();
 
-        if (empty($validated["password"])) {
-            unset($validated["password"]);
+        if (empty($validated['password'])) {
+            unset($validated['password']);
         }
 
         $user->update($validated);
-        ActivityLogger::log("users.update", $user, "Foydalanuvchi yangilandi.");
+        ActivityLogger::log('users.update', $user, 'Foydalanuvchi yangilandi.');
 
-        return back()->with("status", "Foydalanuvchi yangilandi.");
+        return back()->with('status', 'Foydalanuvchi yangilandi.');
     }
 }

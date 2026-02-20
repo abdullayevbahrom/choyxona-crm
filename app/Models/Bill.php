@@ -11,7 +11,9 @@ class Bill extends Model
     use HasFactory;
 
     public const PAYMENT_CASH = 'cash';
+
     public const PAYMENT_CARD = 'card';
+
     public const PAYMENT_TRANSFER = 'transfer';
 
     protected $fillable = [

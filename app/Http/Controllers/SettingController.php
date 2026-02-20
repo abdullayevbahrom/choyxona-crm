@@ -14,7 +14,7 @@ class SettingController extends Controller
     {
         $setting = Setting::current();
 
-        return view("settings.index", compact("setting"));
+        return view('settings.index', compact('setting'));
     }
 
     public function update(SettingUpdateRequest $request): RedirectResponse
@@ -24,11 +24,11 @@ class SettingController extends Controller
         $setting = Setting::current();
         $setting->update($validated);
         ActivityLogger::log(
-            "settings.update",
+            'settings.update',
             $setting,
-            "Sozlamalar yangilandi.",
+            'Sozlamalar yangilandi.',
         );
 
-        return back()->with("status", "Sozlamalar yangilandi.");
+        return back()->with('status', 'Sozlamalar yangilandi.');
     }
 }

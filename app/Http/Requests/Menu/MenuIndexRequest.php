@@ -14,8 +14,8 @@ class MenuIndexRequest extends FormRequest
     public function rules(): array
     {
         return [
-            "type" => ["nullable", "in:food,drink,bread,salad,sauce"],
-            "q" => ["nullable", "string", "max:200"],
+            'type' => ['nullable', 'in:food,drink,bread,salad,sauce'],
+            'q' => ['nullable', 'string', 'max:200'],
         ];
     }
 }

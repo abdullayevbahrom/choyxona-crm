@@ -6,8 +6,8 @@ use App\Exports\ReportStreamExport;
 use App\Http\Requests\Reports\ReportExportStatusesRequest;
 use App\Http\Requests\Reports\ReportFilterRequest;
 use App\Jobs\GenerateReportExport;
-use App\Models\Room;
 use App\Models\ReportExport;
+use App\Models\Room;
 use App\Models\User;
 use App\Services\ReportService;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -31,39 +31,39 @@ class ReportController extends Controller
         $filters = $request->validated();
         $reportData = $this->reportService->getReportData($filters);
         $exports = ReportExport::query()
-            ->where("user_id", (int) auth()->id())
-            ->latest("id")
+            ->where('user_id', (int) auth()->id())
+            ->latest('id')
             ->limit(10)
             ->get();
 
-        return view("reports.index", [
-            "filters" => $filters,
-            "rooms" => Room::query()
-                ->orderBy("number")
-                ->get(["id", "number"]),
-            "cashiers" => User::query()
-                ->whereIn("role", ["cashier", "manager", "admin"])
-                ->orderBy("name")
-                ->get(["id", "name"]),
-            "totalRevenue" => $reportData["totalRevenue"],
-            "ordersCount" => $reportData["ordersCount"],
-            "dailyRevenue" => $reportData["dailyRevenue"],
-            "monthlyRevenue" => $reportData["monthlyRevenue"],
-            "topItems" => $reportData["topItems"],
-            "roomStats" => $reportData["roomStats"],
-            "cashierStats" => $reportData["cashierStats"],
-            "exports" => $exports,
+        return view('reports.index', [
+            'filters' => $filters,
+            'rooms' => Room::query()
+                ->orderBy('number')
+                ->get(['id', 'number']),
+            'cashiers' => User::query()
+                ->whereIn('role', ['cashier', 'manager', 'admin'])
+                ->orderBy('name')
+                ->get(['id', 'name']),
+            'totalRevenue' => $reportData['totalRevenue'],
+            'ordersCount' => $reportData['ordersCount'],
+            'dailyRevenue' => $reportData['dailyRevenue'],
+            'monthlyRevenue' => $reportData['monthlyRevenue'],
+            'topItems' => $reportData['topItems'],
+            'roomStats' => $reportData['roomStats'],
+            'cashierStats' => $reportData['cashierStats'],
+            'exports' => $exports,
         ]);
     }
 
     public function exportCsv(ReportFilterRequest $request): StreamedResponse
     {
         $filters = $request->validated();
-        $filename = "reports-" . now()->format("Ymd-His") . ".csv";
+        $filename = 'reports-'.now()->format('Ymd-His').'.csv';
 
         return response()->streamDownload(
             function () use ($filters): void {
-                $handle = fopen("php://output", "wb");
+                $handle = fopen('php://output', 'wb');
 
                 if ($handle === false) {
                     return;
@@ -74,7 +74,7 @@ class ReportController extends Controller
             },
             $filename,
             [
-                "Content-Type" => "text/csv; charset=UTF-8",
+                'Content-Type' => 'text/csv; charset=UTF-8',
             ],
         );
     }
@@ -83,7 +83,7 @@ class ReportController extends Controller
     {
         return Excel::download(
             new ReportStreamExport($request->validated()),
-            "reports-" . now()->format("Ymd-His") . ".xlsx",
+            'reports-'.now()->format('Ymd-His').'.xlsx',
         );
     }
 
@@ -92,27 +92,27 @@ class ReportController extends Controller
         $filters = $request->validated();
         $reportData = $this->reportService->getReportData($filters);
 
-        $pdf = Pdf::loadView("reports.pdf", [
-            "filters" => $filters,
-            "reportData" => $reportData,
-        ])->setPaper("a4");
+        $pdf = Pdf::loadView('reports.pdf', [
+            'filters' => $filters,
+            'reportData' => $reportData,
+        ])->setPaper('a4');
 
-        return $pdf->download("reports-" . now()->format("Ymd-His") . ".pdf");
+        return $pdf->download('reports-'.now()->format('Ymd-His').'.pdf');
     }
 
     public function requestExport(
         ReportFilterRequest $request,
     ): RedirectResponse {
         $export = ReportExport::query()->create([
-            "user_id" => (int) auth()->id(),
-            "status" => ReportExport::STATUS_PENDING,
-            "filters" => $request->validated(),
-            "format" => "csv",
+            'user_id' => (int) auth()->id(),
+            'status' => ReportExport::STATUS_PENDING,
+            'filters' => $request->validated(),
+            'format' => 'csv',
         ]);
 
         GenerateReportExport::dispatch($export->id);
 
-        return back()->with("status", "Report export navbatga qo'yildi.");
+        return back()->with('status', "Report export navbatga qo'yildi.");
     }
 
     public function downloadExport(
@@ -120,7 +120,7 @@ class ReportController extends Controller
     ): \Symfony\Component\HttpFoundation\BinaryFileResponse|RedirectResponse {
         $user = auth()->user();
 
-        if (!$user) {
+        if (! $user) {
             abort(401);
         }
 
@@ -133,23 +133,23 @@ class ReportController extends Controller
 
         if (
             $export->status !== ReportExport::STATUS_READY ||
-            !$export->file_path
+            ! $export->file_path
         ) {
             return back()->withErrors([
-                "export" => "Fayl hali tayyor emas.",
+                'export' => 'Fayl hali tayyor emas.',
             ]);
         }
 
-        if (!Storage::disk("local")->exists($export->file_path)) {
+        if (! Storage::disk('local')->exists($export->file_path)) {
             return back()->withErrors([
-                "export" => "Fayl topilmadi.",
+                'export' => 'Fayl topilmadi.',
             ]);
         }
 
         return response()->download(
-            Storage::disk("local")->path($export->file_path),
+            Storage::disk('local')->path($export->file_path),
             basename($export->file_path),
-            ["Content-Type" => "text/csv; charset=UTF-8"],
+            ['Content-Type' => 'text/csv; charset=UTF-8'],
         );
     }
 
@@ -159,7 +159,7 @@ class ReportController extends Controller
     ): JsonResponse|Response {
         $user = auth()->user();
 
-        if (!$user) {
+        if (! $user) {
             abort(401);
         }
 
@@ -171,22 +171,21 @@ class ReportController extends Controller
         }
 
         $payload = [
-            "id" => $export->id,
-            "status" => $export->status,
-            "format" => $export->format,
-            "created_at" => $export->created_at?->toIso8601String(),
-            "finished_at" => $export->finished_at?->toIso8601String(),
-            "error_message" => $export->error_message,
-            "download_url" =>
-                $export->status === ReportExport::STATUS_READY
-                    ? route("reports.exports.download", $export)
+            'id' => $export->id,
+            'status' => $export->status,
+            'format' => $export->format,
+            'created_at' => $export->created_at?->toIso8601String(),
+            'finished_at' => $export->finished_at?->toIso8601String(),
+            'error_message' => $export->error_message,
+            'download_url' => $export->status === ReportExport::STATUS_READY
+                    ? route('reports.exports.download', $export)
                     : null,
         ];
 
         $etag = $this->reportExportEtag($payload);
-        $notModifiedResponse = response("", 200)
+        $notModifiedResponse = response('', 200)
             ->setEtag($etag)
-            ->header("Cache-Control", "private, must-revalidate, max-age=0");
+            ->header('Cache-Control', 'private, must-revalidate, max-age=0');
 
         if ($notModifiedResponse->isNotModified($request)) {
             return $notModifiedResponse;
@@ -195,7 +194,7 @@ class ReportController extends Controller
         return response()
             ->json($payload)
             ->setEtag($etag)
-            ->header("Cache-Control", "private, must-revalidate, max-age=0");
+            ->header('Cache-Control', 'private, must-revalidate, max-age=0');
     }
 
     public function exportStatuses(
@@ -203,44 +202,43 @@ class ReportController extends Controller
     ): JsonResponse|Response {
         $user = auth()->user();
 
-        if (!$user) {
+        if (! $user) {
             abort(401);
         }
 
-        $ids = collect($request->validated("ids"))
-            ->map(fn($id) => (int) $id)
+        $ids = collect($request->validated('ids'))
+            ->map(fn ($id) => (int) $id)
             ->all();
 
-        $query = ReportExport::query()->whereIn("id", $ids);
+        $query = ReportExport::query()->whereIn('id', $ids);
 
         if ($user->role !== User::ROLE_ADMIN) {
-            $query->where("user_id", $user->id);
+            $query->where('user_id', $user->id);
         }
 
         $exports = $query
-            ->orderBy("id")
+            ->orderBy('id')
             ->get([
-                "id",
-                "status",
-                "format",
-                "error_message",
-                "created_at",
-                "finished_at",
+                'id',
+                'status',
+                'format',
+                'error_message',
+                'created_at',
+                'finished_at',
             ]);
 
         $payload = [
-            "exports" => $exports
+            'exports' => $exports
                 ->map(
-                    fn(ReportExport $export) => [
-                        "id" => $export->id,
-                        "status" => $export->status,
-                        "format" => $export->format,
-                        "created_at" => $export->created_at?->toIso8601String(),
-                        "finished_at" => $export->finished_at?->toIso8601String(),
-                        "error_message" => $export->error_message,
-                        "download_url" =>
-                            $export->status === ReportExport::STATUS_READY
-                                ? route("reports.exports.download", $export)
+                    fn (ReportExport $export) => [
+                        'id' => $export->id,
+                        'status' => $export->status,
+                        'format' => $export->format,
+                        'created_at' => $export->created_at?->toIso8601String(),
+                        'finished_at' => $export->finished_at?->toIso8601String(),
+                        'error_message' => $export->error_message,
+                        'download_url' => $export->status === ReportExport::STATUS_READY
+                                ? route('reports.exports.download', $export)
                                 : null,
                     ],
                 )
@@ -249,9 +247,9 @@ class ReportController extends Controller
         ];
 
         $etag = $this->reportExportEtag($payload);
-        $notModifiedResponse = response("", 200)
+        $notModifiedResponse = response('', 200)
             ->setEtag($etag)
-            ->header("Cache-Control", "private, must-revalidate, max-age=0");
+            ->header('Cache-Control', 'private, must-revalidate, max-age=0');
 
         if ($notModifiedResponse->isNotModified($request)) {
             return $notModifiedResponse;
@@ -260,7 +258,7 @@ class ReportController extends Controller
         return response()
             ->json($payload)
             ->setEtag($etag)
-            ->header("Cache-Control", "private, must-revalidate, max-age=0");
+            ->header('Cache-Control', 'private, must-revalidate, max-age=0');
     }
 
     private function reportExportEtag(array $payload): string

@@ -19,13 +19,13 @@ class RoomController extends Controller
     {
         $rooms = $this->dashboardRooms();
 
-        return view("rooms.dashboard", compact("rooms"));
+        return view('rooms.dashboard', compact('rooms'));
     }
 
     public function dashboardCards(Request $request): Response
     {
         $etag = $this->dashboardCardsEtag();
-        $response = response("", 200);
+        $response = response('', 200);
         $response->setEtag($etag);
 
         if ($response->isNotModified($request)) {
@@ -34,8 +34,8 @@ class RoomController extends Controller
 
         $rooms = $this->dashboardRooms();
         $freshResponse = response()->view(
-            "rooms.partials.cards",
-            compact("rooms"),
+            'rooms.partials.cards',
+            compact('rooms'),
         );
         $freshResponse->setEtag($etag);
 
@@ -45,15 +45,15 @@ class RoomController extends Controller
     public function dashboardFingerprint(): JsonResponse
     {
         return response()->json([
-            "fingerprint" => $this->dashboardCardsEtag(),
+            'fingerprint' => $this->dashboardCardsEtag(),
         ]);
     }
 
     public function index(): View
     {
-        $rooms = Room::query()->orderBy("number")->paginate(20);
+        $rooms = Room::query()->orderBy('number')->paginate(20);
 
-        return view("rooms.index", compact("rooms"));
+        return view('rooms.index', compact('rooms'));
     }
 
     public function store(RoomStoreRequest $request): RedirectResponse
@@ -62,15 +62,15 @@ class RoomController extends Controller
 
         $room = Room::query()->create(
             $validated + [
-                "status" => Room::STATUS_EMPTY,
-                "is_active" => true,
+                'status' => Room::STATUS_EMPTY,
+                'is_active' => true,
             ],
         );
-        ActivityLogger::log("rooms.create", $room, "Xona yaratildi.");
+        ActivityLogger::log('rooms.create', $room, 'Xona yaratildi.');
 
         return redirect()
-            ->route("rooms.index")
-            ->with("status", "Xona yaratildi.");
+            ->route('rooms.index')
+            ->with('status', 'Xona yaratildi.');
     }
 
     public function update(
@@ -80,76 +80,76 @@ class RoomController extends Controller
         $validated = $request->validated();
 
         $room->update($validated);
-        ActivityLogger::log("rooms.update", $room, "Xona yangilandi.");
+        ActivityLogger::log('rooms.update', $room, 'Xona yangilandi.');
 
-        return back()->with("status", 'Xona ma\'lumotlari yangilandi.');
+        return back()->with('status', 'Xona ma\'lumotlari yangilandi.');
     }
 
     public function toggleActive(Room $room): RedirectResponse
     {
         $room->update([
-            "is_active" => !$room->is_active,
+            'is_active' => ! $room->is_active,
         ]);
         ActivityLogger::log(
-            "rooms.toggle_active",
+            'rooms.toggle_active',
             $room,
-            "Xona faolligi almashtirildi.",
+            'Xona faolligi almashtirildi.',
         );
 
-        return back()->with("status", "Xona holati yangilandi.");
+        return back()->with('status', 'Xona holati yangilandi.');
     }
 
     private function dashboardRooms()
     {
         return Room::query()
             ->select([
-                "id",
-                "number",
-                "name",
-                "status",
-                "is_active",
-                "updated_at",
+                'id',
+                'number',
+                'name',
+                'status',
+                'is_active',
+                'updated_at',
             ])
-            ->where("is_active", true)
+            ->where('is_active', true)
             ->with([
-                "openOrder:id,room_id,order_number,status,total_amount,opened_at,updated_at",
+                'openOrder:id,room_id,order_number,status,total_amount,opened_at,updated_at',
             ])
-            ->orderBy("number")
+            ->orderBy('number')
             ->get();
     }
 
     private function dashboardCardsEtag(): string
     {
         $roomAggregate = Room::query()
-            ->where("is_active", true)
+            ->where('is_active', true)
             ->selectRaw(
-                "max(updated_at) as rooms_updated_at, sum(case when status = ? then 1 else 0 end) as occupied_rooms_count",
+                'max(updated_at) as rooms_updated_at, sum(case when status = ? then 1 else 0 end) as occupied_rooms_count',
                 [Room::STATUS_OCCUPIED],
             )
             ->first();
 
         $orderAggregate = Order::query()
-            ->where("status", Order::STATUS_OPEN)
+            ->where('status', Order::STATUS_OPEN)
             ->selectRaw(
-                "max(updated_at) as open_orders_updated_at, count(*) as open_orders_count",
+                'max(updated_at) as open_orders_updated_at, count(*) as open_orders_count',
             )
             ->first();
 
-        $roomsUpdatedAt = (string) ($roomAggregate?->rooms_updated_at ?? "0");
+        $roomsUpdatedAt = (string) ($roomAggregate?->rooms_updated_at ?? '0');
         $occupiedRoomsCount = (string) ((int) ($roomAggregate?->occupied_rooms_count ??
             0));
         $openOrdersUpdatedAt =
-            (string) ($orderAggregate?->open_orders_updated_at ?? "0");
+            (string) ($orderAggregate?->open_orders_updated_at ?? '0');
         $openOrdersCount = (string) ((int) ($orderAggregate?->open_orders_count ??
             0));
 
         return sha1(
-            $roomsUpdatedAt .
-                "|" .
-                $occupiedRoomsCount .
-                "|" .
-                $openOrdersUpdatedAt .
-                "|" .
+            $roomsUpdatedAt.
+                '|'.
+                $occupiedRoomsCount.
+                '|'.
+                $openOrdersUpdatedAt.
+                '|'.
                 $openOrdersCount,
         );
     }

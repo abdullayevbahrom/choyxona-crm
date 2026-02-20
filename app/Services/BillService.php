@@ -23,14 +23,14 @@ class BillService
     ): Bill {
         if ($order->status !== Order::STATUS_OPEN) {
             throw new RuntimeException(
-                "Chek faqat ochiq buyurtma uchun yaratiladi.",
+                'Chek faqat ochiq buyurtma uchun yaratiladi.',
             );
         }
 
         $itemsSummary = $order
             ->items()
             ->selectRaw(
-                "count(*) as items_count, coalesce(sum(subtotal), 0) as subtotal",
+                'count(*) as items_count, coalesce(sum(subtotal), 0) as subtotal',
             )
             ->first();
 
@@ -45,7 +45,7 @@ class BillService
 
         if ($order->bill()->exists()) {
             throw new RuntimeException(
-                "Bu buyurtma uchun chek allaqachon yaratilgan.",
+                'Bu buyurtma uchun chek allaqachon yaratilgan.',
             );
         }
 
@@ -67,58 +67,58 @@ class BillService
                     $total,
                 ) {
                     $bill = Bill::query()->create([
-                        "order_id" => $order->id,
-                        "room_id" => $order->room_id,
-                        "bill_number" => $this->nextBillNumber(),
-                        "subtotal" => $subtotal,
-                        "discount_percent" => $finalPercent,
-                        "discount_amount" => $finalAmount,
-                        "total_amount" => $total,
-                        "payment_method" => $paymentMethod,
-                        "is_printed" => false,
+                        'order_id' => $order->id,
+                        'room_id' => $order->room_id,
+                        'bill_number' => $this->nextBillNumber(),
+                        'subtotal' => $subtotal,
+                        'discount_percent' => $finalPercent,
+                        'discount_amount' => $finalAmount,
+                        'total_amount' => $total,
+                        'payment_method' => $paymentMethod,
+                        'is_printed' => false,
                     ]);
 
                     return $bill;
                 });
             } catch (QueryException $e) {
-                if (!$this->isDuplicateBillNumberError($e) || $attempt === 4) {
+                if (! $this->isDuplicateBillNumberError($e) || $attempt === 4) {
                     throw $e;
                 }
             }
         }
 
-        throw new RuntimeException("Chek raqami yaratishda xatolik yuz berdi.");
+        throw new RuntimeException('Chek raqami yaratishda xatolik yuz berdi.');
     }
 
     public function markAsPrinted(Bill $bill): void
     {
         DB::transaction(function () use ($bill) {
             $bill->update([
-                "is_printed" => true,
-                "printed_at" => now(),
+                'is_printed' => true,
+                'printed_at' => now(),
             ]);
 
             $order = $bill->order()->firstOrFail();
             $order->update([
-                "status" => Order::STATUS_CLOSED,
-                "closed_at" => now(),
+                'status' => Order::STATUS_CLOSED,
+                'closed_at' => now(),
             ]);
 
             Room::query()
                 ->whereKey($order->room_id)
                 ->update([
-                    "status" => Room::STATUS_EMPTY,
+                    'status' => Room::STATUS_EMPTY,
                 ]);
         });
     }
 
     public function nextBillNumber(): string
     {
-        $year = (int) now()->format("Y");
+        $year = (int) now()->format('Y');
         $prefix = "CHK-{$year}-";
-        $next = $this->numberSequenceService->next("CHK", $year);
+        $next = $this->numberSequenceService->next('CHK', $year);
 
-        return $prefix . str_pad((string) $next, 4, "0", STR_PAD_LEFT);
+        return $prefix.str_pad((string) $next, 4, '0', STR_PAD_LEFT);
     }
 
     private function resolveDiscounts(
@@ -153,11 +153,11 @@ class BillService
 
     private function isDuplicateBillNumberError(QueryException $e): bool
     {
-        return str_contains($e->getMessage(), "bills.bill_number") ||
-            str_contains($e->getMessage(), "bills_bill_number_unique") ||
+        return str_contains($e->getMessage(), 'bills.bill_number') ||
+            str_contains($e->getMessage(), 'bills_bill_number_unique') ||
             str_contains(
                 $e->getMessage(),
-                "UNIQUE constraint failed: bills.bill_number",
+                'UNIQUE constraint failed: bills.bill_number',
             );
     }
 }

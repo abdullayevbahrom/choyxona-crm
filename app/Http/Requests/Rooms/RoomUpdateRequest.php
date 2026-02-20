@@ -14,18 +14,18 @@ class RoomUpdateRequest extends FormRequest
 
     public function rules(): array
     {
-        $roomId = $this->route("room")?->id;
+        $roomId = $this->route('room')?->id;
 
         return [
-            "number" => [
-                "required",
-                "string",
-                "max:20",
-                Rule::unique("rooms", "number")->ignore($roomId),
+            'number' => [
+                'required',
+                'string',
+                'max:20',
+                Rule::unique('rooms', 'number')->ignore($roomId),
             ],
-            "name" => ["nullable", "string", "max:100"],
-            "capacity" => ["nullable", "integer", "min:1"],
-            "description" => ["nullable", "string"],
+            'name' => ['nullable', 'string', 'max:100'],
+            'capacity' => ['nullable', 'integer', 'min:1'],
+            'description' => ['nullable', 'string'],
         ];
     }
 }

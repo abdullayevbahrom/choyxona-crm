@@ -11,10 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table("order_items", function (Blueprint $table) {
+        Schema::table('order_items', function (Blueprint $table) {
             $table->index(
-                ["order_id", "updated_at"],
-                "order_items_order_updated_idx",
+                ['order_id', 'updated_at'],
+                'order_items_order_updated_idx',
             );
         });
     }
@@ -24,8 +24,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table("order_items", function (Blueprint $table) {
-            $table->dropIndex("order_items_order_updated_idx");
+        Schema::table('order_items', function (Blueprint $table) {
+            $table->dropIndex('order_items_order_updated_idx');
         });
     }
 };

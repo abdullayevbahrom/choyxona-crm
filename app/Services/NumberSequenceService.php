@@ -16,7 +16,7 @@ class NumberSequenceService
                 ->lockForUpdate()
                 ->first();
 
-            if (!$row) {
+            if (! $row) {
                 try {
                     DB::table('number_sequences')->insert([
                         'sequence_key' => $sequenceKey,

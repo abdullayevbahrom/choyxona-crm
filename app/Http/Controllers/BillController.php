@@ -28,75 +28,74 @@ class BillController extends Controller
         try {
             $bill = $this->billService->createForOrder(
                 $order,
-                $validated["payment_method"] ?? null,
-                isset($validated["discount_percent"])
-                    ? (float) $validated["discount_percent"]
+                $validated['payment_method'] ?? null,
+                isset($validated['discount_percent'])
+                    ? (float) $validated['discount_percent']
                     : null,
-                isset($validated["discount_amount"])
-                    ? (float) $validated["discount_amount"]
+                isset($validated['discount_amount'])
+                    ? (float) $validated['discount_amount']
                     : null,
             );
         } catch (RuntimeException $e) {
             throw ValidationException::withMessages([
-                "order" => $e->getMessage(),
+                'order' => $e->getMessage(),
             ]);
         }
-        ActivityLogger::log("bills.create", $bill, "Chek yaratildi.");
+        ActivityLogger::log('bills.create', $bill, 'Chek yaratildi.');
 
-        return redirect()->route("bills.show", $bill);
+        return redirect()->route('bills.show', $bill);
     }
 
     public function show(Bill $bill): View
     {
-        $bill->load(["order.room", "order.user", "order.items.menuItem"]);
+        $bill->load(['order.room', 'order.user', 'order.items.menuItem']);
         $setting = Setting::current();
         $qrPayload = $this->buildQrPayload($bill);
 
-        return view("bills.show", [
-            "bill" => $bill,
-            "setting" => $setting,
-            "qrPayload" => $qrPayload,
-            "qrImageUrl" =>
-                "https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=" .
+        return view('bills.show', [
+            'bill' => $bill,
+            'setting' => $setting,
+            'qrPayload' => $qrPayload,
+            'qrImageUrl' => 'https://api.qrserver.com/v1/create-qr-code/?size=120x120&data='.
                 rawurlencode($qrPayload),
         ]);
     }
 
     public function pdf(Bill $bill): Response
     {
-        $bill->load(["order.room", "order.user", "order.items.menuItem"]);
+        $bill->load(['order.room', 'order.user', 'order.items.menuItem']);
         $setting = Setting::current();
         $qrPayload = $this->buildQrPayload($bill);
 
-        $pdf = Pdf::loadView("bills.pdf", [
-            "bill" => $bill,
-            "setting" => $setting,
-            "qrPayload" => $qrPayload,
-        ])->setPaper("a6");
+        $pdf = Pdf::loadView('bills.pdf', [
+            'bill' => $bill,
+            'setting' => $setting,
+            'qrPayload' => $qrPayload,
+        ])->setPaper('a6');
 
-        return $pdf->stream($bill->bill_number . ".pdf");
+        return $pdf->stream($bill->bill_number.'.pdf');
     }
 
     public function print(Bill $bill): RedirectResponse
     {
         $this->billService->markAsPrinted($bill);
-        ActivityLogger::log("bills.print", $bill, "Chek chop etildi.");
+        ActivityLogger::log('bills.print', $bill, 'Chek chop etildi.');
 
         return redirect()
-            ->route("dashboard")
-            ->with("status", 'Chek chop etildi, xona bo\'shatildi.');
+            ->route('dashboard')
+            ->with('status', 'Chek chop etildi, xona bo\'shatildi.');
     }
 
     private function buildQrPayload(Bill $bill): string
     {
-        return implode("|", [
-            "bill=" . $bill->bill_number,
-            "order=" . $bill->order->order_number,
-            "room=" . $bill->room->number,
-            "total=" . number_format((float) $bill->total_amount, 2, ".", ""),
-            "date=" .
-            ($bill->created_at?->format("Y-m-d H:i") ??
-                now()->format("Y-m-d H:i")),
+        return implode('|', [
+            'bill='.$bill->bill_number,
+            'order='.$bill->order->order_number,
+            'room='.$bill->room->number,
+            'total='.number_format((float) $bill->total_amount, 2, '.', ''),
+            'date='.
+            ($bill->created_at?->format('Y-m-d H:i') ??
+                now()->format('Y-m-d H:i')),
         ]);
     }
 }

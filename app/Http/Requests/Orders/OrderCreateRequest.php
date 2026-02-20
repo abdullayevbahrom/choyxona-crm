@@ -14,9 +14,9 @@ class OrderCreateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            "room" => ["required", "integer", "exists:rooms,id"],
-            "type" => ["nullable", "in:food,drink,bread,salad,sauce"],
-            "q" => ["nullable", "string", "max:200"],
+            'room' => ['required', 'integer', 'exists:rooms,id'],
+            'type' => ['nullable', 'in:food,drink,bread,salad,sauce'],
+            'q' => ['nullable', 'string', 'max:200'],
         ];
     }
 }

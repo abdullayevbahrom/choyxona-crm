@@ -13,7 +13,9 @@ class Order extends Model
     use HasFactory;
 
     public const STATUS_OPEN = 'open';
+
     public const STATUS_CLOSED = 'closed';
+
     public const STATUS_CANCELLED = 'cancelled';
 
     protected $fillable = [

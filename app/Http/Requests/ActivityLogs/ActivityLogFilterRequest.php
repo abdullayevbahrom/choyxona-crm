@@ -14,12 +14,12 @@ class ActivityLogFilterRequest extends FormRequest
     public function rules(): array
     {
         return [
-            "action" => ["nullable", "string", "max:100"],
-            "user_id" => ["nullable", "integer", "exists:users,id"],
-            "subject_type" => ["nullable", "string", "max:100"],
-            "subject_id" => ["nullable", "integer", "min:1"],
-            "date_from" => ["nullable", "date"],
-            "date_to" => ["nullable", "date"],
+            'action' => ['nullable', 'string', 'max:100'],
+            'user_id' => ['nullable', 'integer', 'exists:users,id'],
+            'subject_type' => ['nullable', 'string', 'max:100'],
+            'subject_id' => ['nullable', 'integer', 'min:1'],
+            'date_from' => ['nullable', 'date'],
+            'date_to' => ['nullable', 'date'],
         ];
     }
 }

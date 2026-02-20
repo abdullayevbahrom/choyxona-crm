@@ -14,12 +14,12 @@ class MenuUpsertRequest extends FormRequest
     public function rules(): array
     {
         return [
-            "name" => ["required", "string", "max:200"],
-            "type" => ["required", "in:food,drink,bread,salad,sauce"],
-            "price" => ["nullable", "numeric", "min:0"],
-            "stock_quantity" => ["nullable", "integer", "min:0"],
-            "unit" => ["nullable", "string", "max:20"],
-            "description" => ["nullable", "string"],
+            'name' => ['required', 'string', 'max:200'],
+            'type' => ['required', 'in:food,drink,bread,salad,sauce'],
+            'price' => ['nullable', 'numeric', 'min:0'],
+            'stock_quantity' => ['nullable', 'integer', 'min:0'],
+            'unit' => ['nullable', 'string', 'max:20'],
+            'description' => ['nullable', 'string'],
         ];
     }
 }
