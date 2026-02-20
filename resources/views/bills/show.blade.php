@@ -12,26 +12,28 @@
     <p class="text-slate-600 mb-4">Kassir: {{ $bill->order->user?->name ?? 'Noma\'lum' }}</p>
 
     <div class="bg-white rounded-xl border p-4 mb-6">
-        <table class="min-w-full text-sm mb-4">
-            <thead>
-            <tr class="border-b">
-                <th class="text-left p-2">Mahsulot</th>
-                <th class="text-left p-2">Soni</th>
-                <th class="text-left p-2">Narx</th>
-                <th class="text-left p-2">Jami</th>
-            </tr>
-            </thead>
-            <tbody>
-            @foreach ($bill->order->items as $item)
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-sm mb-4">
+                <thead>
                 <tr class="border-b">
-                    <td class="p-2">{{ $item->menuItem->name }}</td>
-                    <td class="p-2">{{ $item->quantity }}</td>
-                    <td class="p-2">{{ number_format((float) $item->unit_price, 2) }}</td>
-                    <td class="p-2">{{ number_format((float) $item->subtotal, 2) }}</td>
+                    <th class="text-left p-2">Mahsulot</th>
+                    <th class="text-left p-2">Soni</th>
+                    <th class="text-left p-2">Narx</th>
+                    <th class="text-left p-2">Jami</th>
                 </tr>
-            @endforeach
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                @foreach ($bill->order->items as $item)
+                    <tr class="border-b">
+                        <td class="p-2">{{ $item->menuItem->name }}</td>
+                        <td class="p-2">{{ $item->quantity }}</td>
+                        <td class="p-2">{{ number_format((float) $item->unit_price, 2) }}</td>
+                        <td class="p-2">{{ number_format((float) $item->subtotal, 2) }}</td>
+                    </tr>
+                @endforeach
+                </tbody>
+            </table>
+        </div>
 
         <div class="text-right space-y-1">
             <div>Subtotal: {{ number_format((float) $bill->subtotal, 2) }}</div>

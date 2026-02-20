@@ -10,7 +10,7 @@
                     @php $role = Auth::user()->role; @endphp
 
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                        Dashboard
+                        Asosiy panel
                     </x-nav-link>
 
                     @if (in_array($role, ['admin', 'manager', 'cashier'], true))
@@ -43,7 +43,7 @@
                         </x-nav-link>
 
                         <x-nav-link :href="route('activity-logs.index')" :active="request()->routeIs('activity-logs.*')">
-                            Activity Log
+                            Faoliyat jurnali
                         </x-nav-link>
                     @endif
                 </div>
@@ -63,12 +63,12 @@
                     </x-slot>
 
                     <x-slot name="content">
-                        <x-dropdown-link :href="route('profile.edit')">Profile</x-dropdown-link>
+                        <x-dropdown-link :href="route('profile.edit')">Profil</x-dropdown-link>
 
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
                             <x-dropdown-link :href="route('logout')" onclick="event.preventDefault(); this.closest('form').submit();">
-                                Log Out
+                                Chiqish
                             </x-dropdown-link>
                         </form>
                     </x-slot>
@@ -89,7 +89,7 @@
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
         <div class="pt-2 pb-3 space-y-1">
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                Dashboard
+                Asosiy panel
             </x-responsive-nav-link>
 
             @if (in_array(Auth::user()->role, ['admin', 'manager', 'cashier'], true))
@@ -122,7 +122,7 @@
                 </x-responsive-nav-link>
 
                 <x-responsive-nav-link :href="route('activity-logs.index')" :active="request()->routeIs('activity-logs.*')">
-                    Activity Log
+                    Faoliyat jurnali
                 </x-responsive-nav-link>
             @endif
         </div>
@@ -134,12 +134,12 @@
             </div>
 
             <div class="mt-3 space-y-1">
-                <x-responsive-nav-link :href="route('profile.edit')">Profile</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('profile.edit')">Profil</x-responsive-nav-link>
 
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
                     <x-responsive-nav-link :href="route('logout')" onclick="event.preventDefault(); this.closest('form').submit();">
-                        Log Out
+                        Chiqish
                     </x-responsive-nav-link>
                 </form>
             </div>

@@ -66,7 +66,12 @@
                             </td>
                             <td class="p-3">
                                     <input name="unit" value="{{ $item->unit }}" class="border rounded p-2" placeholder="Birlik">
-                                    <input type="hidden" name="description" value="{{ $item->description }}">
+                                    <textarea
+                                        name="description"
+                                        rows="2"
+                                        class="mt-2 w-full border rounded p-2"
+                                        placeholder="Izoh"
+                                    >{{ $item->description }}</textarea>
                             </td>
                             <td class="p-3">{{ $item->is_active ? 'ha' : 'yo\'q' }}</td>
                             <td class="p-3 align-top">

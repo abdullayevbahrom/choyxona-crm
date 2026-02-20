@@ -110,17 +110,23 @@
                 forms.forEach((form) => {
                     const button = form.querySelector('[data-add-button]');
                     const quantityInput = form.querySelector('[data-quantity-input]');
+                    const minusButton = form.querySelector('[data-minus-button]');
+                    const plusButton = form.querySelector('[data-plus-button]');
 
                     if (!orderId) {
                         form.setAttribute('action', '#');
                         if (button) button.disabled = true;
                         if (quantityInput) quantityInput.disabled = true;
+                        if (minusButton) minusButton.disabled = true;
+                        if (plusButton) plusButton.disabled = true;
                         return;
                     }
 
                     form.setAttribute('action', actionTemplate.replace('__ORDER_ID__', orderId));
                     if (button) button.disabled = false;
                     if (quantityInput) quantityInput.disabled = false;
+                    if (minusButton) minusButton.disabled = false;
+                    if (plusButton) plusButton.disabled = false;
                 });
             };
 
