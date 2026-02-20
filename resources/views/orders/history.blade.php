@@ -13,6 +13,7 @@
 
                 <select name="status" class="border rounded p-2">
                     <option value="">Barcha holatlar</option>
+                    <option value="open" @selected(($filters['status'] ?? '') === 'open')>Ochiq</option>
                     <option value="closed" @selected(($filters['status'] ?? '') === 'closed')>Yopilgan</option>
                     <option value="cancelled" @selected(($filters['status'] ?? '') === 'cancelled')>Bekor qilingan</option>
                 </select>
@@ -34,7 +35,7 @@
                         <th class="text-left p-3">Holat</th>
                         <th class="text-left p-3">Jami</th>
                         <th class="text-left p-3">Kassir</th>
-                        <th class="text-left p-3">Yopilgan vaqt</th>
+                        <th class="text-left p-3">Vaqt</th>
                         <th class="text-left p-3">Amal</th>
                     </tr>
                     </thead>
@@ -46,6 +47,7 @@
                             <td class="p-3">
                                 {{
                                     match ($order->status) {
+                                        'open' => 'Ochiq',
                                         'closed' => 'Yopilgan',
                                         'cancelled' => 'Bekor qilingan',
                                         default => $order->status,
@@ -54,7 +56,7 @@
                             </td>
                             <td class="p-3">{{ number_format((float) $order->total_amount, 2) }}</td>
                             <td class="p-3">{{ $order->user?->name ?? '-' }}</td>
-                            <td class="p-3">{{ $order->closed_at?->format('Y-m-d H:i') ?? '-' }}</td>
+                            <td class="p-3">{{ $order->closed_at?->format('Y-m-d H:i') ?? $order->opened_at?->format('Y-m-d H:i') ?? '-' }}</td>
                             <td class="p-3"><a class="text-blue-700 underline" href="{{ route('orders.show', $order) }}">Ko'rish</a></td>
                         </tr>
                     @empty

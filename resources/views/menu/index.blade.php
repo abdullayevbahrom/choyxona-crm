@@ -43,7 +43,7 @@
                     <thead class="bg-slate-100">
                     <tr>
                         <th class="text-left p-3">Nomi</th>
-                        <th class="text-left p-3">Tur</th>
+                        <th class="w-36 min-w-36 whitespace-nowrap text-left p-3">Tur</th>
                         <th class="text-left p-3">Narx</th>
                         <th class="text-left p-3">Miqdor</th>
                         <th class="text-left p-3">Birlik</th>
@@ -66,8 +66,8 @@
                                     @method('PATCH')
                                     <input name="name" value="{{ $item->name }}" class="border rounded p-2" required>
                             </td>
-                            <td class="p-3">
-                                    <select name="type" class="border rounded p-2" required>
+                            <td class="w-36 min-w-36 p-3">
+                                    <select name="type" class="w-full border rounded p-2" required>
                                         @foreach (['food', 'drink', 'bread', 'salad', 'sauce'] as $type)
                                             <option value="{{ $type }}" @selected($item->type === $type)>{{ $type }}</option>
                                         @endforeach

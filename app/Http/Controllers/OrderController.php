@@ -285,8 +285,12 @@ class OrderController extends Controller
 
         $query = Order::query()
             ->with(['room', 'user'])
-            ->whereIn('status', ['closed', 'cancelled'])
-            ->latest('closed_at')
+            ->whereIn('status', [
+                Order::STATUS_OPEN,
+                Order::STATUS_CLOSED,
+                Order::STATUS_CANCELLED,
+            ])
+            ->orderByRaw('coalesce(closed_at, opened_at) desc')
             ->latest('id');
 
         if (! empty($validated['room_id'])) {
@@ -298,19 +302,15 @@ class OrderController extends Controller
         }
 
         if (! empty($validated['date_from'])) {
-            $query->where(
-                'closed_at',
-                '>=',
+            $query->whereRaw('coalesce(closed_at, opened_at) >= ?', [
                 $validated['date_from'].' 00:00:00',
-            );
+            ]);
         }
 
         if (! empty($validated['date_to'])) {
-            $query->where(
-                'closed_at',
-                '<=',
+            $query->whereRaw('coalesce(closed_at, opened_at) <= ?', [
                 $validated['date_to'].' 23:59:59',
-            );
+            ]);
         }
 
         $orders = $query->paginate(30)->withQueryString();

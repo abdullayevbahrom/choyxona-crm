@@ -17,7 +17,7 @@ class OrderHistoryRequest extends FormRequest
             'room_id' => ['nullable', 'integer', 'exists:rooms,id'],
             'date_from' => ['nullable', 'date'],
             'date_to' => ['nullable', 'date'],
-            'status' => ['nullable', 'in:closed,cancelled'],
+            'status' => ['nullable', 'in:open,closed,cancelled'],
         ];
     }
 }
