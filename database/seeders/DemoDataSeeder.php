@@ -19,6 +19,16 @@ use Illuminate\Support\Facades\Schema;
 
 class DemoDataSeeder extends Seeder
 {
+    private const DEFAULT_ROOMS_COUNT = 28;
+
+    private const DEFAULT_EXTRA_MENU_ITEMS_PER_TYPE = 8;
+
+    private const DEFAULT_CLOSED_ORDERS_COUNT = 260;
+
+    private const DEFAULT_CANCELLED_ORDERS_COUNT = 40;
+
+    private const DEFAULT_OPEN_ORDERS_COUNT = 8;
+
     public function run(): void
     {
         $this->call(DatabaseSeeder::class);
@@ -27,11 +37,46 @@ class DemoDataSeeder extends Seeder
         $orderService = app(OrderService::class);
         $billService = app(BillService::class);
 
-        $rooms = $this->seedRooms();
-        $menuItems = $this->seedMenuItems();
+        $roomsCount = $this->intEnv(
+            'DEMO_SEED_ROOMS_COUNT',
+            self::DEFAULT_ROOMS_COUNT,
+            1,
+            300,
+        );
+        $extraMenuPerType = $this->intEnv(
+            'DEMO_SEED_MENU_EXTRA_PER_TYPE',
+            self::DEFAULT_EXTRA_MENU_ITEMS_PER_TYPE,
+            0,
+            100,
+        );
+        $closedOrdersCount = $this->intEnv(
+            'DEMO_SEED_CLOSED_ORDERS',
+            self::DEFAULT_CLOSED_ORDERS_COUNT,
+            0,
+            20000,
+        );
+        $cancelledOrdersCount = $this->intEnv(
+            'DEMO_SEED_CANCELLED_ORDERS',
+            self::DEFAULT_CANCELLED_ORDERS_COUNT,
+            0,
+            20000,
+        );
+        $openOrdersCount = $this->intEnv(
+            'DEMO_SEED_OPEN_ORDERS',
+            self::DEFAULT_OPEN_ORDERS_COUNT,
+            0,
+            $roomsCount,
+        );
+
+        $rooms = $this->seedRooms($roomsCount);
+        $menuItems = $this->seedMenuItems($extraMenuPerType);
 
         $cashierIds = User::query()
-            ->whereIn('role', [User::ROLE_CASHIER, User::ROLE_MANAGER, User::ROLE_ADMIN])
+            ->whereIn('role', [
+                User::ROLE_CASHIER,
+                User::ROLE_MANAGER,
+                User::ROLE_ADMIN,
+            ])
             ->pluck('id')
             ->all();
 
@@ -40,14 +85,13 @@ class DemoDataSeeder extends Seeder
             ->where('is_active', true)
             ->values();
 
-        $closedOrdersCount = 260;
-        $cancelledOrdersCount = 40;
-        $openOrdersCount = 8;
-
         for ($i = 0; $i < $closedOrdersCount; $i++) {
             $room = $rooms->random();
             $openedAt = $this->randomDateTime('-45 days', '-1 day');
-            $closedAt = $this->randomDateTime($openedAt->copy()->addMinutes(20), 'now');
+            $closedAt = $this->randomDateTime(
+                $openedAt->copy()->addMinutes(20),
+                'now',
+            );
 
             $order = Order::query()->create([
                 'room_id' => $room->id,
@@ -62,11 +106,17 @@ class DemoDataSeeder extends Seeder
                 'updated_at' => $closedAt,
             ]);
 
-            $this->attachRandomItems($order, $pricedMenuItems, random_int(2, 8));
+            $this->attachRandomItems(
+                $order,
+                $pricedMenuItems,
+                random_int(2, 8),
+            );
             $orderService->recalculateTotal($order);
             $order->refresh();
 
-            [$discountPercent, $discountAmount] = $this->randomDiscount((float) $order->total_amount);
+            [$discountPercent, $discountAmount] = $this->randomDiscount(
+                (float) $order->total_amount,
+            );
 
             Bill::query()->create([
                 'order_id' => $order->id,
@@ -75,8 +125,16 @@ class DemoDataSeeder extends Seeder
                 'subtotal' => $order->total_amount,
                 'discount_percent' => $discountPercent,
                 'discount_amount' => $discountAmount,
-                'total_amount' => max(0, (float) $order->total_amount - (float) ($discountAmount ?? 0)),
-                'payment_method' => Arr::random([Bill::PAYMENT_CASH, Bill::PAYMENT_CARD, Bill::PAYMENT_TRANSFER]),
+                'total_amount' => max(
+                    0,
+                    (float) $order->total_amount -
+                        (float) ($discountAmount ?? 0),
+                ),
+                'payment_method' => Arr::random([
+                    Bill::PAYMENT_CASH,
+                    Bill::PAYMENT_CARD,
+                    Bill::PAYMENT_TRANSFER,
+                ]),
                 'is_printed' => true,
                 'printed_at' => $closedAt,
                 'created_at' => $closedAt,
@@ -87,7 +145,10 @@ class DemoDataSeeder extends Seeder
         for ($i = 0; $i < $cancelledOrdersCount; $i++) {
             $room = $rooms->random();
             $openedAt = $this->randomDateTime('-30 days', '-1 day');
-            $closedAt = $this->randomDateTime($openedAt->copy()->addMinutes(10), 'now');
+            $closedAt = $this->randomDateTime(
+                $openedAt->copy()->addMinutes(10),
+                'now',
+            );
 
             Order::query()->create([
                 'room_id' => $room->id,
@@ -103,7 +164,9 @@ class DemoDataSeeder extends Seeder
             ]);
         }
 
-        $openRooms = $rooms->shuffle()->take(min($openOrdersCount, $rooms->count()));
+        $openRooms = $rooms
+            ->shuffle()
+            ->take(min($openOrdersCount, $rooms->count()));
         foreach ($openRooms as $room) {
             $order = $orderService->createOrder(
                 room: $room,
@@ -111,7 +174,11 @@ class DemoDataSeeder extends Seeder
                 notes: $this->randomNote(30),
             );
 
-            $this->attachRandomItems($order, $pricedMenuItems, random_int(1, 5));
+            $this->attachRandomItems(
+                $order,
+                $pricedMenuItems,
+                random_int(1, 5),
+            );
             $orderService->recalculateTotal($order);
         }
 
@@ -126,8 +193,12 @@ class DemoDataSeeder extends Seeder
         );
 
         $this->command?->info('Demo dataset yaratildi.');
-        $this->command?->info("Rooms: {$rooms->count()}, Menu items: {$menuItems->count()}");
-        $this->command?->info("Orders => closed: {$closedOrdersCount}, cancelled: {$cancelledOrdersCount}, open: {$openRooms->count()}");
+        $this->command?->info(
+            "Rooms: {$rooms->count()}, Menu items: {$menuItems->count()}",
+        );
+        $this->command?->info(
+            "Orders => closed: {$closedOrdersCount}, cancelled: {$cancelledOrdersCount}, open: {$openRooms->count()}",
+        );
     }
 
     private function truncateOperationalData(): void
@@ -164,69 +235,128 @@ class DemoDataSeeder extends Seeder
         }
     }
 
-    private function seedRooms(): Collection
+    private function seedRooms(int $roomsCount): Collection
     {
         $rooms = collect();
         $baseNumber = 100;
 
-        for ($i = 1; $i <= 28; $i++) {
+        for ($i = 1; $i <= $roomsCount; $i++) {
             $number = (string) ($baseNumber + $i);
-            $rooms->push(Room::query()->create([
-                'number' => $number,
-                'name' => random_int(1, 100) <= 60 ? "Xona {$number}" : null,
-                'capacity' => Arr::random([2, 4, 6, 8, 10]),
-                'status' => Room::STATUS_EMPTY,
-                'is_active' => true,
-                'description' => random_int(1, 100) <= 25 ? $this->randomSentence(5) : null,
-            ]));
+            $rooms->push(
+                Room::query()->create([
+                    'number' => $number,
+                    'name' => random_int(1, 100) <= 60 ? "Xona {$number}" : null,
+                    'capacity' => Arr::random([2, 4, 6, 8, 10]),
+                    'status' => Room::STATUS_EMPTY,
+                    'is_active' => true,
+                    'description' => random_int(1, 100) <= 25
+                            ? $this->randomSentence(5)
+                            : null,
+                ]),
+            );
         }
 
         return $rooms;
     }
 
-    private function seedMenuItems(): Collection
+    private function seedMenuItems(int $extraItemsPerType): Collection
     {
         $catalog = [
-            MenuItem::TYPE_FOOD => ['Palov', 'Lagmon', 'Shurva', 'Kabob', 'Manti', 'Qozon Kabob', 'Chuchvara', 'Dimlama'],
-            MenuItem::TYPE_DRINK => ['Ko\'k choy', 'Qora choy', 'Qahva', 'Sharbat', 'Mineral suv', 'Limonad'],
+            MenuItem::TYPE_FOOD => [
+                'Palov',
+                'Lagmon',
+                'Shurva',
+                'Kabob',
+                'Manti',
+                'Qozon Kabob',
+                'Chuchvara',
+                'Dimlama',
+            ],
+            MenuItem::TYPE_DRINK => [
+                'Ko\'k choy',
+                'Qora choy',
+                'Qahva',
+                'Sharbat',
+                'Mineral suv',
+                'Limonad',
+            ],
             MenuItem::TYPE_BREAD => ['Non', 'Patir', 'Kulcha', 'Lochira'],
-            MenuItem::TYPE_SALAD => ['Achichuk', 'Toshkent salati', 'Karam salat', 'Bahor salati'],
-            MenuItem::TYPE_SAUCE => ['Pomidor sousi', 'Sarimsoq sousi', 'Qatiq sousi', 'Achchiq sous'],
+            MenuItem::TYPE_SALAD => [
+                'Achichuk',
+                'Toshkent salati',
+                'Karam salat',
+                'Bahor salati',
+            ],
+            MenuItem::TYPE_SAUCE => [
+                'Pomidor sousi',
+                'Sarimsoq sousi',
+                'Qatiq sousi',
+                'Achchiq sous',
+            ],
         ];
 
         $items = collect();
 
         foreach ($catalog as $type => $names) {
             foreach ($names as $name) {
-                $items->push(MenuItem::query()->create([
-                    'name' => $name,
-                    'type' => $type,
-                    'price' => random_int(1, 100) <= 8 ? null : random_int(8000, 120000),
-                    'stock_quantity' => random_int(1, 100) <= 70 ? random_int(5, 120) : null,
-                    'unit' => Arr::random(['dona', 'porsiya', 'litr', 'stakan']),
-                    'description' => random_int(1, 100) <= 20 ? $this->randomSentence(4) : null,
-                    'is_active' => random_int(1, 100) <= 92,
-                ]));
+                $items->push(
+                    MenuItem::query()->create([
+                        'name' => $name,
+                        'type' => $type,
+                        'price' => random_int(1, 100) <= 8
+                                ? null
+                                : random_int(8000, 120000),
+                        'stock_quantity' => random_int(1, 100) <= 70
+                                ? random_int(5, 120)
+                                : null,
+                        'unit' => Arr::random([
+                            'dona',
+                            'porsiya',
+                            'litr',
+                            'stakan',
+                        ]),
+                        'description' => random_int(1, 100) <= 20
+                                ? $this->randomSentence(4)
+                                : null,
+                        'is_active' => random_int(1, 100) <= 92,
+                    ]),
+                );
             }
 
-            for ($i = 1; $i <= 8; $i++) {
-                $items->push(MenuItem::query()->create([
-                    'name' => $this->randomMenuName($type, $i),
-                    'type' => $type,
-                    'price' => random_int(1, 100) <= 10 ? null : random_int(6000, 150000),
-                    'stock_quantity' => random_int(1, 100) <= 65 ? random_int(3, 150) : null,
-                    'unit' => Arr::random(['dona', 'porsiya', 'litr', 'gramm']),
-                    'description' => random_int(1, 100) <= 30 ? $this->randomSentence(5) : null,
-                    'is_active' => random_int(1, 100) <= 90,
-                ]));
+            for ($i = 1; $i <= $extraItemsPerType; $i++) {
+                $items->push(
+                    MenuItem::query()->create([
+                        'name' => $this->randomMenuName($type, $i),
+                        'type' => $type,
+                        'price' => random_int(1, 100) <= 10
+                                ? null
+                                : random_int(6000, 150000),
+                        'stock_quantity' => random_int(1, 100) <= 65
+                                ? random_int(3, 150)
+                                : null,
+                        'unit' => Arr::random([
+                            'dona',
+                            'porsiya',
+                            'litr',
+                            'gramm',
+                        ]),
+                        'description' => random_int(1, 100) <= 30
+                                ? $this->randomSentence(5)
+                                : null,
+                        'is_active' => random_int(1, 100) <= 90,
+                    ]),
+                );
             }
         }
 
         return $items;
     }
 
-    private function attachRandomItems(Order $order, Collection $menuItems, int $count): void
-    {
+    private function attachRandomItems(
+        Order $order,
+        Collection $menuItems,
+        int $count,
+    ): void {
         $selected = $menuItems->shuffle()->take($count);
 
         foreach ($selected as $menuItem) {
@@ -258,8 +388,10 @@ class DemoDataSeeder extends Seeder
         return [$percent, $amount];
     }
 
-    private function randomDateTime(Carbon|string $from, Carbon|string $to): Carbon
-    {
+    private function randomDateTime(
+        Carbon|string $from,
+        Carbon|string $to,
+    ): Carbon {
         $start = $from instanceof Carbon ? $from : Carbon::parse($from);
         $end = $to instanceof Carbon ? $to : Carbon::parse($to);
 
@@ -281,8 +413,26 @@ class DemoDataSeeder extends Seeder
     private function randomSentence(int $wordCount): string
     {
         $pool = [
-            'issiq', 'tez', 'kam', 'ko\'p', 'achchiq', 'shirin', 'limon', 'sous', 'non', 'taom', 'choy',
-            'mijoz', 'xona', 'buyurtma', 'kassir', 'yangilash', 'tayyor', 'kutmoqda', 'sifatli', 'yangi',
+            'issiq',
+            'tez',
+            'kam',
+            'ko\'p',
+            'achchiq',
+            'shirin',
+            'limon',
+            'sous',
+            'non',
+            'taom',
+            'choy',
+            'mijoz',
+            'xona',
+            'buyurtma',
+            'kassir',
+            'yangilash',
+            'tayyor',
+            'kutmoqda',
+            'sifatli',
+            'yangi',
         ];
 
         $words = [];
@@ -305,5 +455,20 @@ class DemoDataSeeder extends Seeder
         };
 
         return "{$prefix} {$index}";
+    }
+
+    private function intEnv(string $key, int $default, int $min, int $max): int
+    {
+        $value = (int) env($key, $default);
+
+        if ($value < $min) {
+            return $min;
+        }
+
+        if ($value > $max) {
+            return $max;
+        }
+
+        return $value;
     }
 }
