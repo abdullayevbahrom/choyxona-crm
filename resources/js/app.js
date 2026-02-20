@@ -18,6 +18,7 @@ window.setupHtmlPolling = function setupHtmlPolling({
     let inFlight = false;
     let etag = null;
     let fingerprint = null;
+    let disposed = false;
 
     const poll = async () => {
         if (document.hidden || inFlight) return;
@@ -83,32 +84,53 @@ window.setupHtmlPolling = function setupHtmlPolling({
         }
     };
 
+    const schedule = (delayMs = intervalMs) => {
+        if (disposed) return;
+        if (timerId !== null) {
+            window.clearTimeout(timerId);
+        }
+
+        timerId = window.setTimeout(async () => {
+            await poll();
+            schedule();
+        }, delayMs);
+    };
+
     const start = () => {
         if (timerId !== null) return;
-        timerId = window.setInterval(poll, intervalMs);
+        schedule();
     };
 
     const stop = () => {
         if (timerId === null) return;
-        window.clearInterval(timerId);
+        window.clearTimeout(timerId);
         timerId = null;
     };
 
-    document.addEventListener("visibilitychange", () => {
+    const handleVisibilityChange = () => {
         if (document.hidden) {
             stop();
-            return;
+        } else {
+            poll();
+            schedule(intervalMs);
         }
+    };
 
-        poll();
-        start();
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("beforeunload", () => {
+        disposed = true;
+        document.removeEventListener(
+            "visibilitychange",
+            handleVisibilityChange,
+        );
+        stop();
     });
 
     if (typeof afterUpdate === "function") {
         afterUpdate(container);
     }
 
-    start();
+    poll().finally(() => start());
 };
 
 Alpine.start();

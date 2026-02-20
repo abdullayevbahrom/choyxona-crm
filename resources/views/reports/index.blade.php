@@ -210,9 +210,10 @@
     <script>
         (function () {
             let timerId = null;
+            let inFlight = false;
 
             const poll = () => {
-                if (document.hidden) return;
+                if (document.hidden || inFlight) return;
 
                 const rows = Array.from(document.querySelectorAll('[data-export-row]'));
                 const pendingRows = rows.filter((row) => {
@@ -233,6 +234,7 @@
                     .filter(Boolean);
 
                 if (!ids.length) return;
+                inFlight = true;
 
                 const params = new URLSearchParams();
                 ids.forEach((id) => params.append('ids[]', id));
@@ -262,11 +264,41 @@
                             }
                         });
                     })
-                    .catch(() => {});
+                    .catch(() => {})
+                    .finally(() => {
+                        inFlight = false;
+                    });
             };
 
+            const start = () => {
+                if (timerId !== null) return;
+                timerId = setInterval(poll, 5000);
+            };
+
+            const stop = () => {
+                if (timerId === null) return;
+                clearInterval(timerId);
+                timerId = null;
+            };
+
+            const handleVisibilityChange = () => {
+                if (document.hidden) {
+                    stop();
+                    return;
+                }
+
+                poll();
+                start();
+            };
+
+            document.addEventListener('visibilitychange', handleVisibilityChange);
+            window.addEventListener('beforeunload', () => {
+                document.removeEventListener('visibilitychange', handleVisibilityChange);
+                stop();
+            });
+
             poll();
-            timerId = setInterval(poll, 5000);
+            start();
         })();
     </script>
 </x-app-layout>
