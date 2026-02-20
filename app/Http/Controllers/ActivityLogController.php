@@ -73,7 +73,11 @@ class ActivityLogController extends Controller
 
         return response()->streamDownload(
             function () use ($validated) {
-                $handle = fopen("php://output", "w");
+                $handle = fopen("php://output", "wb");
+
+                if ($handle === false) {
+                    return;
+                }
 
                 fputcsv($handle, [
                     "id",
@@ -89,28 +93,34 @@ class ActivityLogController extends Controller
 
                 $this->queryService
                     ->build($validated)
-                    ->with("user")
-                    ->chunk(500, function ($logs) use ($handle) {
-                        foreach ($logs as $log) {
-                            fputcsv(
-                                $handle,
-                                $this->sanitizeCsvRow([
-                                    $log->id,
-                                    $log->created_at?->format("Y-m-d H:i:s"),
-                                    $log->user?->name,
-                                    $log->action,
-                                    $log->subject_type,
-                                    $log->subject_id,
-                                    $log->description,
-                                    $log->ip_address,
-                                    json_encode(
-                                        $log->properties,
-                                        JSON_UNESCAPED_UNICODE,
-                                    ),
-                                ]),
-                            );
-                        }
-                    });
+                    ->reorder("id")
+                    ->chunkById(
+                        500,
+                        function ($logs) use ($handle) {
+                            foreach ($logs as $log) {
+                                fputcsv(
+                                    $handle,
+                                    $this->sanitizeCsvRow([
+                                        $log->id,
+                                        $log->created_at?->format(
+                                            "Y-m-d H:i:s",
+                                        ),
+                                        $log->user?->name,
+                                        $log->action,
+                                        $log->subject_type,
+                                        $log->subject_id,
+                                        $log->description,
+                                        $log->ip_address,
+                                        json_encode(
+                                            $log->properties,
+                                            JSON_UNESCAPED_UNICODE,
+                                        ),
+                                    ]),
+                                );
+                            }
+                        },
+                        "id",
+                    );
 
                 fclose($handle);
             },
