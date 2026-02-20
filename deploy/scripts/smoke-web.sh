@@ -34,7 +34,7 @@ if [[ -z "$csrf_token" ]]; then
 fi
 
 login_code="$(
-  curl -sS -L -c "$COOKIE_JAR" -b "$COOKIE_JAR" \
+  curl -sS -c "$COOKIE_JAR" -b "$COOKIE_JAR" \
     -o "${TMP_DIR}/post-login.html" -w "%{http_code}" \
     -X POST "${APP_URL}/login" \
     -H "Content-Type: application/x-www-form-urlencoded" \
@@ -43,7 +43,7 @@ login_code="$(
     --data-urlencode "password=${SMOKE_PASSWORD}"
 )"
 
-if [[ "$login_code" != "200" ]]; then
+if [[ "$login_code" != "302" && "$login_code" != "303" && "$login_code" != "200" ]]; then
   echo "Smoke failed: login flow returned HTTP ${login_code}" >&2
   exit 1
 fi

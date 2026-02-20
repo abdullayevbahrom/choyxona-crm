@@ -9,6 +9,7 @@
 - [ ] DB backup ishga tushdi: `php artisan backup:database --prune-days=30`
 - [ ] `storage/` va `bootstrap/cache/` yozish huquqlari to'g'ri
 - [ ] Queue worker va scheduler aktiv
+  Misol tekshiruv: `supervisorctl status 'choyxona-worker:*' choyxona-scheduler`
 
 ## Deploy
 

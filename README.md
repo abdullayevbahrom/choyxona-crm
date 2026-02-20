@@ -118,6 +118,7 @@ php artisan optimize
 
 - `deploy/nginx/choyxona.conf`
 - `deploy/supervisor/choyxona-worker.conf`
+- `deploy/supervisor/choyxona-scheduler.conf`
 - `deploy/systemd/choyxona-scheduler.service`
 - `deploy/systemd/choyxona-scheduler.timer`
 - `deploy/logrotate/choyxona`
@@ -161,6 +162,12 @@ SMOKE_EMAIL=manager@choyxona.uz SMOKE_PASSWORD=password ./deploy/scripts/smoke-w
 
 ```bash
 ./deploy/scripts/post-deploy-verify.sh "$APP_URL"
+```
+
+- Docker Compose muhitida verify:
+
+```bash
+./deploy/scripts/post-deploy-verify.sh --docker "$APP_URL"
 ```
 
 ## Observability
