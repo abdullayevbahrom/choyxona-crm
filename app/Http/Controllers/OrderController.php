@@ -14,7 +14,6 @@ use App\Models\OrderItem;
 use App\Models\Room;
 use App\Services\OrderService;
 use App\Support\ActivityLogger;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Response;
@@ -104,6 +103,14 @@ class OrderController extends Controller
         \Illuminate\Http\Request $request,
         Order $order,
     ): Response {
+        $etag = $this->orderPanelEtagFromDatabase($order);
+        $notModified = response("", 200);
+        $notModified->setEtag($etag);
+
+        if ($notModified->isNotModified($request)) {
+            return $notModified;
+        }
+
         $order->load([
             "room:id,number,name,status",
             "items:id,order_id,menu_item_id,quantity,unit_price,subtotal,notes,updated_at",
@@ -114,11 +121,7 @@ class OrderController extends Controller
             "orders.partials.order_panel",
             compact("order"),
         );
-        $response->setEtag($this->orderPanelEtag($order));
-
-        if ($response->isNotModified($request)) {
-            return $response;
-        }
+        $response->setEtag($etag);
 
         return $response;
     }
@@ -126,7 +129,7 @@ class OrderController extends Controller
     public function panelFingerprint(Order $order): JsonResponse
     {
         return response()->json([
-            "fingerprint" => $this->orderPanelEtag($order),
+            "fingerprint" => $this->orderPanelEtagFromDatabase($order),
         ]);
     }
 
@@ -135,27 +138,20 @@ class OrderController extends Controller
         $validated = $request->validated();
 
         $room = Room::query()->findOrFail($validated["room"]);
-        $openOrder = $room
-            ->openOrder()
-            ->first([
-                "id",
-                "room_id",
-                "order_number",
-                "status",
-                "total_amount",
-                "opened_at",
-                "updated_at",
-            ]);
+        $openOrder = $this->roomOpenOrderSnapshot($room);
+        $etag = $this->createStatusEtag($room, $openOrder);
+        $notModified = response("", 200);
+        $notModified->setEtag($etag);
+
+        if ($notModified->isNotModified($request)) {
+            return $notModified;
+        }
 
         $response = response()->view("orders.partials.create_status", [
             "room" => $room,
             "openOrder" => $openOrder,
         ]);
-        $response->setEtag($this->createStatusEtag($room, $openOrder));
-
-        if ($response->isNotModified($request)) {
-            return $response;
-        }
+        $response->setEtag($etag);
 
         return $response;
     }
@@ -166,7 +162,7 @@ class OrderController extends Controller
         $validated = $request->validated();
 
         $room = Room::query()->findOrFail($validated["room"]);
-        $openOrder = $room->openOrder()->first();
+        $openOrder = $this->roomOpenOrderSnapshot($room);
 
         return response()->json([
             "fingerprint" => $this->createStatusEtag($room, $openOrder),
@@ -330,39 +326,50 @@ class OrderController extends Controller
         ]);
     }
 
-    private function orderPanelEtag(Order $order): string
+    private function orderPanelEtagFromDatabase(Order $order): string
     {
-        if ($order->relationLoaded("items")) {
-            /** @var Collection<int, OrderItem> $items */
-            $items = $order->items;
-            $itemsCount = (string) $items->count();
-            $itemsMaxUpdated = (string) ($items->max("updated_at") ?? "0");
-        } else {
-            $aggregate = $order
-                ->items()
-                ->selectRaw(
-                    "count(*) as items_count, max(updated_at) as items_max_updated",
-                )
-                ->first();
-            $itemsCount = (string) ((int) ($aggregate?->items_count ?? 0));
-            $itemsMaxUpdated = (string) ($aggregate?->items_max_updated ?? "0");
-        }
+        $aggregate = $order
+            ->items()
+            ->selectRaw(
+                "count(*) as items_count, max(updated_at) as items_max_updated",
+            )
+            ->first();
 
-        $orderUpdated = (string) ($order->updated_at?->timestamp ?? 0);
+        $itemsCount = (string) ((int) ($aggregate?->items_count ?? 0));
+        $itemsMaxUpdated = (string) ($aggregate?->items_max_updated ?? "0");
+
+        $freshOrder = Order::query()
+            ->select(["id", "status", "total_amount", "updated_at"])
+            ->findOrFail($order->id);
 
         return sha1(
-            $order->id .
+            $freshOrder->id .
                 "|" .
-                $orderUpdated .
+                (string) ($freshOrder->updated_at?->timestamp ?? 0) .
                 "|" .
-                $order->status .
+                $freshOrder->status .
                 "|" .
-                (string) $order->total_amount .
+                (string) $freshOrder->total_amount .
                 "|" .
                 $itemsMaxUpdated .
                 "|" .
                 $itemsCount,
         );
+    }
+
+    private function roomOpenOrderSnapshot(Room $room): ?Order
+    {
+        return $room
+            ->openOrder()
+            ->first([
+                "id",
+                "room_id",
+                "order_number",
+                "status",
+                "total_amount",
+                "opened_at",
+                "updated_at",
+            ]);
     }
 
     private function createStatusEtag(Room $room, ?Order $openOrder): string
