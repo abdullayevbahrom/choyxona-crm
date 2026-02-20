@@ -33,6 +33,10 @@ HEALTH_JSON="$(curl -fsS --max-time 10 "${APP_URL%/}/healthz")"
 echo "Health: $HEALTH_JSON"
 
 echo "$HEALTH_JSON" | grep -q '"status":"ok"'
+echo "$HEALTH_JSON" | grep -q '"database":true'
+echo "$HEALTH_JSON" | grep -q '"storage":true'
+echo "$HEALTH_JSON" | grep -q '"queue_backlog":'
+echo "$HEALTH_JSON" | grep -q '"disk_free":'
 
 if [[ "$DOCKER_MODE" == "true" ]]; then
   ./deploy/scripts/check-runtime-services.sh --docker

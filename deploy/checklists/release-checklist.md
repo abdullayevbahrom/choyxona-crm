@@ -21,6 +21,7 @@
 ## Post-Release Smoke
 
 - [ ] `/healthz` `200` va `status=ok`
+  Tekshiruv: `database=true`, `storage=true`, `queue_backlog` va `disk_free` keylari bor
 - [ ] `php artisan migrate:status --pending --no-ansi` da pending yo'q
 - [ ] `./deploy/scripts/check-runtime-services.sh` muvaffaqiyatli
 - [ ] `./deploy/scripts/smoke-web.sh "$APP_URL"` muvaffaqiyatli
@@ -29,6 +30,7 @@
 - [ ] Xonada buyurtma ochish va item qo'shish ishlaydi
 - [ ] Chek yaratish/print flow ishlaydi
 - [ ] Queue'da stuck job yo'q (`php artisan queue:monitor default --max=100`)
+- [ ] `php artisan monitor:system-health` `HEALTHY` qaytaradi
 
 ## Rollback (agar kerak bo'lsa)
 

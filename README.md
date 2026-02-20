@@ -59,7 +59,9 @@ Seeddan keyin quyidagi loginlar yaratiladi (`password`):
 - Readiness check: `/healthz`
 - Dashboard: `/dashboard`
 
-`/healthz` JSON qaytaradi va DB yoki storage muammosi bo'lsa `503` beradi.
+`/healthz` JSON qaytaradi:
+- Critical checklar: `database`, `storage` (`false` bo'lsa `503`).
+- Info checklar: `queue_backlog`, `disk_free` (kuzatuv uchun, statusni yiqitmaydi).
 
 ## Registration siyosati
 
@@ -214,6 +216,11 @@ SMOKE_EMAIL=manager@choyxona.uz SMOKE_PASSWORD=password ./deploy/scripts/smoke-w
 
 - Har bir javobda `X-Request-ID` header qaytadi.
 - Sekin so'rovlar `performance` log kanaliga yoziladi.
+- Sog'liq monitoring thresholdlari:
+  - `MONITOR_FAILED_JOBS_THRESHOLD=5`
+  - `MONITOR_QUEUE_BACKLOG_THRESHOLD=200`
+  - `MONITOR_SUMMARY_STALE_HOURS=2`
+  - `MONITOR_MIN_DISK_FREE_PERCENT=5`
 - Sozlamalar:
   - `OBS_ENABLED=true|false`
   - `OBS_SLOW_REQUEST_MS=700`
