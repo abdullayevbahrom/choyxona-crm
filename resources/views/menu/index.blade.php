@@ -11,7 +11,7 @@
                         <option value="{{ $key }}" @selected(($filters['type'] ?? '') === $key)>{{ $label }}</option>
                     @endforeach
                 </select>
-                <button class="bg-slate-900 text-white rounded p-2">Filter</button>
+                <button class="bg-slate-900 text-white rounded p-2">Filtrlash</button>
                 <a href="{{ route('menu.index') }}" class="inline-flex items-center justify-center rounded border border-slate-300 bg-white p-2 text-slate-700 hover:bg-slate-50">
                     Tozalash
                 </a>

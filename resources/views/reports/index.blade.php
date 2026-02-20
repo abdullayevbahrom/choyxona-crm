@@ -51,7 +51,7 @@
                     @endforeach
                 </select>
 
-                <button class="bg-slate-900 text-white rounded p-2">Filter</button>
+                <button class="bg-slate-900 text-white rounded p-2">Filtrlash</button>
                 <a href="{{ route('reports.index') }}" class="inline-flex items-center justify-center rounded border border-slate-300 bg-white p-2 text-slate-700 hover:bg-slate-50">
                     Tozalash
                 </a>
@@ -69,7 +69,7 @@
             </div>
 
             <div class="bg-white rounded-xl border overflow-x-auto">
-                <h2 class="font-semibold p-4 border-b">Background exportlar</h2>
+                <h2 class="font-semibold p-4 border-b">Fon rejimidagi eksportlar</h2>
                 <table class="min-w-full text-sm">
                     <thead class="bg-slate-50">
                         <tr>

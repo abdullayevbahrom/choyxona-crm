@@ -9,7 +9,7 @@
 <body class="bg-amber-50 text-slate-800">
 <nav class="bg-slate-900 text-white">
     <div class="max-w-7xl mx-auto px-4 py-3 flex items-center gap-4">
-        <a href="{{ route('dashboard') }}" class="font-semibold">Dashboard</a>
+        <a href="{{ route('dashboard') }}" class="font-semibold">Asosiy panel</a>
         <a href="{{ route('menu.index') }}">Menyu</a>
         <a href="{{ route('rooms.index') }}">Xonalar</a>
     </div>

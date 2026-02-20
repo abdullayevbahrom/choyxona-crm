@@ -1,11 +1,11 @@
 <x-app-layout>
     <div class="py-8">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <h1 class="text-2xl font-bold mb-4">Activity Log</h1>
+            <h1 class="text-2xl font-bold mb-4">Faoliyat jurnali</h1>
 
             @if($quickActions->isNotEmpty())
                 <div class="mb-4 rounded-xl border bg-white p-3">
-                    <p class="mb-2 text-sm font-semibold text-slate-700">Tezkor action filter</p>
+                    <p class="mb-2 text-sm font-semibold text-slate-700">Tezkor amal filtrlari</p>
                     <div class="flex flex-wrap gap-2">
                         @foreach ($quickActions as $action)
                             <a
@@ -20,10 +20,10 @@
             @endif
 
             <form method="GET" class="bg-white rounded-xl border p-4 mb-4 grid grid-cols-1 md:grid-cols-5 gap-3">
-                <input name="action" value="{{ $filters['action'] ?? '' }}" placeholder="Action" class="border rounded p-2">
+                <input name="action" value="{{ $filters['action'] ?? '' }}" placeholder="Amal" class="border rounded p-2">
 
                 <select name="user_id" class="border rounded p-2">
-                    <option value="">Barcha userlar</option>
+                    <option value="">Barcha foydalanuvchilar</option>
                     @foreach ($users as $user)
                         <option value="{{ $user->id }}" @selected(($filters['user_id'] ?? '') == $user->id)>{{ $user->name }}</option>
                     @endforeach
@@ -33,17 +33,17 @@
                 <input type="date" name="date_to" value="{{ $filters['date_to'] ?? '' }}" class="border rounded p-2">
 
                 <select name="subject_type" class="border rounded p-2 md:col-span-2">
-                    <option value="">Barcha subject type</option>
+                    <option value="">Barcha obyekt turlari</option>
                     @foreach ($subjectTypes as $subjectType)
                         <option value="{{ $subjectType }}" @selected(($filters['subject_type'] ?? '') === $subjectType)>{{ class_basename($subjectType) }}</option>
                     @endforeach
                 </select>
 
-                <input name="subject_id" type="number" min="1" value="{{ $filters['subject_id'] ?? '' }}" placeholder="Subject ID" class="border rounded p-2">
+                <input name="subject_id" type="number" min="1" value="{{ $filters['subject_id'] ?? '' }}" placeholder="Obyekt ID" class="border rounded p-2">
 
                 <div class="flex gap-2 md:col-span-2">
-                    <button class="bg-slate-900 text-white rounded p-2 flex-1">Filter</button>
-                    <a href="{{ route('activity-logs.export', request()->query()) }}" class="bg-emerald-700 text-white rounded p-2 text-center flex-1">CSV Export</a>
+                    <button class="bg-slate-900 text-white rounded p-2 flex-1">Filtrlash</button>
+                    <a href="{{ route('activity-logs.export', request()->query()) }}" class="bg-emerald-700 text-white rounded p-2 text-center flex-1">CSV yuklab olish</a>
                 </div>
             </form>
 
@@ -54,7 +54,7 @@
                         @foreach(request()->query() as $key => $value)
                             <input type="hidden" name="{{ $key }}" value="{{ is_array($value) ? json_encode($value) : $value }}">
                         @endforeach
-                        <button class="rounded bg-indigo-700 px-3 py-2 text-white text-sm">Background Export</button>
+                        <button class="rounded bg-indigo-700 px-3 py-2 text-white text-sm">Fon rejimida eksport</button>
                     </form>
                     <span class="text-xs text-slate-600">Queue worker ishlayotgan bo'lsa export avtomatik tayyor bo'ladi.</span>
                 </div>
@@ -65,7 +65,7 @@
                             <thead class="bg-slate-100">
                                 <tr>
                                     <th class="p-2 text-left">ID</th>
-                                    <th class="p-2 text-left">Status</th>
+                                    <th class="p-2 text-left">Holat</th>
                                     <th class="p-2 text-left">Yaratilgan</th>
                                     <th class="p-2 text-left">Tugatildi</th>
                                     <th class="p-2 text-left">Fayl</th>
@@ -102,11 +102,11 @@
                     <thead class="bg-slate-100">
                         <tr>
                             <th class="p-3 text-left">Vaqt</th>
-                            <th class="p-3 text-left">User</th>
-                            <th class="p-3 text-left">Action</th>
-                            <th class="p-3 text-left">Subject</th>
-                            <th class="p-3 text-left">Description</th>
-                            <th class="p-3 text-left">Properties</th>
+                            <th class="p-3 text-left">Foydalanuvchi</th>
+                            <th class="p-3 text-left">Amal</th>
+                            <th class="p-3 text-left">Obyekt</th>
+                            <th class="p-3 text-left">Tavsif</th>
+                            <th class="p-3 text-left">Qo'shimcha ma'lumot</th>
                             <th class="p-3 text-left">IP</th>
                         </tr>
                     </thead>
