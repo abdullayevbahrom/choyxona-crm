@@ -12,7 +12,7 @@ class ReportService
 {
     public function getReportData(array $filters): array
     {
-        $monthExpr = $this->monthExpression();
+        $monthExpr = $this->monthExpression("closed_orders.closed_at");
         $driver = DB::connection()->getDriverName();
 
         $cacheTtlSeconds = (int) config("performance.report_cache_seconds", 30);
@@ -124,17 +124,24 @@ class ReportService
                     );
                 }
 
+                $closedOrders = $this->filteredClosedOrdersQuery($filters);
+
                 $topItems = DB::table("order_items")
-                    ->join("orders", "orders.id", "=", "order_items.order_id")
+                    ->joinSub(
+                        $closedOrders,
+                        "closed_orders",
+                        fn($join) => $join->on(
+                            "closed_orders.id",
+                            "=",
+                            "order_items.order_id",
+                        ),
+                    )
                     ->join(
                         "menu_items",
                         "menu_items.id",
                         "=",
                         "order_items.menu_item_id",
-                    )
-                    ->where("orders.status", "closed");
-
-                $this->applyFilters($topItems, $filters);
+                    );
 
                 $topItems = $topItems
                     ->selectRaw(
@@ -146,15 +153,20 @@ class ReportService
                     ->get();
 
                 $roomStats = DB::table("bills")
-                    ->join("orders", "orders.id", "=", "bills.order_id")
-                    ->join("rooms", "rooms.id", "=", "orders.room_id")
-                    ->where("orders.status", "closed");
-
-                $this->applyFilters($roomStats, $filters);
+                    ->joinSub(
+                        $closedOrders,
+                        "closed_orders",
+                        fn($join) => $join->on(
+                            "closed_orders.id",
+                            "=",
+                            "bills.order_id",
+                        ),
+                    )
+                    ->join("rooms", "rooms.id", "=", "closed_orders.room_id");
 
                 $roomStats = $roomStats
                     ->selectRaw(
-                        "rooms.number as room_number, count(orders.id) as orders_count, sum(bills.total_amount) as revenue",
+                        "rooms.number as room_number, count(closed_orders.id) as orders_count, sum(bills.total_amount) as revenue",
                     )
                     ->groupBy("rooms.id", "rooms.number")
                     ->orderByDesc("orders_count")
@@ -162,15 +174,25 @@ class ReportService
                     ->get();
 
                 $cashierStats = DB::table("bills")
-                    ->join("orders", "orders.id", "=", "bills.order_id")
-                    ->leftJoin("users", "users.id", "=", "orders.user_id")
-                    ->where("orders.status", "closed");
-
-                $this->applyFilters($cashierStats, $filters);
+                    ->joinSub(
+                        $closedOrders,
+                        "closed_orders",
+                        fn($join) => $join->on(
+                            "closed_orders.id",
+                            "=",
+                            "bills.order_id",
+                        ),
+                    )
+                    ->leftJoin(
+                        "users",
+                        "users.id",
+                        "=",
+                        "closed_orders.user_id",
+                    );
 
                 $cashierStats = $cashierStats
                     ->selectRaw(
-                        "coalesce(users.name, 'Nomalum') as cashier_name, count(orders.id) as bills_count, sum(bills.total_amount) as revenue",
+                        "coalesce(users.name, 'Nomalum') as cashier_name, count(closed_orders.id) as bills_count, sum(bills.total_amount) as revenue",
                     )
                     ->groupBy("users.id", "users.name")
                     ->orderByDesc("bills_count")
@@ -192,11 +214,11 @@ class ReportService
 
     public function streamRows(array $filters): \Generator
     {
-        $monthExpr = $this->monthExpression();
+        $monthExpr = $this->monthExpression("closed_orders.closed_at");
         $baseBills = $this->baseBillsQuery($filters);
 
         $totalRevenue = (float) (clone $baseBills)->sum("bills.total_amount");
-        $ordersCount = (int) (clone $baseBills)->count("orders.id");
+        $ordersCount = (int) (clone $baseBills)->count("closed_orders.id");
 
         yield ["Bo'lim", "Nom", "Qiymat", "Qiymat 2"];
         yield ["Umumiy", "Jami daromad", $totalRevenue, null];
@@ -206,7 +228,7 @@ class ReportService
         yield ["Kunlik daromad", "Sana", "Daromad", null];
         $dailyQuery = (clone $baseBills)
             ->selectRaw(
-                "date(orders.closed_at) as day, sum(bills.total_amount) as revenue",
+                "date(closed_orders.closed_at) as day, sum(bills.total_amount) as revenue",
             )
             ->groupBy("day")
             ->orderByDesc("day");
@@ -229,15 +251,21 @@ class ReportService
 
         yield ["TOP mahsulot", "Nomi", "Soni", "Daromad"];
         $topItems = DB::table("order_items")
-            ->join("orders", "orders.id", "=", "order_items.order_id")
+            ->joinSub(
+                $this->filteredClosedOrdersQuery($filters),
+                "closed_orders",
+                fn($join) => $join->on(
+                    "closed_orders.id",
+                    "=",
+                    "order_items.order_id",
+                ),
+            )
             ->join(
                 "menu_items",
                 "menu_items.id",
                 "=",
                 "order_items.menu_item_id",
-            )
-            ->where("orders.status", "closed");
-        $this->applyFilters($topItems, $filters);
+            );
         $topItems = $topItems
             ->selectRaw(
                 "menu_items.name as item_name, sum(order_items.quantity) as total_qty, sum(order_items.subtotal) as revenue",
@@ -258,13 +286,19 @@ class ReportService
 
         yield ["Xonalar", "Xona", "Buyurtma", "Daromad"];
         $roomStats = DB::table("bills")
-            ->join("orders", "orders.id", "=", "bills.order_id")
-            ->join("rooms", "rooms.id", "=", "orders.room_id")
-            ->where("orders.status", "closed");
-        $this->applyFilters($roomStats, $filters);
+            ->joinSub(
+                $this->filteredClosedOrdersQuery($filters),
+                "closed_orders",
+                fn($join) => $join->on(
+                    "closed_orders.id",
+                    "=",
+                    "bills.order_id",
+                ),
+            )
+            ->join("rooms", "rooms.id", "=", "closed_orders.room_id");
         $roomStats = $roomStats
             ->selectRaw(
-                "rooms.number as room_number, count(orders.id) as orders_count, sum(bills.total_amount) as revenue",
+                "rooms.number as room_number, count(closed_orders.id) as orders_count, sum(bills.total_amount) as revenue",
             )
             ->groupBy("rooms.id", "rooms.number")
             ->orderByDesc("orders_count")
@@ -282,13 +316,19 @@ class ReportService
 
         yield ["Kassirlar", "Kassir", "Chek", "Daromad"];
         $cashierStats = DB::table("bills")
-            ->join("orders", "orders.id", "=", "bills.order_id")
-            ->leftJoin("users", "users.id", "=", "orders.user_id")
-            ->where("orders.status", "closed");
-        $this->applyFilters($cashierStats, $filters);
+            ->joinSub(
+                $this->filteredClosedOrdersQuery($filters),
+                "closed_orders",
+                fn($join) => $join->on(
+                    "closed_orders.id",
+                    "=",
+                    "bills.order_id",
+                ),
+            )
+            ->leftJoin("users", "users.id", "=", "closed_orders.user_id");
         $cashierStats = $cashierStats
             ->selectRaw(
-                "coalesce(users.name, 'Nomalum') as cashier_name, count(orders.id) as bills_count, sum(bills.total_amount) as revenue",
+                "coalesce(users.name, 'Nomalum') as cashier_name, count(closed_orders.id) as bills_count, sum(bills.total_amount) as revenue",
             )
             ->groupBy("users.id", "users.name")
             ->orderByDesc("bills_count")
@@ -318,12 +358,12 @@ class ReportService
         }
     }
 
-    private function monthExpression(): string
+    private function monthExpression(string $closedAtColumn): string
     {
         return match (DB::connection()->getDriverName()) {
-            "mysql" => "date_format(orders.closed_at, '%Y-%m')",
-            "pgsql" => "to_char(orders.closed_at, 'YYYY-MM')",
-            default => "strftime('%Y-%m', orders.closed_at)",
+            "mysql" => "date_format({$closedAtColumn}, '%Y-%m')",
+            "pgsql" => "to_char({$closedAtColumn}, 'YYYY-MM')",
+            default => "strftime('%Y-%m', {$closedAtColumn})",
         };
     }
 
@@ -334,11 +374,11 @@ class ReportService
         $baseBills = $this->baseBillsQuery($filters);
 
         $totalRevenue = (float) (clone $baseBills)->sum("bills.total_amount");
-        $ordersCount = (int) (clone $baseBills)->count("orders.id");
+        $ordersCount = (int) (clone $baseBills)->count("closed_orders.id");
 
         $dailyRevenue = (clone $baseBills)
             ->selectRaw(
-                "date(orders.closed_at) as day, sum(bills.total_amount) as revenue",
+                "date(closed_orders.closed_at) as day, sum(bills.total_amount) as revenue",
             )
             ->groupBy("day")
             ->orderByDesc("day")
@@ -359,10 +399,25 @@ class ReportService
 
     private function baseBillsQuery(array $filters): Builder
     {
-        $query = DB::table("bills")
-            ->join("orders", "orders.id", "=", "bills.order_id")
-            ->where("orders.status", "closed");
+        $query = DB::table("bills")->joinSub(
+            $this->filteredClosedOrdersQuery($filters),
+            "closed_orders",
+            fn($join) => $join->on("closed_orders.id", "=", "bills.order_id"),
+        );
 
+        return $query;
+    }
+
+    private function filteredClosedOrdersQuery(array $filters): Builder
+    {
+        $query = DB::table("orders")
+            ->select([
+                "orders.id",
+                "orders.room_id",
+                "orders.user_id",
+                "orders.closed_at",
+            ])
+            ->where("orders.status", "closed");
         $this->applyFilters($query, $filters);
 
         return $query;
