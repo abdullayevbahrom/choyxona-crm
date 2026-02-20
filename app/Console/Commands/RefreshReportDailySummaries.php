@@ -14,24 +14,29 @@ class RefreshReportDailySummaries extends Command
     public function handle(): int
     {
         $days = max(1, (int) $this->option("days"));
-        $fromDate = now()->subDays($days - 1)->toDateString();
+        $fromDate = now()
+            ->subDays($days - 1)
+            ->toDateString();
+        $fromDateTime = $fromDate . " 00:00:00";
 
         $rows = DB::table("bills")
             ->join("orders", "orders.id", "=", "bills.order_id")
             ->where("orders.status", "closed")
-            ->whereDate("orders.closed_at", ">=", $fromDate)
+            ->where("orders.closed_at", ">=", $fromDateTime)
             ->selectRaw(
                 "date(orders.closed_at) as day, count(orders.id) as orders_count, sum(bills.total_amount) as total_revenue",
             )
             ->groupByRaw("date(orders.closed_at)")
             ->get()
-            ->map(fn($row) => [
-                "day" => $row->day,
-                "orders_count" => (int) $row->orders_count,
-                "total_revenue" => (float) $row->total_revenue,
-                "created_at" => now(),
-                "updated_at" => now(),
-            ])
+            ->map(
+                fn($row) => [
+                    "day" => $row->day,
+                    "orders_count" => (int) $row->orders_count,
+                    "total_revenue" => (float) $row->total_revenue,
+                    "created_at" => now(),
+                    "updated_at" => now(),
+                ],
+            )
             ->all();
 
         DB::transaction(function () use ($fromDate, $rows) {

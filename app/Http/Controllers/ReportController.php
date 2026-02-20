@@ -73,32 +73,70 @@ class ReportController extends Controller
                     /** @var Collection<int, object> $summaryRows */
                     $summaryRows = $summaryBase->orderByDesc("day")->get();
 
-                    $totalRevenue = (float) $summaryRows->sum("total_revenue");
-                    $ordersCount = (int) $summaryRows->sum("orders_count");
+                    if ($summaryRows->isNotEmpty()) {
+                        $totalRevenue = (float) $summaryRows->sum(
+                            "total_revenue",
+                        );
+                        $ordersCount = (int) $summaryRows->sum("orders_count");
 
-                    $dailyRevenue = $summaryRows
-                        ->take(31)
-                        ->map(
-                            fn($row) => (object) [
-                                "day" => $row->day,
-                                "revenue" => (float) $row->total_revenue,
-                            ],
-                        )
-                        ->values();
+                        $dailyRevenue = $summaryRows
+                            ->take(31)
+                            ->map(
+                                fn($row) => (object) [
+                                    "day" => $row->day,
+                                    "revenue" => (float) $row->total_revenue,
+                                ],
+                            )
+                            ->values();
 
-                    $monthlyRevenue = $summaryRows
-                        ->groupBy(fn($row) => substr((string) $row->day, 0, 7))
-                        ->map(
-                            fn(Collection $rows, string $ym) => (object) [
-                                "ym" => $ym,
-                                "revenue" => (float) $rows->sum(
-                                    "total_revenue",
-                                ),
-                            ],
-                        )
-                        ->sortByDesc("ym")
-                        ->take(12)
-                        ->values();
+                        $monthlyRevenue = $summaryRows
+                            ->groupBy(
+                                fn($row) => substr((string) $row->day, 0, 7),
+                            )
+                            ->map(
+                                fn(Collection $rows, string $ym) => (object) [
+                                    "ym" => $ym,
+                                    "revenue" => (float) $rows->sum(
+                                        "total_revenue",
+                                    ),
+                                ],
+                            )
+                            ->sortByDesc("ym")
+                            ->take(12)
+                            ->values();
+                    } else {
+                        // Safety fallback: if summaries are not ready yet, use base tables.
+                        $baseBills = DB::table("bills")
+                            ->join("orders", "orders.id", "=", "bills.order_id")
+                            ->where("orders.status", "closed");
+
+                        $this->applyFilters($baseBills, $validated);
+
+                        $totalRevenue = (float) (clone $baseBills)->sum(
+                            "bills.total_amount",
+                        );
+                        $ordersCount = (int) (clone $baseBills)->count(
+                            "orders.id",
+                        );
+
+                        $dailyRevenue = (clone $baseBills)
+                            ->selectRaw(
+                                "date(orders.closed_at) as day, sum(bills.total_amount) as revenue",
+                            )
+                            ->groupBy("day")
+                            ->orderByDesc("day")
+                            ->limit(31)
+                            ->get();
+
+                        $monthlyRevenue = (clone $baseBills)
+                            ->selectRaw(
+                                "{$monthExpr} as ym, sum(bills.total_amount) as revenue",
+                            )
+                            ->groupBy("ym")
+                            ->orderByDesc("ym")
+                            ->limit(12)
+                            ->get();
+                    }
                 } else {
                     $baseBills = DB::table("bills")
                         ->join("orders", "orders.id", "=", "bills.order_id")
