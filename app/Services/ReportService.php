@@ -19,7 +19,10 @@ class ReportService
         $cacheKey =
             "reports:v3:" .
             md5(
-                json_encode([$driver, $monthExpr, $filters], JSON_THROW_ON_ERROR),
+                json_encode(
+                    [$driver, $monthExpr, $filters],
+                    JSON_THROW_ON_ERROR,
+                ),
             );
 
         return Cache::remember(
@@ -55,18 +58,20 @@ class ReportService
                     };
 
                     if (!empty($filters["date_from"])) {
-                        $summaryBase->whereDate("day", ">=", $filters["date_from"]);
+                        $summaryBase->where("day", ">=", $filters["date_from"]);
                     }
 
                     if (!empty($filters["date_to"])) {
-                        $summaryBase->whereDate("day", "<=", $filters["date_to"]);
+                        $summaryBase->where("day", "<=", $filters["date_to"]);
                     }
 
                     /** @var Collection<int, object> $summaryRows */
                     $summaryRows = $summaryBase->orderByDesc("day")->get();
 
                     if ($summaryRows->isNotEmpty()) {
-                        $totalRevenue = (float) $summaryRows->sum("total_revenue");
+                        $totalRevenue = (float) $summaryRows->sum(
+                            "total_revenue",
+                        );
                         $ordersCount = (int) $summaryRows->sum("orders_count");
 
                         $dailyRevenue = $summaryRows
@@ -88,20 +93,32 @@ class ReportService
                             ->map(
                                 fn(Collection $rows, string $ym) => (object) [
                                     "ym" => $ym,
-                                    "revenue" => (float) $rows->sum("total_revenue"),
+                                    "revenue" => (float) $rows->sum(
+                                        "total_revenue",
+                                    ),
                                 ],
                             )
                             ->sortByDesc("ym")
                             ->take(12)
                             ->values();
                     } else {
-                        [$totalRevenue, $ordersCount, $dailyRevenue, $monthlyRevenue] = $this->buildTotalsAndRevenueFromBase(
+                        [
+                            $totalRevenue,
+                            $ordersCount,
+                            $dailyRevenue,
+                            $monthlyRevenue,
+                        ] = $this->buildTotalsAndRevenueFromBase(
                             $filters,
                             $monthExpr,
                         );
                     }
                 } else {
-                    [$totalRevenue, $ordersCount, $dailyRevenue, $monthlyRevenue] = $this->buildTotalsAndRevenueFromBase(
+                    [
+                        $totalRevenue,
+                        $ordersCount,
+                        $dailyRevenue,
+                        $monthlyRevenue,
+                    ] = $this->buildTotalsAndRevenueFromBase(
                         $filters,
                         $monthExpr,
                     );
@@ -109,7 +126,12 @@ class ReportService
 
                 $topItems = DB::table("order_items")
                     ->join("orders", "orders.id", "=", "order_items.order_id")
-                    ->join("menu_items", "menu_items.id", "=", "order_items.menu_item_id")
+                    ->join(
+                        "menu_items",
+                        "menu_items.id",
+                        "=",
+                        "order_items.menu_item_id",
+                    )
                     ->where("orders.status", "closed");
 
                 $this->applyFilters($topItems, $filters);
@@ -183,7 +205,9 @@ class ReportService
 
         yield ["Kunlik daromad", "Sana", "Daromad", null];
         $dailyQuery = (clone $baseBills)
-            ->selectRaw("date(orders.closed_at) as day, sum(bills.total_amount) as revenue")
+            ->selectRaw(
+                "date(orders.closed_at) as day, sum(bills.total_amount) as revenue",
+            )
             ->groupBy("day")
             ->orderByDesc("day");
         foreach ($dailyQuery->cursor() as $row) {
@@ -193,7 +217,9 @@ class ReportService
 
         yield ["Oylik daromad", "Oy", "Daromad", null];
         $monthlyQuery = (clone $baseBills)
-            ->selectRaw("{$monthExpr} as ym, sum(bills.total_amount) as revenue")
+            ->selectRaw(
+                "{$monthExpr} as ym, sum(bills.total_amount) as revenue",
+            )
             ->groupBy("ym")
             ->orderByDesc("ym");
         foreach ($monthlyQuery->cursor() as $row) {
@@ -204,7 +230,12 @@ class ReportService
         yield ["TOP mahsulot", "Nomi", "Soni", "Daromad"];
         $topItems = DB::table("order_items")
             ->join("orders", "orders.id", "=", "order_items.order_id")
-            ->join("menu_items", "menu_items.id", "=", "order_items.menu_item_id")
+            ->join(
+                "menu_items",
+                "menu_items.id",
+                "=",
+                "order_items.menu_item_id",
+            )
             ->where("orders.status", "closed");
         $this->applyFilters($topItems, $filters);
         $topItems = $topItems
@@ -275,8 +306,15 @@ class ReportService
 
     public function streamCsv(array $filters, $handle): void
     {
-        foreach ($this->streamRows($filters) as $row) {
+        foreach ($this->streamSafeRows($filters) as $row) {
             fputcsv($handle, $row);
+        }
+    }
+
+    public function streamSafeRows(array $filters): \Generator
+    {
+        foreach ($this->streamRows($filters) as $row) {
+            yield $this->sanitizeExportRow($row);
         }
     }
 
@@ -299,14 +337,18 @@ class ReportService
         $ordersCount = (int) (clone $baseBills)->count("orders.id");
 
         $dailyRevenue = (clone $baseBills)
-            ->selectRaw("date(orders.closed_at) as day, sum(bills.total_amount) as revenue")
+            ->selectRaw(
+                "date(orders.closed_at) as day, sum(bills.total_amount) as revenue",
+            )
             ->groupBy("day")
             ->orderByDesc("day")
             ->limit(31)
             ->get();
 
         $monthlyRevenue = (clone $baseBills)
-            ->selectRaw("{$monthExpr} as ym, sum(bills.total_amount) as revenue")
+            ->selectRaw(
+                "{$monthExpr} as ym, sum(bills.total_amount) as revenue",
+            )
             ->groupBy("ym")
             ->orderByDesc("ym")
             ->limit(12)
@@ -328,30 +370,54 @@ class ReportService
 
     private function applyFilters(Builder $query, array $filters): void
     {
+        $dateFrom = !empty($filters["date_from"])
+            ? $filters["date_from"] . " 00:00:00"
+            : null;
+        $dateTo = !empty($filters["date_to"])
+            ? $filters["date_to"] . " 23:59:59"
+            : null;
+
         $query
             ->when(
-                !empty($filters["date_from"]),
-                fn(Builder $q) => $q->whereDate(
+                $dateFrom !== null,
+                fn(Builder $q) => $q->where(
                     "orders.closed_at",
                     ">=",
-                    $filters["date_from"],
+                    $dateFrom,
                 ),
             )
             ->when(
-                !empty($filters["date_to"]),
-                fn(Builder $q) => $q->whereDate(
-                    "orders.closed_at",
-                    "<=",
-                    $filters["date_to"],
-                ),
+                $dateTo !== null,
+                fn(Builder $q) => $q->where("orders.closed_at", "<=", $dateTo),
             )
             ->when(
                 !empty($filters["room_id"]),
-                fn(Builder $q) => $q->where("orders.room_id", $filters["room_id"]),
+                fn(Builder $q) => $q->where(
+                    "orders.room_id",
+                    $filters["room_id"],
+                ),
             )
             ->when(
                 !empty($filters["cashier_id"]),
-                fn(Builder $q) => $q->where("orders.user_id", $filters["cashier_id"]),
+                fn(Builder $q) => $q->where(
+                    "orders.user_id",
+                    $filters["cashier_id"],
+                ),
             );
+    }
+
+    private function sanitizeExportRow(array $row): array
+    {
+        return array_map(function ($value) {
+            if (!is_string($value) || $value === "") {
+                return $value;
+            }
+
+            if (in_array($value[0], ["=", "+", "-", "@"], true)) {
+                return "'" . $value;
+            }
+
+            return $value;
+        }, $row);
     }
 }

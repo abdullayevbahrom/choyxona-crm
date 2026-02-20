@@ -302,11 +302,19 @@ class OrderController extends Controller
         }
 
         if (!empty($validated["date_from"])) {
-            $query->whereDate("closed_at", ">=", $validated["date_from"]);
+            $query->where(
+                "closed_at",
+                ">=",
+                $validated["date_from"] . " 00:00:00",
+            );
         }
 
         if (!empty($validated["date_to"])) {
-            $query->whereDate("closed_at", "<=", $validated["date_to"]);
+            $query->where(
+                "closed_at",
+                "<=",
+                $validated["date_to"] . " 23:59:59",
+            );
         }
 
         $orders = $query->paginate(30)->withQueryString();

@@ -14,6 +14,6 @@ class ReportStreamExport implements FromGenerator
         /** @var ReportService $service */
         $service = app(ReportService::class);
 
-        return $service->streamRows($this->filters);
+        return $service->streamSafeRows($this->filters);
     }
 }

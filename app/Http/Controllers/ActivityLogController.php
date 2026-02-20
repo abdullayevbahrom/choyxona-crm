@@ -92,20 +92,23 @@ class ActivityLogController extends Controller
                     ->with("user")
                     ->chunk(500, function ($logs) use ($handle) {
                         foreach ($logs as $log) {
-                            fputcsv($handle, [
-                                $log->id,
-                                $log->created_at?->format("Y-m-d H:i:s"),
-                                $log->user?->name,
-                                $log->action,
-                                $log->subject_type,
-                                $log->subject_id,
-                                $log->description,
-                                $log->ip_address,
-                                json_encode(
-                                    $log->properties,
-                                    JSON_UNESCAPED_UNICODE,
-                                ),
-                            ]);
+                            fputcsv(
+                                $handle,
+                                $this->sanitizeCsvRow([
+                                    $log->id,
+                                    $log->created_at?->format("Y-m-d H:i:s"),
+                                    $log->user?->name,
+                                    $log->action,
+                                    $log->subject_type,
+                                    $log->subject_id,
+                                    $log->description,
+                                    $log->ip_address,
+                                    json_encode(
+                                        $log->properties,
+                                        JSON_UNESCAPED_UNICODE,
+                                    ),
+                                ]),
+                            );
                         }
                     });
 
@@ -177,5 +180,20 @@ class ActivityLogController extends Controller
             \App\Models\Setting::class => route("settings.index"),
             default => null,
         };
+    }
+
+    private function sanitizeCsvRow(array $row): array
+    {
+        return array_map(function ($value) {
+            if (!is_string($value) || $value === "") {
+                return $value;
+            }
+
+            if (in_array($value[0], ["=", "+", "-", "@"], true)) {
+                return "'" . $value;
+            }
+
+            return $value;
+        }, $row);
     }
 }
