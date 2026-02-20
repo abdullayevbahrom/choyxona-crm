@@ -1,0 +1,11 @@
+/var/www/choyxona/storage/logs/*.log {
+    daily
+    rotate 30
+    missingok
+    notifempty
+    compress
+    delaycompress
+    copytruncate
+    dateext
+    maxage 30
+}

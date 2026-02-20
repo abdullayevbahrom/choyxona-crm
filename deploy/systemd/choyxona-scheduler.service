@@ -1,0 +1,10 @@
+[Unit]
+Description=Run Laravel scheduler for Choyxona CRM
+After=network.target
+
+[Service]
+Type=oneshot
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/choyxona
+ExecStart=/usr/bin/php artisan schedule:run

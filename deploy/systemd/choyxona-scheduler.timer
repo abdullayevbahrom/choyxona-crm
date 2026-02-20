@@ -1,0 +1,10 @@
+[Unit]
+Description=Run Choyxona scheduler every minute
+
+[Timer]
+OnCalendar=*-*-* *:*:00
+Persistent=true
+Unit=choyxona-scheduler.service
+
+[Install]
+WantedBy=timers.target
