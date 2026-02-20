@@ -3,7 +3,7 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <h1 class="text-2xl font-bold mb-4">Menyu boshqaruvi</h1>
 
-            <form method="GET" class="bg-white rounded-xl border p-4 mb-4 grid grid-cols-1 md:grid-cols-3 gap-3">
+            <form method="GET" class="bg-white rounded-xl border p-4 mb-4 grid grid-cols-1 md:grid-cols-4 gap-3">
                 <input name="q" value="{{ $filters['q'] ?? '' }}" placeholder="Qidirish" class="border rounded p-2">
                 <select name="type" class="border rounded p-2">
                     <option value="">Barchasi</option>
@@ -12,6 +12,9 @@
                     @endforeach
                 </select>
                 <button class="bg-slate-900 text-white rounded p-2">Filter</button>
+                <a href="{{ route('menu.index') }}" class="inline-flex items-center justify-center rounded border border-slate-300 bg-white p-2 text-slate-700 hover:bg-slate-50">
+                    Tozalash
+                </a>
             </form>
 
             <form

@@ -3,7 +3,7 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <h1 class="text-2xl font-bold mb-4">Buyurtmalar tarixi</h1>
 
-            <form method="GET" class="bg-white rounded-xl border p-4 mb-4 grid grid-cols-1 md:grid-cols-5 gap-3">
+            <form method="GET" class="bg-white rounded-xl border p-4 mb-4 grid grid-cols-1 md:grid-cols-6 gap-3">
                 <select name="room_id" class="border rounded p-2">
                     <option value="">Barcha xonalar</option>
                     @foreach ($rooms as $room)
@@ -20,6 +20,9 @@
                 <input type="date" name="date_from" value="{{ $filters['date_from'] ?? '' }}" class="border rounded p-2">
                 <input type="date" name="date_to" value="{{ $filters['date_to'] ?? '' }}" class="border rounded p-2">
                 <button class="bg-slate-900 text-white rounded p-2">Filter</button>
+                <a href="{{ route('orders.history') }}" class="inline-flex items-center justify-center rounded border border-slate-300 bg-white p-2 text-slate-700 hover:bg-slate-50">
+                    Tozalash
+                </a>
             </form>
 
             <div class="bg-white rounded-xl border overflow-x-auto">
