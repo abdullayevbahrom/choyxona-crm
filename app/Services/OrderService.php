@@ -79,18 +79,14 @@ class OrderService
             );
         }
 
-        if ($menuItem->price === null) {
-            throw new RuntimeException(
-                'Narxi kiritilmagan mahsulotni buyurtmaga qo\'shib bo\'lmaydi.',
-            );
-        }
-
         $quantity = max(1, $quantity);
+        $priceSnapshot = (float) ($menuItem->price ?? 0);
 
         return DB::transaction(function () use (
             $order,
             $menuItem,
             $quantity,
+            $priceSnapshot,
             $notes,
         ) {
             $item = OrderItem::query()
@@ -100,7 +96,7 @@ class OrderService
 
             if ($item) {
                 $item->quantity += $quantity;
-                $item->unit_price = $menuItem->price;
+                $item->unit_price = $priceSnapshot;
                 $item->subtotal = $item->quantity * $item->unit_price;
                 if ($notes !== null) {
                     $item->notes = $notes;
@@ -111,8 +107,8 @@ class OrderService
                     "order_id" => $order->id,
                     "menu_item_id" => $menuItem->id,
                     "quantity" => $quantity,
-                    "unit_price" => $menuItem->price,
-                    "subtotal" => $menuItem->price * $quantity,
+                    "unit_price" => $priceSnapshot,
+                    "subtotal" => $priceSnapshot * $quantity,
                     "notes" => $notes,
                 ]);
             }

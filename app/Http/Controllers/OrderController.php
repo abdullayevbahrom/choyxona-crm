@@ -176,7 +176,16 @@ class OrderController extends Controller
             ],
         );
 
-        return back()->with("status", 'Mahsulot qo\'shildi.');
+        $redirect = back()->with("status", 'Mahsulot qo\'shildi.');
+
+        if ($menuItem->price === null) {
+            $redirect->with(
+                "warning",
+                "Diqqat: mahsulot narxi kiritilmagan. Buyurtmaga 0 narx bilan qo'shildi.",
+            );
+        }
+
+        return $redirect;
     }
 
     public function updateItem(

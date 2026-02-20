@@ -36,6 +36,12 @@
                         </div>
                     @endif
 
+                    @if (session('warning'))
+                        <div class="mb-4 rounded border border-amber-300 bg-amber-100 p-3 text-sm text-amber-800">
+                            {{ session('warning') }}
+                        </div>
+                    @endif
+
                     @if ($errors->any())
                         <div class="mb-4 rounded border border-red-300 bg-red-100 p-3 text-sm text-red-800">
                             <ul class="list-disc pl-5">
