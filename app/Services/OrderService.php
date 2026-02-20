@@ -12,6 +12,10 @@ use RuntimeException;
 
 class OrderService
 {
+    public function __construct(
+        private readonly NumberSequenceService $numberSequenceService,
+    ) {}
+
     public function canCreateOrder(Room $room): bool
     {
         return $room->is_active &&
@@ -182,19 +186,9 @@ class OrderService
 
     public function nextOrderNumber(): string
     {
-        $year = now()->format("Y");
+        $year = (int) now()->format("Y");
         $prefix = "ORD-{$year}-";
-
-        $latest = Order::query()
-            ->where("order_number", "like", $prefix . "%")
-            ->latest("id")
-            ->value("order_number");
-
-        $next = 1;
-
-        if ($latest && preg_match('/^ORD-\d{4}-(\d+)$/', $latest, $matches)) {
-            $next = (int) $matches[1] + 1;
-        }
+        $next = $this->numberSequenceService->next("ORD", $year);
 
         return $prefix . str_pad((string) $next, 4, "0", STR_PAD_LEFT);
     }

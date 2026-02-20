@@ -11,6 +11,10 @@ use RuntimeException;
 
 class BillService
 {
+    public function __construct(
+        private readonly NumberSequenceService $numberSequenceService,
+    ) {}
+
     public function createForOrder(
         Order $order,
         ?string $paymentMethod = null,
@@ -110,19 +114,9 @@ class BillService
 
     public function nextBillNumber(): string
     {
-        $year = now()->format("Y");
+        $year = (int) now()->format("Y");
         $prefix = "CHK-{$year}-";
-
-        $latest = Bill::query()
-            ->where("bill_number", "like", $prefix . "%")
-            ->latest("id")
-            ->value("bill_number");
-
-        $next = 1;
-
-        if ($latest && preg_match('/^CHK-\d{4}-(\d+)$/', $latest, $matches)) {
-            $next = (int) $matches[1] + 1;
-        }
+        $next = $this->numberSequenceService->next("CHK", $year);
 
         return $prefix . str_pad((string) $next, 4, "0", STR_PAD_LEFT);
     }
