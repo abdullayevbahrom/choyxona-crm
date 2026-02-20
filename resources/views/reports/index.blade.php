@@ -74,17 +74,18 @@
                     </thead>
                     <tbody>
                     @forelse($exports as $export)
-                        <tr class="border-t">
+                        <tr class="border-t" data-export-row="{{ $export->id }}">
                             <td class="p-3">{{ $export->id }}</td>
-                            <td class="p-3">{{ $export->status }}</td>
+                            <td class="p-3" data-export-status>{{ $export->status }}</td>
                             <td class="p-3">{{ strtoupper($export->format) }}</td>
                             <td class="p-3">{{ $export->created_at?->format('Y-m-d H:i') }}</td>
                             <td class="p-3">
-                                @if($export->status === 'ready')
-                                    <a href="{{ route('reports.exports.download', $export) }}" class="text-blue-700 underline">Yuklab olish</a>
-                                @else
-                                    <span class="text-slate-500">Tayyor emas</span>
-                                @endif
+                                <a
+                                    href="{{ route('reports.exports.download', $export) }}"
+                                    class="text-blue-700 underline {{ $export->status === 'ready' ? '' : 'hidden' }}"
+                                    data-export-download
+                                >Yuklab olish</a>
+                                <span class="text-slate-500 {{ $export->status === 'ready' ? 'hidden' : '' }}" data-export-pending>Tayyor emas</span>
                             </td>
                         </tr>
                     @empty
@@ -205,4 +206,43 @@
             </div>
         </div>
     </div>
+
+    <script>
+        (function () {
+            const rows = Array.from(document.querySelectorAll('[data-export-row]'));
+
+            if (!rows.length) return;
+
+            const poll = () => {
+                rows.forEach((row) => {
+                    const id = row.getAttribute('data-export-row');
+                    const statusNode = row.querySelector('[data-export-status]');
+                    const pendingNode = row.querySelector('[data-export-pending]');
+                    const downloadNode = row.querySelector('[data-export-download]');
+
+                    if (!id || !statusNode || !pendingNode || !downloadNode) return;
+                    if (statusNode.textContent.trim() === 'ready') return;
+
+                    fetch(`/reports/exports/${id}/status`, {
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                    })
+                        .then((response) => response.ok ? response.json() : null)
+                        .then((data) => {
+                            if (!data) return;
+
+                            statusNode.textContent = data.status;
+
+                            if (data.status === 'ready' && data.download_url) {
+                                downloadNode.href = data.download_url;
+                                downloadNode.classList.remove('hidden');
+                                pendingNode.classList.add('hidden');
+                            }
+                        })
+                        .catch(() => {});
+                });
+            };
+
+            setInterval(poll, 5000);
+        })();
+    </script>
 </x-app-layout>

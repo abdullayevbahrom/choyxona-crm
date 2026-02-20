@@ -10,6 +10,7 @@ use App\Models\ReportExport;
 use App\Models\User;
 use App\Services\ReportService;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
@@ -148,5 +149,34 @@ class ReportController extends Controller
             basename($export->file_path),
             ["Content-Type" => "text/csv; charset=UTF-8"],
         );
+    }
+
+    public function exportStatus(ReportExport $export): JsonResponse
+    {
+        $user = auth()->user();
+
+        if (!$user) {
+            abort(401);
+        }
+
+        if (
+            $user->role !== User::ROLE_ADMIN &&
+            $export->user_id !== $user->id
+        ) {
+            abort(403);
+        }
+
+        return response()->json([
+            "id" => $export->id,
+            "status" => $export->status,
+            "format" => $export->format,
+            "created_at" => $export->created_at?->toIso8601String(),
+            "finished_at" => $export->finished_at?->toIso8601String(),
+            "error_message" => $export->error_message,
+            "download_url" =>
+                $export->status === ReportExport::STATUS_READY
+                    ? route("reports.exports.download", $export)
+                    : null,
+        ]);
     }
 }

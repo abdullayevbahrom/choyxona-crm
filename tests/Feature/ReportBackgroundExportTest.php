@@ -79,4 +79,52 @@ class ReportBackgroundExportTest extends TestCase
         $response->assertOk();
         $response->assertHeader("content-type", "text/csv; charset=UTF-8");
     }
+
+    public function test_owner_can_view_report_export_status_json(): void
+    {
+        $manager = User::factory()->create([
+            "role" => User::ROLE_MANAGER,
+        ]);
+
+        $export = ReportExport::query()->create([
+            "user_id" => $manager->id,
+            "status" => ReportExport::STATUS_PROCESSING,
+            "filters" => [],
+            "format" => "csv",
+        ]);
+
+        $response = $this->actingAs($manager)->getJson(
+            route("reports.exports.status", $export),
+        );
+
+        $response->assertOk();
+        $response->assertJson([
+            "id" => $export->id,
+            "status" => ReportExport::STATUS_PROCESSING,
+            "download_url" => null,
+        ]);
+    }
+
+    public function test_non_owner_cannot_view_report_export_status_json(): void
+    {
+        $owner = User::factory()->create([
+            "role" => User::ROLE_MANAGER,
+        ]);
+        $other = User::factory()->create([
+            "role" => User::ROLE_MANAGER,
+        ]);
+
+        $export = ReportExport::query()->create([
+            "user_id" => $owner->id,
+            "status" => ReportExport::STATUS_PENDING,
+            "filters" => [],
+            "format" => "csv",
+        ]);
+
+        $response = $this->actingAs($other)->getJson(
+            route("reports.exports.status", $export),
+        );
+
+        $response->assertForbidden();
+    }
 }

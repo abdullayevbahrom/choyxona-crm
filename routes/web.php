@@ -176,6 +176,12 @@ Route::middleware("auth")->group(function () {
         ])
             ->middleware("throttle:reports-export")
             ->name("reports.exports.download");
+        Route::get("/reports/exports/{export}/status", [
+            ReportController::class,
+            "exportStatus",
+        ])
+            ->middleware("throttle:reports-export")
+            ->name("reports.exports.status");
         Route::get("/settings", [SettingController::class, "index"])->name(
             "settings.index",
         );
