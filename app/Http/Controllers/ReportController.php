@@ -13,6 +13,7 @@ use App\Services\ReportService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use Maatwebsite\Excel\Facades\Excel;
@@ -152,8 +153,10 @@ class ReportController extends Controller
         );
     }
 
-    public function exportStatus(ReportExport $export): JsonResponse
-    {
+    public function exportStatus(
+        Request $request,
+        ReportExport $export,
+    ): JsonResponse|Response {
         $user = auth()->user();
 
         if (!$user) {
@@ -167,7 +170,7 @@ class ReportController extends Controller
             abort(403);
         }
 
-        return response()->json([
+        $payload = [
             "id" => $export->id,
             "status" => $export->status,
             "format" => $export->format,
@@ -178,12 +181,26 @@ class ReportController extends Controller
                 $export->status === ReportExport::STATUS_READY
                     ? route("reports.exports.download", $export)
                     : null,
-        ]);
+        ];
+
+        $etag = $this->reportExportEtag($payload);
+        $notModifiedResponse = response("", 200)
+            ->setEtag($etag)
+            ->header("Cache-Control", "private, must-revalidate, max-age=0");
+
+        if ($notModifiedResponse->isNotModified($request)) {
+            return $notModifiedResponse;
+        }
+
+        return response()
+            ->json($payload)
+            ->setEtag($etag)
+            ->header("Cache-Control", "private, must-revalidate, max-age=0");
     }
 
     public function exportStatuses(
         ReportExportStatusesRequest $request,
-    ): JsonResponse {
+    ): JsonResponse|Response {
         $user = auth()->user();
 
         if (!$user) {
@@ -200,30 +217,54 @@ class ReportController extends Controller
             $query->where("user_id", $user->id);
         }
 
-        $exports = $query->get([
-            "id",
-            "status",
-            "format",
-            "error_message",
-            "created_at",
-            "finished_at",
-        ]);
+        $exports = $query
+            ->orderBy("id")
+            ->get([
+                "id",
+                "status",
+                "format",
+                "error_message",
+                "created_at",
+                "finished_at",
+            ]);
 
-        return response()->json([
-            "exports" => $exports->map(
-                fn(ReportExport $export) => [
-                    "id" => $export->id,
-                    "status" => $export->status,
-                    "format" => $export->format,
-                    "created_at" => $export->created_at?->toIso8601String(),
-                    "finished_at" => $export->finished_at?->toIso8601String(),
-                    "error_message" => $export->error_message,
-                    "download_url" =>
-                        $export->status === ReportExport::STATUS_READY
-                            ? route("reports.exports.download", $export)
-                            : null,
-                ],
-            ),
-        ]);
+        $payload = [
+            "exports" => $exports
+                ->map(
+                    fn(ReportExport $export) => [
+                        "id" => $export->id,
+                        "status" => $export->status,
+                        "format" => $export->format,
+                        "created_at" => $export->created_at?->toIso8601String(),
+                        "finished_at" => $export->finished_at?->toIso8601String(),
+                        "error_message" => $export->error_message,
+                        "download_url" =>
+                            $export->status === ReportExport::STATUS_READY
+                                ? route("reports.exports.download", $export)
+                                : null,
+                    ],
+                )
+                ->values()
+                ->all(),
+        ];
+
+        $etag = $this->reportExportEtag($payload);
+        $notModifiedResponse = response("", 200)
+            ->setEtag($etag)
+            ->header("Cache-Control", "private, must-revalidate, max-age=0");
+
+        if ($notModifiedResponse->isNotModified($request)) {
+            return $notModifiedResponse;
+        }
+
+        return response()
+            ->json($payload)
+            ->setEtag($etag)
+            ->header("Cache-Control", "private, must-revalidate, max-age=0");
+    }
+
+    private function reportExportEtag(array $payload): string
+    {
+        return sha1(json_encode($payload, JSON_THROW_ON_ERROR));
     }
 }

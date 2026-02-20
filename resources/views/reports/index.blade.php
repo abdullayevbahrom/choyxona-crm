@@ -211,6 +211,7 @@
         (function () {
             let timerId = null;
             let inFlight = false;
+            let statusesEtag = null;
 
             const poll = () => {
                 if (document.hidden || inFlight) return;
@@ -239,11 +240,33 @@
                 const params = new URLSearchParams();
                 ids.forEach((id) => params.append('ids[]', id));
 
+                const headers = { 'X-Requested-With': 'XMLHttpRequest' };
+                if (statusesEtag) {
+                    headers['If-None-Match'] = statusesEtag;
+                }
+
                 fetch(`/reports/exports/statuses?${params.toString()}`, {
-                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                    headers,
                 })
-                    .then((response) => response.ok ? response.json() : null)
+                    .then((response) => {
+                        if (response.status === 304) {
+                            return null;
+                        }
+
+                        if (!response.ok) {
+                            return null;
+                        }
+
+                        const nextEtag = response.headers.get('etag');
+                        if (nextEtag) {
+                            statusesEtag = nextEtag;
+                        }
+
+                        return response.json();
+                    })
                     .then((payload) => {
+                        if (!payload) return;
+
                         const exports = payload?.exports ?? [];
 
                         exports.forEach((item) => {

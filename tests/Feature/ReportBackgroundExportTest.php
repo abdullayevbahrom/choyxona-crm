@@ -154,4 +154,33 @@ class ReportBackgroundExportTest extends TestCase
         $response->assertOk();
         $response->assertJsonCount(2, "exports");
     }
+
+    public function test_batch_export_statuses_support_conditional_etag(): void
+    {
+        $manager = User::factory()->create([
+            "role" => User::ROLE_MANAGER,
+        ]);
+
+        $export = ReportExport::query()->create([
+            "user_id" => $manager->id,
+            "status" => ReportExport::STATUS_PENDING,
+            "filters" => [],
+            "format" => "csv",
+        ]);
+
+        $firstResponse = $this->actingAs($manager)->get(
+            "/reports/exports/statuses?ids[]={$export->id}",
+        );
+
+        $firstResponse->assertOk();
+        $etag = $firstResponse->headers->get("etag");
+        $this->assertNotNull($etag);
+
+        $secondResponse = $this->actingAs($manager)->get(
+            "/reports/exports/statuses?ids[]={$export->id}",
+            ["If-None-Match" => $etag],
+        );
+
+        $secondResponse->assertStatus(304);
+    }
 }
