@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exports\ReportStreamExport;
+use App\Http\Requests\Reports\ReportExportStatusesRequest;
 use App\Http\Requests\Reports\ReportFilterRequest;
 use App\Jobs\GenerateReportExport;
 use App\Models\Room;
@@ -177,6 +178,52 @@ class ReportController extends Controller
                 $export->status === ReportExport::STATUS_READY
                     ? route("reports.exports.download", $export)
                     : null,
+        ]);
+    }
+
+    public function exportStatuses(
+        ReportExportStatusesRequest $request,
+    ): JsonResponse {
+        $user = auth()->user();
+
+        if (!$user) {
+            abort(401);
+        }
+
+        $ids = collect($request->validated("ids"))
+            ->map(fn($id) => (int) $id)
+            ->all();
+
+        $query = ReportExport::query()->whereIn("id", $ids);
+
+        if ($user->role !== User::ROLE_ADMIN) {
+            $query->where("user_id", $user->id);
+        }
+
+        $exports = $query->get([
+            "id",
+            "status",
+            "format",
+            "error_message",
+            "created_at",
+            "finished_at",
+        ]);
+
+        return response()->json([
+            "exports" => $exports->map(
+                fn(ReportExport $export) => [
+                    "id" => $export->id,
+                    "status" => $export->status,
+                    "format" => $export->format,
+                    "created_at" => $export->created_at?->toIso8601String(),
+                    "finished_at" => $export->finished_at?->toIso8601String(),
+                    "error_message" => $export->error_message,
+                    "download_url" =>
+                        $export->status === ReportExport::STATUS_READY
+                            ? route("reports.exports.download", $export)
+                            : null,
+                ],
+            ),
         ]);
     }
 }

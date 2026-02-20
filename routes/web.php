@@ -170,6 +170,12 @@ Route::middleware("auth")->group(function () {
         ])
             ->middleware("throttle:reports-export")
             ->name("reports.exports.request");
+        Route::get("/reports/exports/statuses", [
+            ReportController::class,
+            "exportStatuses",
+        ])
+            ->middleware("throttle:reports-export")
+            ->name("reports.exports.statuses");
         Route::get("/reports/exports/{export}", [
             ReportController::class,
             "downloadExport",

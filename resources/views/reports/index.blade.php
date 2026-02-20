@@ -209,40 +209,64 @@
 
     <script>
         (function () {
-            const rows = Array.from(document.querySelectorAll('[data-export-row]'));
-
-            if (!rows.length) return;
+            let timerId = null;
 
             const poll = () => {
-                rows.forEach((row) => {
-                    const id = row.getAttribute('data-export-row');
+                if (document.hidden) return;
+
+                const rows = Array.from(document.querySelectorAll('[data-export-row]'));
+                const pendingRows = rows.filter((row) => {
                     const statusNode = row.querySelector('[data-export-status]');
-                    const pendingNode = row.querySelector('[data-export-pending]');
-                    const downloadNode = row.querySelector('[data-export-download]');
+                    return statusNode && statusNode.textContent.trim() !== 'ready' && statusNode.textContent.trim() !== 'failed';
+                });
 
-                    if (!id || !statusNode || !pendingNode || !downloadNode) return;
-                    if (statusNode.textContent.trim() === 'ready') return;
+                if (!pendingRows.length) {
+                    if (timerId !== null) {
+                        clearInterval(timerId);
+                        timerId = null;
+                    }
+                    return;
+                }
 
-                    fetch(`/reports/exports/${id}/status`, {
-                        headers: { 'X-Requested-With': 'XMLHttpRequest' },
-                    })
-                        .then((response) => response.ok ? response.json() : null)
-                        .then((data) => {
-                            if (!data) return;
+                const ids = pendingRows
+                    .map((row) => row.getAttribute('data-export-row'))
+                    .filter(Boolean);
 
-                            statusNode.textContent = data.status;
+                if (!ids.length) return;
 
-                            if (data.status === 'ready' && data.download_url) {
-                                downloadNode.href = data.download_url;
+                const params = new URLSearchParams();
+                ids.forEach((id) => params.append('ids[]', id));
+
+                fetch(`/reports/exports/statuses?${params.toString()}`, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                })
+                    .then((response) => response.ok ? response.json() : null)
+                    .then((payload) => {
+                        const exports = payload?.exports ?? [];
+
+                        exports.forEach((item) => {
+                            const row = document.querySelector(`[data-export-row="${item.id}"]`);
+                            if (!row) return;
+
+                            const statusNode = row.querySelector('[data-export-status]');
+                            const pendingNode = row.querySelector('[data-export-pending]');
+                            const downloadNode = row.querySelector('[data-export-download]');
+                            if (!statusNode || !pendingNode || !downloadNode) return;
+
+                            statusNode.textContent = item.status;
+
+                            if (item.status === 'ready' && item.download_url) {
+                                downloadNode.href = item.download_url;
                                 downloadNode.classList.remove('hidden');
                                 pendingNode.classList.add('hidden');
                             }
-                        })
-                        .catch(() => {});
-                });
+                        });
+                    })
+                    .catch(() => {});
             };
 
-            setInterval(poll, 5000);
+            poll();
+            timerId = setInterval(poll, 5000);
         })();
     </script>
 </x-app-layout>

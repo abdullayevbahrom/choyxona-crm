@@ -127,4 +127,31 @@ class ReportBackgroundExportTest extends TestCase
 
         $response->assertForbidden();
     }
+
+    public function test_owner_can_view_batch_report_export_statuses_json(): void
+    {
+        $manager = User::factory()->create([
+            "role" => User::ROLE_MANAGER,
+        ]);
+
+        $first = ReportExport::query()->create([
+            "user_id" => $manager->id,
+            "status" => ReportExport::STATUS_PENDING,
+            "filters" => [],
+            "format" => "csv",
+        ]);
+        $second = ReportExport::query()->create([
+            "user_id" => $manager->id,
+            "status" => ReportExport::STATUS_PROCESSING,
+            "filters" => [],
+            "format" => "csv",
+        ]);
+
+        $response = $this->actingAs($manager)->getJson(
+            "/reports/exports/statuses?ids[]={$first->id}&ids[]={$second->id}",
+        );
+
+        $response->assertOk();
+        $response->assertJsonCount(2, "exports");
+    }
 }
