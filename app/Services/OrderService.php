@@ -189,7 +189,7 @@ class OrderService
 
     public function attachServingWaiter(Order $order, ?int $userId): void
     {
-        if (! $this->isWaiterId($userId)) {
+        if (! $this->isTrackableUserId($userId)) {
             return;
         }
 
@@ -200,7 +200,7 @@ class OrderService
         OrderItem $item,
         ?int $userId,
     ): void {
-        if (! $this->isWaiterId($userId)) {
+        if (! $this->isTrackableUserId($userId)) {
             return;
         }
 
@@ -235,15 +235,12 @@ class OrderService
             );
     }
 
-    private function isWaiterId(?int $userId): bool
+    private function isTrackableUserId(?int $userId): bool
     {
         if (! $userId) {
             return false;
         }
 
-        return User::query()
-            ->whereKey($userId)
-            ->where('role', User::ROLE_WAITER)
-            ->exists();
+        return User::query()->whereKey($userId)->exists();
     }
 }
