@@ -61,11 +61,13 @@ class BillController extends Controller
         $setting = Setting::current();
         $qrPayload = $this->buildQrPayload($bill);
         $qrImageDataUri = $this->buildQrImageDataUri($qrPayload, 140);
+        $qrLogoUrl = $this->resolveQrLogoUrl($setting);
 
         return view('bills.show', [
             'bill' => $bill,
             'setting' => $setting,
             'qrImageDataUri' => $qrImageDataUri,
+            'qrLogoUrl' => $qrLogoUrl,
         ]);
     }
 
@@ -81,11 +83,13 @@ class BillController extends Controller
         $setting = Setting::current();
         $qrPayload = $this->buildQrPayload($bill);
         $qrImageDataUri = $this->buildQrImageDataUri($qrPayload, 120);
+        $qrLogoUrl = $this->resolveQrLogoUrl($setting);
 
         $pdf = Pdf::loadView('bills.pdf', [
             'bill' => $bill,
             'setting' => $setting,
             'qrImageDataUri' => $qrImageDataUri,
+            'qrLogoUrl' => $qrLogoUrl,
         ])->setPaper('a6');
 
         return $pdf->stream($bill->bill_number.'.pdf');
@@ -129,5 +133,14 @@ class BillController extends Controller
             ->generate($payload);
 
         return 'data:image/svg+xml;base64,'.base64_encode($svg);
+    }
+
+    private function resolveQrLogoUrl(Setting $setting): string
+    {
+        if (filled($setting->notification_logo_url)) {
+            return (string) $setting->notification_logo_url;
+        }
+
+        return asset('favicon.svg');
     }
 }

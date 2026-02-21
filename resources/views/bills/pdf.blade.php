@@ -87,6 +87,9 @@
     @endif
 
     <div class="center mb-6">
+        <div class="mb-6">
+            <img src="{{ $qrLogoUrl }}" alt="Logo" width="36" height="36">
+        </div>
         <div class="mb-6">QR kod:</div>
         <img src="{{ $qrImageDataUri }}" alt="QR kod" width="100" height="100">
     </div>
