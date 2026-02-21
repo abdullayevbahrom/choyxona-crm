@@ -9,7 +9,7 @@
                     </a>
                 </div>
 
-                <div class="hidden md:-my-px md:ms-4 md:flex md:min-w-0 md:flex-1 md:items-center md:gap-5 md:overflow-x-auto md:whitespace-nowrap lg:ms-8 lg:gap-8">
+                <div class="hidden sm:-my-px sm:ms-4 sm:flex sm:min-w-0 sm:flex-1 sm:items-center sm:gap-5 sm:overflow-x-auto sm:whitespace-nowrap lg:ms-8 lg:gap-8">
                     @php $role = Auth::user()->role; @endphp
 
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
@@ -52,7 +52,7 @@
                 </div>
             </div>
 
-            <div class="hidden shrink-0 md:ms-2 md:flex md:items-center lg:ms-6">
+            <div class="hidden shrink-0 sm:ms-2 sm:flex sm:items-center lg:ms-6">
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
                         <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
@@ -78,7 +78,7 @@
                 </x-dropdown>
             </div>
 
-            <div class="-me-2 flex items-center md:hidden">
+            <div class="-me-2 flex items-center sm:hidden">
                 <button
                     @click="open = ! open"
                     :aria-expanded="open.toString()"
@@ -95,7 +95,7 @@
         </div>
     </div>
 
-    <div id="mobile-nav" :class="{'block': open, 'hidden': ! open}" class="hidden md:hidden">
+    <div id="mobile-nav" :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
         <div class="pt-2 pb-3 space-y-1">
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 Asosiy panel
