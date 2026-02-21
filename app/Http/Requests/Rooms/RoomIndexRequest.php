@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Requests\Menu;
+namespace App\Http\Requests\Rooms;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class MenuIndexRequest extends FormRequest
+class RoomIndexRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -15,8 +15,6 @@ class MenuIndexRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'type' => ['nullable', 'in:food,drink,bread,salad,sauce'],
-            'q' => ['nullable', 'string', 'max:200'],
             'per_page' => [
                 'nullable',
                 'integer',

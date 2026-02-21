@@ -50,9 +50,13 @@ class ActivityLogController extends Controller
             ->limit(10)
             ->get();
 
+        $perPage =
+            (int) ($validated['per_page'] ??
+                config('pagination.default_per_page', 10));
+
         return view('activity-logs.index', [
             'logs' => $query
-                ->paginate(40)
+                ->paginate($perPage)
                 ->withQueryString()
                 ->through(function (ActivityLog $log) {
                     $log->subject_url = $this->resolveSubjectUrl($log);
@@ -66,6 +70,7 @@ class ActivityLogController extends Controller
             'quickActions' => $quickActions,
             'exports' => $exports,
             'filters' => $validated,
+            'perPageOptions' => config('pagination.allowed_per_page'),
         ]);
     }
 

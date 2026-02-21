@@ -65,6 +65,13 @@
 
                 <input type="date" name="date_from" value="{{ $filters['date_from'] ?? '' }}" class="border rounded p-2">
                 <input type="date" name="date_to" value="{{ $filters['date_to'] ?? '' }}" class="border rounded p-2">
+                <select name="per_page" class="border rounded p-2">
+                    @foreach ($perPageOptions as $option)
+                        <option value="{{ $option }}" @selected((int) ($filters['per_page'] ?? config('pagination.default_per_page', 10)) === (int) $option)>
+                            {{ $option }} ta
+                        </option>
+                    @endforeach
+                </select>
 
                 <select name="subject_type" class="border rounded p-2 sm:col-span-2 xl:col-span-2">
                     <option value="">Barcha obyekt turlari</option>

@@ -329,7 +329,11 @@ class OrderController extends Controller
             ]);
         }
 
-        $orders = $query->paginate(30)->withQueryString();
+        $perPage =
+            (int) ($validated['per_page'] ??
+                config('pagination.default_per_page', 10));
+
+        $orders = $query->paginate($perPage)->withQueryString();
         $rooms = Room::query()
             ->where('is_active', true)
             ->orderBy('number')
@@ -339,6 +343,7 @@ class OrderController extends Controller
             'orders' => $orders,
             'rooms' => $rooms,
             'filters' => $validated,
+            'perPageOptions' => config('pagination.allowed_per_page'),
         ]);
     }
 

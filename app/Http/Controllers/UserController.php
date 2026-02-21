@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Users\UserIndexRequest;
 use App\Http\Requests\Users\UserStoreRequest;
 use App\Http\Requests\Users\UserUpdateRequest;
 use App\Models\User;
@@ -11,11 +12,21 @@ use Illuminate\View\View;
 
 class UserController extends Controller
 {
-    public function index(): View
+    public function index(UserIndexRequest $request): View
     {
+        $validated = $request->validated();
+        $perPage =
+            (int) ($validated['per_page'] ??
+                config('pagination.default_per_page', 10));
+
         return view('users.index', [
-            'users' => User::query()->orderBy('name')->paginate(20),
+            'users' => User::query()
+                ->orderBy('name')
+                ->paginate($perPage)
+                ->withQueryString(),
             'roles' => User::availableRoles(),
+            'filters' => $validated,
+            'perPageOptions' => config('pagination.allowed_per_page'),
         ]);
     }
 

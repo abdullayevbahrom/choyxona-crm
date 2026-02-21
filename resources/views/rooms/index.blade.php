@@ -9,6 +9,21 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h1 class="text-2xl font-bold mb-4">Xonalar boshqaruvi</h1>
 
+            <form method="GET" class="bg-white rounded-xl border p-4 mb-4 grid grid-cols-1 gap-3 sm:grid-cols-4">
+                <div class="sm:col-span-2">
+                    <label class="mb-1 block text-sm text-slate-600">Sahifadagi yozuvlar</label>
+                    <select name="per_page" class="w-full border rounded p-2">
+                        @foreach ($perPageOptions as $option)
+                            <option value="{{ $option }}" @selected((int) ($filters['per_page'] ?? config('pagination.default_per_page', 10)) === (int) $option)>
+                                {{ $option }} ta
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <button class="bg-slate-900 text-white rounded p-2 sm:self-end">Qo'llash</button>
+                <a href="{{ route('rooms.index') }}" class="inline-flex items-center justify-center rounded border border-slate-300 bg-white p-2 text-slate-700 hover:bg-slate-50 sm:self-end">Tozalash</a>
+            </form>
+
             <form method="POST" action="{{ route('rooms.store') }}" class="bg-white rounded-xl border p-4 mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
                 @csrf
                 <input name="number" placeholder="Xona raqami" class="border rounded p-2" required>

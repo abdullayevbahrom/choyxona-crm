@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Rooms\RoomIndexRequest;
 use App\Http\Requests\Rooms\RoomStoreRequest;
 use App\Http\Requests\Rooms\RoomUpdateRequest;
 use App\Models\Order;
@@ -49,11 +50,22 @@ class RoomController extends Controller
         ]);
     }
 
-    public function index(): View
+    public function index(RoomIndexRequest $request): View
     {
-        $rooms = Room::query()->orderBy('number')->paginate(20);
+        $validated = $request->validated();
+        $perPage =
+            (int) ($validated['per_page'] ??
+                config('pagination.default_per_page', 10));
+        $rooms = Room::query()
+            ->orderBy('number')
+            ->paginate($perPage)
+            ->withQueryString();
 
-        return view('rooms.index', compact('rooms'));
+        return view('rooms.index', [
+            'rooms' => $rooms,
+            'filters' => $validated,
+            'perPageOptions' => config('pagination.allowed_per_page'),
+        ]);
     }
 
     public function store(RoomStoreRequest $request): RedirectResponse

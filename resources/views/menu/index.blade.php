@@ -12,12 +12,19 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h1 class="text-2xl font-bold mb-4">Menyu boshqaruvi</h1>
 
-            <form method="GET" class="bg-white rounded-xl border p-4 mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <form method="GET" class="bg-white rounded-xl border p-4 mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
                 <input name="q" value="{{ $filters['q'] ?? '' }}" placeholder="Qidirish" class="border rounded p-2">
                 <select name="type" class="border rounded p-2">
                     <option value="">Barchasi</option>
                     @foreach ($typeLabels as $key => $label)
                         <option value="{{ $key }}" @selected(($filters['type'] ?? '') === $key)>{{ $label }}</option>
+                    @endforeach
+                </select>
+                <select name="per_page" class="border rounded p-2">
+                    @foreach ($perPageOptions as $option)
+                        <option value="{{ $option }}" @selected((int) ($filters['per_page'] ?? config('pagination.default_per_page', 10)) === (int) $option)>
+                            {{ $option }} ta
+                        </option>
                     @endforeach
                 </select>
                 <button class="bg-slate-900 text-white rounded p-2">Filtrlash</button>

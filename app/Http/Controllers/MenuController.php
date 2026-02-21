@@ -25,11 +25,16 @@ class MenuController extends Controller
             $query->where('name', 'like', '%'.$validated['q'].'%');
         }
 
-        $items = $query->paginate(30)->withQueryString();
+        $perPage =
+            (int) ($validated['per_page'] ??
+                config('pagination.default_per_page', 10));
+
+        $items = $query->paginate($perPage)->withQueryString();
 
         return view('menu.index', [
             'items' => $items,
             'filters' => $validated,
+            'perPageOptions' => config('pagination.allowed_per_page'),
         ]);
     }
 

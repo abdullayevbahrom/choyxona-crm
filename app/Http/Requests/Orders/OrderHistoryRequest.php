@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Orders;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class OrderHistoryRequest extends FormRequest
 {
@@ -18,6 +19,11 @@ class OrderHistoryRequest extends FormRequest
             'date_from' => ['nullable', 'date'],
             'date_to' => ['nullable', 'date'],
             'status' => ['nullable', 'in:open,closed,cancelled'],
+            'per_page' => [
+                'nullable',
+                'integer',
+                Rule::in(config('pagination.allowed_per_page')),
+            ],
         ];
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Requests\ActivityLogs;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class ActivityLogFilterRequest extends FormRequest
 {
@@ -20,6 +21,11 @@ class ActivityLogFilterRequest extends FormRequest
             'subject_id' => ['nullable', 'integer', 'min:1'],
             'date_from' => ['nullable', 'date'],
             'date_to' => ['nullable', 'date'],
+            'per_page' => [
+                'nullable',
+                'integer',
+                Rule::in(config('pagination.allowed_per_page')),
+            ],
         ];
     }
 }
