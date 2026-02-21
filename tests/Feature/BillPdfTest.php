@@ -67,7 +67,7 @@ class BillPdfTest extends TestCase
         $response->assertHeader('content-type', 'application/pdf');
     }
 
-    public function test_bill_show_uses_logo_fallback_and_configured_size(): void
+    public function test_bill_show_renders_png_qr_with_fallback_logo(): void
     {
         $user = User::factory()->create(['role' => User::ROLE_CASHIER]);
         Setting::query()->create([
@@ -119,17 +119,21 @@ class BillPdfTest extends TestCase
         $response = $this->actingAs($user)->get(route('bills.show', $bill));
 
         $response->assertOk();
-        $response->assertSee('favicon.svg');
-        $response->assertSee('width="40"', false);
-        $response->assertSee('height="40"', false);
+        $response->assertSee('data:image/svg+xml;base64,');
     }
 
-    public function test_bill_show_uses_custom_logo_url_when_configured(): void
+    public function test_bill_show_renders_png_qr_with_uploaded_logo(): void
     {
         $user = User::factory()->create(['role' => User::ROLE_CASHIER]);
+        $logoPath = storage_path('app/public/branding/qr-logos/test-logo.png');
+        @mkdir(dirname($logoPath), 0775, true);
+        copy(public_path('qr-logo-fallback.png'), $logoPath);
+
         Setting::query()->create([
             'company_name' => 'Choyxona CRM',
-            'notification_logo_url' => 'https://cdn.example.com/logo.png',
+            'notification_logo_url' => asset(
+                'storage/branding/qr-logos/test-logo.png',
+            ),
             'notification_logo_size' => 24,
         ]);
 
@@ -176,8 +180,6 @@ class BillPdfTest extends TestCase
         $response = $this->actingAs($user)->get(route('bills.show', $bill));
 
         $response->assertOk();
-        $response->assertSee('https://cdn.example.com/logo.png');
-        $response->assertSee('width="24"', false);
-        $response->assertSee('height="24"', false);
+        $response->assertSee('data:image/svg+xml;base64,');
     }
 }

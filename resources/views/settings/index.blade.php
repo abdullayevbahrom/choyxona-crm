@@ -3,7 +3,7 @@
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <h1 class="text-2xl font-bold mb-4">Sozlamalar</h1>
 
-            <form method="POST" action="{{ route('settings.update') }}" class="bg-white rounded-xl border p-6 grid grid-cols-1 gap-4">
+            <form method="POST" action="{{ route('settings.update') }}" enctype="multipart/form-data" class="bg-white rounded-xl border p-6 grid grid-cols-1 gap-4">
                 @csrf
                 @method('PATCH')
 
@@ -40,9 +40,15 @@
                         </div>
                     </div>
                     <div class="mt-4">
-                        <label class="block text-sm font-medium mb-1">Email logo URL</label>
-                        <input name="notification_logo_url" type="url" value="{{ old('notification_logo_url', $setting->notification_logo_url) }}" class="border rounded p-2 w-full" placeholder="https://example.com/logo.png">
-                        <p class="mt-1 text-xs text-slate-500">Bo'sh qoldirilsa tizim logo rasmi ishlatiladi.</p>
+                        <label class="block text-sm font-medium mb-1">QR logo yuklash</label>
+                        <input name="notification_logo_file" type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp" class="border rounded p-2 w-full">
+                        <p class="mt-1 text-xs text-slate-500">Rasm avtomatik PNG formatga o'tkazilib public diskka saqlanadi.</p>
+                        @if($setting->notification_logo_url)
+                            <div class="mt-2 flex items-center gap-3">
+                                <img src="{{ $setting->notification_logo_url }}" alt="Joriy QR logo" class="h-10 w-10 rounded border bg-white p-1 object-contain">
+                                <span class="text-xs text-slate-500">Joriy logo</span>
+                            </div>
+                        @endif
                     </div>
                     <div class="mt-4">
                         <label class="block text-sm font-medium mb-1">QR logo o'lchami (px)</label>
