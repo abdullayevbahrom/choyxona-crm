@@ -4,6 +4,11 @@
         'closed' => 'Yopilgan',
         'cancelled' => 'Bekor qilingan',
     ];
+    $canManageBilling = in_array(auth()->user()?->role, [
+        \App\Models\User::ROLE_ADMIN,
+        \App\Models\User::ROLE_MANAGER,
+        \App\Models\User::ROLE_CASHIER,
+    ], true);
 @endphp
 <p class="mb-4 text-slate-600">Xona: {{ $order->room->number }} | Holat: {{ $statusLabels[$order->status] ?? $order->status }}</p>
 
@@ -97,7 +102,7 @@
     </div>
 @endif
 
-@if ($order->status === 'open')
+@if ($order->status === 'open' && $canManageBilling)
     <form
         method="POST"
         action="{{ route('orders.bill.store', $order) }}"
@@ -128,4 +133,8 @@
         @csrf
         <button class="rounded bg-red-700 px-4 py-2 text-white">Buyurtmani bekor qilish</button>
     </form>
+@elseif ($order->status === 'open')
+    <p class="rounded-xl border bg-white p-4 text-sm text-slate-600">
+        Chek yaratish va buyurtmani bekor qilish uchun kassir yoki menejer huquqi kerak.
+    </p>
 @endif
