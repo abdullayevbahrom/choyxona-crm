@@ -13,6 +13,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use RuntimeException;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Symfony\Component\HttpFoundation\Response;
 
 class BillController extends Controller
@@ -57,13 +58,13 @@ class BillController extends Controller
         ]);
         $setting = Setting::current();
         $qrPayload = $this->buildQrPayload($bill);
-        $qrImageUrl = $this->buildQrImageUrl($qrPayload, 140);
+        $qrImageDataUri = $this->buildQrImageDataUri($qrPayload, 140);
 
         return view('bills.show', [
             'bill' => $bill,
             'setting' => $setting,
             'qrPayload' => $qrPayload,
-            'qrImageUrl' => $qrImageUrl,
+            'qrImageDataUri' => $qrImageDataUri,
         ]);
     }
 
@@ -78,16 +79,14 @@ class BillController extends Controller
         ]);
         $setting = Setting::current();
         $qrPayload = $this->buildQrPayload($bill);
-        $qrImageUrl = $this->buildQrImageUrl($qrPayload, 120);
+        $qrImageDataUri = $this->buildQrImageDataUri($qrPayload, 120);
 
         $pdf = Pdf::loadView('bills.pdf', [
             'bill' => $bill,
             'setting' => $setting,
             'qrPayload' => $qrPayload,
-            'qrImageUrl' => $qrImageUrl,
-        ])
-            ->setOption('isRemoteEnabled', true)
-            ->setPaper('a6');
+            'qrImageDataUri' => $qrImageDataUri,
+        ])->setPaper('a6');
 
         return $pdf->stream($bill->bill_number.'.pdf');
     }
@@ -115,15 +114,14 @@ class BillController extends Controller
         ]);
     }
 
-    private function buildQrImageUrl(string $payload, int $size): string
+    private function buildQrImageDataUri(string $payload, int $size): string
     {
         $normalizedSize = max(80, min(300, $size));
+        $svg = QrCode::format('svg')
+            ->size($normalizedSize)
+            ->margin(1)
+            ->generate($payload);
 
-        return 'https://api.qrserver.com/v1/create-qr-code/?size='.
-            $normalizedSize.
-            'x'.
-            $normalizedSize.
-            '&data='.
-            rawurlencode($payload);
+        return 'data:image/svg+xml;base64,'.base64_encode($svg);
     }
 }

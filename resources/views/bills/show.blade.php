@@ -65,8 +65,8 @@
         <div class="mt-4 border-t pt-4">
             <p class="text-sm font-medium text-slate-700 mb-2">QR (tekshirish ma'lumoti)</p>
             <div class="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
-                <img src="{{ $qrImageUrl }}" alt="Bill QR" width="120" height="120" class="rounded border">
-                <p class="text-xs text-slate-600 break-all">{{ $qrPayload }}</p>
+                <img src="{{ $qrImageDataUri }}" alt="Chek QR kodi" width="120" height="120" class="rounded border">
+                <p class="text-xs text-slate-600">Chek kodi: {{ $bill->bill_number }}</p>
             </div>
         </div>
             </div>

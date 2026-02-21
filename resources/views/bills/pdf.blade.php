@@ -88,9 +88,9 @@
 
     <div class="center mb-6">
         <div class="mb-6">QR kod:</div>
-        <img src="{{ $qrImageUrl }}" alt="QR kod" width="100" height="100">
+        <img src="{{ $qrImageDataUri }}" alt="QR kod" width="100" height="100">
     </div>
-    <div class="mb-6">QR ma'lumot: {{ $qrPayload }}</div>
+    <div class="mb-6">Chek kodi: {{ $bill->bill_number }}</div>
 
     @if($setting->receipt_footer)
         <div class="center">{{ $setting->receipt_footer }}</div>
