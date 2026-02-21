@@ -51,7 +51,10 @@ class GenerateReportExport implements ShouldQueue
             $reportService->streamCsv($export->filters ?? [], $tmpHandle);
             fclose($tmpHandle);
 
-            $path = "exports/reports-{$export->id}-".now()->format('Ymd-His').'.csv';
+            $path =
+                "exports/reports-{$export->id}-".
+                now()->format('Ymd-His').
+                '.csv';
             $readHandle = fopen($tmpPath, 'r');
 
             if ($readHandle === false) {
@@ -60,6 +63,7 @@ class GenerateReportExport implements ShouldQueue
 
             Storage::disk('local')->writeStream($path, $readHandle);
             fclose($readHandle);
+            $this->ensureExportPathIsReadable($path);
 
             $fileSize = filesize($tmpPath) ?: null;
 
@@ -79,6 +83,25 @@ class GenerateReportExport implements ShouldQueue
             throw $e;
         } finally {
             @unlink($tmpPath);
+        }
+    }
+
+    private function ensureExportPathIsReadable(string $path): void
+    {
+        $disk = Storage::disk('local');
+
+        try {
+            $disk->setVisibility($path, 'public');
+        } catch (\Throwable) {
+            // Best effort only; download fallback will handle issues.
+        }
+
+        try {
+            $absolutePath = $disk->path($path);
+            @chmod(dirname($absolutePath), 0755);
+            @chmod($absolutePath, 0644);
+        } catch (\Throwable) {
+            // Best effort only.
         }
     }
 }

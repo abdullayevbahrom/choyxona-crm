@@ -154,7 +154,7 @@ class ActivityLogController extends Controller
 
     public function downloadExport(
         ActivityLogExport $export,
-    ): BinaryFileResponse|RedirectResponse {
+    ): BinaryFileResponse|RedirectResponse|StreamedResponse {
         if ($export->user_id !== auth()->id()) {
             abort(403);
         }
@@ -179,9 +179,8 @@ class ActivityLogController extends Controller
         }
 
         if ($downloadPath === null) {
-            return back()->withErrors([
-                'export' => 'Fayl topilmadi.',
-            ]);
+            // Fallback for unreadable/missing export files: regenerate from saved filters.
+            return $this->streamExportFromFilters($export);
         }
 
         return response()->download(
@@ -312,6 +311,73 @@ class ActivityLogController extends Controller
 
             return $value;
         }, $row);
+    }
+
+    private function streamExportFromFilters(
+        ActivityLogExport $export,
+    ): StreamedResponse {
+        $filename = basename(
+            $export->file_path ?: 'activity-logs-'.$export->id.'.csv',
+        );
+
+        return response()->streamDownload(
+            function () use ($export) {
+                $handle = fopen('php://output', 'wb');
+
+                if ($handle === false) {
+                    return;
+                }
+
+                fputcsv($handle, [
+                    'id',
+                    'created_at',
+                    'user',
+                    'action',
+                    'subject_type',
+                    'subject_id',
+                    'description',
+                    'ip_address',
+                    'properties',
+                ]);
+
+                $this->queryService
+                    ->build($export->filters ?? [])
+                    ->reorder('id')
+                    ->chunkById(
+                        500,
+                        function ($logs) use ($handle) {
+                            foreach ($logs as $log) {
+                                fputcsv(
+                                    $handle,
+                                    $this->sanitizeCsvRow([
+                                        $log->id,
+                                        $log->created_at?->format(
+                                            'Y-m-d H:i:s',
+                                        ),
+                                        $log->user?->name,
+                                        $log->action,
+                                        $log->subject_type,
+                                        $log->subject_id,
+                                        $log->description,
+                                        $log->ip_address,
+                                        json_encode(
+                                            $log->properties,
+                                            JSON_UNESCAPED_UNICODE,
+                                        ),
+                                    ]),
+                                );
+                            }
+                        },
+                        'id',
+                    );
+
+                fclose($handle);
+            },
+            $filename,
+            [
+                'Content-Type' => 'text/csv; charset=UTF-8',
+            ],
+        );
     }
 
     private function activityExportEtag(array $payload): string

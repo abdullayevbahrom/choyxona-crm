@@ -102,4 +102,28 @@ class ActivityLogBackgroundExportTest extends TestCase
             (string) $response->headers->get('content-disposition'),
         );
     }
+
+    public function test_ready_export_falls_back_to_stream_when_file_is_missing(): void
+    {
+        $admin = User::factory()->create([
+            'role' => User::ROLE_ADMIN,
+        ]);
+
+        $export = ActivityLogExport::query()->create([
+            'user_id' => $admin->id,
+            'status' => ActivityLogExport::STATUS_READY,
+            'file_path' => 'exports/missing.csv',
+            'finished_at' => now(),
+        ]);
+
+        $response = $this->actingAs($admin)->get(
+            route('activity-logs.exports.download', $export),
+        );
+
+        $response->assertOk();
+        $this->assertStringContainsString(
+            'missing.csv',
+            (string) $response->headers->get('content-disposition'),
+        );
+    }
 }

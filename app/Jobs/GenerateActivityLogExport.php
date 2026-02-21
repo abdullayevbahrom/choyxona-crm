@@ -30,7 +30,12 @@ class GenerateActivityLogExport implements ShouldQueue
         ]);
 
         try {
-            $path = 'exports/activity-logs-'.$export->id.'-'.now()->format('Ymd-His').'.csv';
+            $path =
+                'exports/activity-logs-'.
+                $export->id.
+                '-'.
+                now()->format('Ymd-His').
+                '.csv';
 
             $stream = fopen('php://temp', 'r+');
 
@@ -46,27 +51,33 @@ class GenerateActivityLogExport implements ShouldQueue
                 'properties',
             ]);
 
-            $queryService->build($export->filters ?? [])->chunk(500, function ($logs) use ($stream) {
-                foreach ($logs as $log) {
-                    fputcsv($stream, [
-                        $log->id,
-                        $log->created_at?->format('Y-m-d H:i:s'),
-                        $log->user?->name,
-                        $log->action,
-                        $log->subject_type,
-                        $log->subject_id,
-                        $log->description,
-                        $log->ip_address,
-                        json_encode($log->properties, JSON_UNESCAPED_UNICODE),
-                    ]);
-                }
-            });
+            $queryService
+                ->build($export->filters ?? [])
+                ->chunk(500, function ($logs) use ($stream) {
+                    foreach ($logs as $log) {
+                        fputcsv($stream, [
+                            $log->id,
+                            $log->created_at?->format('Y-m-d H:i:s'),
+                            $log->user?->name,
+                            $log->action,
+                            $log->subject_type,
+                            $log->subject_id,
+                            $log->description,
+                            $log->ip_address,
+                            json_encode(
+                                $log->properties,
+                                JSON_UNESCAPED_UNICODE,
+                            ),
+                        ]);
+                    }
+                });
 
             rewind($stream);
             $content = stream_get_contents($stream) ?: '';
             fclose($stream);
 
             Storage::disk('local')->put($path, $content);
+            $this->ensureExportPathIsReadable($path);
 
             $export->update([
                 'status' => ActivityLogExport::STATUS_READY,
@@ -82,6 +93,25 @@ class GenerateActivityLogExport implements ShouldQueue
             ]);
 
             throw $e;
+        }
+    }
+
+    private function ensureExportPathIsReadable(string $path): void
+    {
+        $disk = Storage::disk('local');
+
+        try {
+            $disk->setVisibility($path, 'public');
+        } catch (\Throwable) {
+            // Best effort only; download fallback in controller will handle unreadable files.
+        }
+
+        try {
+            $absolutePath = $disk->path($path);
+            @chmod(dirname($absolutePath), 0755);
+            @chmod($absolutePath, 0644);
+        } catch (\Throwable) {
+            // Best effort only.
         }
     }
 }
