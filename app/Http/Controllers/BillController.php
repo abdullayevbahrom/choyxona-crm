@@ -17,6 +17,7 @@ use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use RuntimeException;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
+use SplQueue;
 use Symfony\Component\HttpFoundation\Response;
 
 class BillController extends Controller
@@ -66,7 +67,7 @@ class BillController extends Controller
             payload: $qrPayload,
             size: 140,
             logoPath: $qrLogoPath,
-            logoSize: $this->resolveQrLogoSize($setting, 68, 16, 96),
+            logoSize: $this->resolveQrLogoSize($setting, 60, 16, 96),
         );
 
         return view('bills.show', [
@@ -220,15 +221,15 @@ class BillController extends Controller
             return $svg;
         }
 
-        $logoInfo = @getimagesizefromstring($logoBinary);
-        if ($logoInfo === false || ($logoInfo['mime'] ?? '') !== 'image/png') {
+        $preparedLogo = $this->prepareLogoForQr($logoBinary);
+        if ($preparedLogo === null) {
             return $svg;
         }
 
         $targetSize = max(16, min(96, $logoSize));
         $x = (int) floor(($canvasSize - $targetSize) / 2);
         $y = (int) floor(($canvasSize - $targetSize) / 2);
-        $encodedLogo = base64_encode($logoBinary);
+        $encodedLogo = base64_encode($preparedLogo);
         $overlay = sprintf(
             '<image x="%d" y="%d" width="%d" height="%d" href="data:image/png;base64,%s" preserveAspectRatio="xMidYMid slice" />',
             $x,
@@ -244,5 +245,99 @@ class BillController extends Controller
         }
 
         return str_replace($needle, $overlay.$needle, $svg);
+    }
+
+    private function prepareLogoForQr(string $logoBinary): ?string
+    {
+        $logoInfo = @getimagesizefromstring($logoBinary);
+        if ($logoInfo === false || ($logoInfo['mime'] ?? '') !== 'image/png') {
+            return null;
+        }
+
+        $image = @imagecreatefromstring($logoBinary);
+        if ($image === false) {
+            return null;
+        }
+
+        imagealphablending($image, false);
+        imagesavealpha($image, true);
+        $this->makeEdgeWhitePixelsTransparent($image, 246);
+
+        ob_start();
+        imagepng($image);
+        imagedestroy($image);
+
+        $normalized = (string) ob_get_clean();
+
+        return $normalized !== '' ? $normalized : null;
+    }
+
+    private function makeEdgeWhitePixelsTransparent(
+        \GdImage $image,
+        int $threshold,
+    ): void {
+        $width = imagesx($image);
+        $height = imagesy($image);
+
+        if ($width < 1 || $height < 1) {
+            return;
+        }
+
+        $queue = new SplQueue;
+        $seen = [];
+        $transparent = imagecolorallocatealpha($image, 0, 0, 0, 127);
+
+        $enqueue = function (int $x, int $y) use (
+            &$queue,
+            &$seen,
+            $width,
+            $height,
+        ): void {
+            if ($x < 0 || $y < 0 || $x >= $width || $y >= $height) {
+                return;
+            }
+
+            $key = $x.':'.$y;
+            if (isset($seen[$key])) {
+                return;
+            }
+
+            $seen[$key] = true;
+            $queue->enqueue([$x, $y]);
+        };
+
+        for ($x = 0; $x < $width; $x++) {
+            $enqueue($x, 0);
+            $enqueue($x, $height - 1);
+        }
+        for ($y = 0; $y < $height; $y++) {
+            $enqueue(0, $y);
+            $enqueue($width - 1, $y);
+        }
+
+        while (! $queue->isEmpty()) {
+            [$x, $y] = $queue->dequeue();
+            $rgba = imagecolorat($image, $x, $y);
+
+            $alpha = ($rgba & 0x7F000000) >> 24;
+            $r = ($rgba >> 16) & 0xFF;
+            $g = ($rgba >> 8) & 0xFF;
+            $b = $rgba & 0xFF;
+
+            $isOpaqueEnough = $alpha < 110;
+            $isWhiteLike =
+                $r >= $threshold && $g >= $threshold && $b >= $threshold;
+
+            if (! $isOpaqueEnough || ! $isWhiteLike) {
+                continue;
+            }
+
+            imagesetpixel($image, $x, $y, $transparent);
+
+            $enqueue($x + 1, $y);
+            $enqueue($x - 1, $y);
+            $enqueue($x, $y + 1);
+            $enqueue($x, $y - 1);
+        }
     }
 }

@@ -24,7 +24,10 @@ class Setting extends Model
     {
         return self::query()->firstOrCreate(
             ['id' => 1],
-            ['company_name' => 'Choyxona CRM'],
+            [
+                'company_name' => 'Choyxona CRM',
+                'notification_logo_size' => 60,
+            ],
         );
     }
 }
