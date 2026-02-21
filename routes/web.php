@@ -217,12 +217,24 @@ Route::middleware('auth')->group(function () {
         ])
             ->middleware('throttle:activity-export')
             ->name('activity-logs.exports.request');
+        Route::get('/activity-logs/exports/statuses', [
+            ActivityLogController::class,
+            'exportStatuses',
+        ])
+            ->middleware('throttle:activity-export')
+            ->name('activity-logs.exports.statuses');
         Route::get('/activity-logs/exports/{export}', [
             ActivityLogController::class,
             'downloadExport',
         ])
             ->middleware('throttle:activity-export')
             ->name('activity-logs.exports.download');
+        Route::get('/activity-logs/exports/{export}/status', [
+            ActivityLogController::class,
+            'exportStatus',
+        ])
+            ->middleware('throttle:activity-export')
+            ->name('activity-logs.exports.status');
         Route::get('/activity-logs/export.csv', [
             ActivityLogController::class,
             'exportCsv',

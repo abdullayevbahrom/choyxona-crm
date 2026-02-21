@@ -82,19 +82,24 @@
                             </thead>
                             <tbody>
                                 @foreach($exports as $export)
-                                    <tr class="border-t">
+                                    <tr class="border-t" data-export-row="{{ $export->id }}">
                                         <td class="p-2">#{{ $export->id }}</td>
-                                        <td class="p-2">{{ $exportStatusLabels[$export->status] ?? $export->status }}</td>
+                                        <td class="p-2" data-export-status data-export-status-code="{{ $export->status }}">{{ $exportStatusLabels[$export->status] ?? $export->status }}</td>
                                         <td class="p-2">{{ $export->created_at?->format('Y-m-d H:i:s') }}</td>
                                         <td class="p-2">{{ $export->finished_at?->format('Y-m-d H:i:s') ?? '-' }}</td>
-                                        <td class="p-2">{{ $export->file_size ? number_format($export->file_size) . ' bayt' : '-' }}</td>
+                                        <td class="p-2" data-export-file-size>{{ $export->file_size ? number_format($export->file_size) . ' bayt' : '-' }}</td>
                                         <td class="p-2">
                                             @if($export->status === \App\Models\ActivityLogExport::STATUS_READY)
-                                                <a href="{{ route('activity-logs.exports.download', $export) }}" class="text-blue-700 underline">Yuklash</a>
+                                                <a href="{{ route('activity-logs.exports.download', $export) }}" class="text-blue-700 underline" data-export-download>Yuklash</a>
+                                                <span class="hidden text-slate-600" data-export-pending>Kutilmoqda...</span>
                                             @elseif($export->status === \App\Models\ActivityLogExport::STATUS_FAILED)
-                                                <span class="text-red-700">{{ $export->error_message ?? 'Xato' }}</span>
+                                                <span class="text-red-700" data-export-failed>{{ $export->error_message ?? 'Xato' }}</span>
+                                                <a href="#" class="hidden text-blue-700 underline" data-export-download>Yuklash</a>
+                                                <span class="hidden text-slate-600" data-export-pending>Kutilmoqda...</span>
                                             @else
-                                                <span class="text-slate-600">Kutilmoqda...</span>
+                                                <a href="#" class="hidden text-blue-700 underline" data-export-download>Yuklash</a>
+                                                <span class="text-slate-600" data-export-pending>Kutilmoqda...</span>
+                                                <span class="hidden text-red-700" data-export-failed>Xato</span>
                                             @endif
                                         </td>
                                     </tr>
@@ -154,4 +159,131 @@
             <div class="mt-4">{{ $logs->links() }}</div>
         </div>
     </div>
+
+    <script>
+        (function () {
+            let timerId = null;
+            let inFlight = false;
+            let statusesEtag = null;
+            const statusLabels = {
+                pending: 'Kutilmoqda',
+                processing: 'Jarayonda',
+                ready: 'Tayyor',
+                failed: 'Xato',
+            };
+
+            const formatBytes = (value) => {
+                const size = Number(value ?? 0);
+                if (!Number.isFinite(size) || size <= 0) return '-';
+                return `${size.toLocaleString('en-US')} bayt`;
+            };
+
+            const poll = () => {
+                if (document.hidden || inFlight) return;
+
+                const rows = Array.from(document.querySelectorAll('[data-export-row]'));
+                const pendingRows = rows.filter((row) => {
+                    const statusNode = row.querySelector('[data-export-status]');
+                    const code = statusNode?.getAttribute('data-export-status-code');
+                    return statusNode && code !== 'ready' && code !== 'failed';
+                });
+
+                if (!pendingRows.length) {
+                    if (timerId !== null) {
+                        clearInterval(timerId);
+                        timerId = null;
+                    }
+                    return;
+                }
+
+                const ids = pendingRows
+                    .map((row) => row.getAttribute('data-export-row'))
+                    .filter(Boolean);
+                if (!ids.length) return;
+
+                inFlight = true;
+                const params = new URLSearchParams();
+                ids.forEach((id) => params.append('ids[]', id));
+
+                const headers = { 'X-Requested-With': 'XMLHttpRequest' };
+                if (statusesEtag) {
+                    headers['If-None-Match'] = statusesEtag;
+                }
+
+                fetch(`/activity-logs/exports/statuses?${params.toString()}`, { headers })
+                    .then((response) => {
+                        if (response.status === 304) {
+                            return null;
+                        }
+                        if (!response.ok) {
+                            return null;
+                        }
+
+                        const nextEtag = response.headers.get('etag');
+                        if (nextEtag) {
+                            statusesEtag = nextEtag;
+                        }
+
+                        return response.json();
+                    })
+                    .then((payload) => {
+                        if (!payload) return;
+                        const exports = payload?.exports ?? [];
+
+                        exports.forEach((item) => {
+                            const row = document.querySelector(`[data-export-row="${item.id}"]`);
+                            if (!row) return;
+
+                            const statusNode = row.querySelector('[data-export-status]');
+                            const fileSizeNode = row.querySelector('[data-export-file-size]');
+                            const pendingNode = row.querySelector('[data-export-pending]');
+                            const failedNode = row.querySelector('[data-export-failed]');
+                            const downloadNode = row.querySelector('[data-export-download]');
+                            if (!statusNode || !fileSizeNode || !pendingNode || !downloadNode) return;
+
+                            statusNode.setAttribute('data-export-status-code', item.status);
+                            statusNode.textContent = statusLabels[item.status] ?? item.status;
+                            fileSizeNode.textContent = formatBytes(item.file_size);
+
+                            if (item.status === 'ready' && item.download_url) {
+                                downloadNode.href = item.download_url;
+                                downloadNode.classList.remove('hidden');
+                                pendingNode.classList.add('hidden');
+                                if (failedNode) failedNode.classList.add('hidden');
+                            } else if (item.status === 'failed') {
+                                pendingNode.classList.add('hidden');
+                                downloadNode.classList.add('hidden');
+                                if (failedNode) {
+                                    failedNode.textContent = item.error_message ?? 'Xato';
+                                    failedNode.classList.remove('hidden');
+                                }
+                            } else {
+                                pendingNode.classList.remove('hidden');
+                                downloadNode.classList.add('hidden');
+                                if (failedNode) failedNode.classList.add('hidden');
+                            }
+                        });
+                    })
+                    .catch(() => {})
+                    .finally(() => {
+                        inFlight = false;
+                    });
+            };
+
+            const start = () => {
+                poll();
+                if (timerId === null) {
+                    timerId = setInterval(poll, 3000);
+                }
+            };
+
+            document.addEventListener('visibilitychange', () => {
+                if (!document.hidden) {
+                    poll();
+                }
+            });
+
+            start();
+        })();
+    </script>
 </x-app-layout>
