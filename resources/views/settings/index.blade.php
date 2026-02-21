@@ -56,12 +56,12 @@
                             name="notification_logo_size"
                             type="number"
                             min="16"
-                            max="48"
+                            max="96"
                             value="{{ old('notification_logo_size', $setting->notification_logo_size) }}"
                             class="border rounded p-2 w-full sm:max-w-xs"
                             placeholder="24"
                         >
-                        <p class="mt-1 text-xs text-slate-500">16 dan 48 gacha. Bo'sh bo'lsa default o'lcham ishlatiladi.</p>
+                        <p class="mt-1 text-xs text-slate-500">16 dan 96 gacha. Bo'sh bo'lsa default o'lcham ishlatiladi.</p>
                     </div>
                 </div>
 

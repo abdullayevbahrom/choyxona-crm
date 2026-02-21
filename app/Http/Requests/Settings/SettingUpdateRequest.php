@@ -36,7 +36,7 @@ class SettingUpdateRequest extends FormRequest
                 'nullable',
                 'integer',
                 'min:16',
-                'max:48',
+                'max:96',
             ],
         ];
     }

@@ -66,7 +66,7 @@ class BillController extends Controller
             payload: $qrPayload,
             size: 140,
             logoPath: $qrLogoPath,
-            logoSize: $this->resolveQrLogoSize($setting, 34, 16, 48),
+            logoSize: $this->resolveQrLogoSize($setting, 68, 16, 96),
         );
 
         return view('bills.show', [
@@ -92,7 +92,7 @@ class BillController extends Controller
             payload: $qrPayload,
             size: 120,
             logoPath: $qrLogoPath,
-            logoSize: $this->resolveQrLogoSize($setting, 30, 16, 36),
+            logoSize: $this->resolveQrLogoSize($setting, 60, 16, 96),
         );
 
         $pdf = Pdf::loadView('bills.pdf', [
@@ -225,7 +225,7 @@ class BillController extends Controller
             return $svg;
         }
 
-        $targetSize = max(16, min(48, $logoSize));
+        $targetSize = max(16, min(96, $logoSize));
         $x = (int) floor(($canvasSize - $targetSize) / 2);
         $y = (int) floor(($canvasSize - $targetSize) / 2);
         $encodedLogo = base64_encode($logoBinary);
