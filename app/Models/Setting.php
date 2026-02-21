@@ -17,6 +17,7 @@ class Setting extends Model
         'notification_from_name',
         'notification_from_email',
         'notification_logo_url',
+        'notification_logo_size',
     ];
 
     public static function current(): self

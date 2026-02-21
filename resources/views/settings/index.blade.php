@@ -44,6 +44,19 @@
                         <input name="notification_logo_url" type="url" value="{{ old('notification_logo_url', $setting->notification_logo_url) }}" class="border rounded p-2 w-full" placeholder="https://example.com/logo.png">
                         <p class="mt-1 text-xs text-slate-500">Bo'sh qoldirilsa tizim logo rasmi ishlatiladi.</p>
                     </div>
+                    <div class="mt-4">
+                        <label class="block text-sm font-medium mb-1">QR logo o'lchami (px)</label>
+                        <input
+                            name="notification_logo_size"
+                            type="number"
+                            min="16"
+                            max="48"
+                            value="{{ old('notification_logo_size', $setting->notification_logo_size) }}"
+                            class="border rounded p-2 w-full sm:max-w-xs"
+                            placeholder="24"
+                        >
+                        <p class="mt-1 text-xs text-slate-500">16 dan 48 gacha. Bo'sh bo'lsa default o'lcham ishlatiladi.</p>
+                    </div>
                 </div>
 
                 <div>

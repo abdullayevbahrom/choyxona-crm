@@ -62,12 +62,14 @@ class BillController extends Controller
         $qrPayload = $this->buildQrPayload($bill);
         $qrImageDataUri = $this->buildQrImageDataUri($qrPayload, 140);
         $qrLogoUrl = $this->resolveQrLogoUrl($setting);
+        $qrLogoSize = $this->resolveQrLogoSize($setting, 28, 16, 48);
 
         return view('bills.show', [
             'bill' => $bill,
             'setting' => $setting,
             'qrImageDataUri' => $qrImageDataUri,
             'qrLogoUrl' => $qrLogoUrl,
+            'qrLogoSize' => $qrLogoSize,
         ]);
     }
 
@@ -84,12 +86,14 @@ class BillController extends Controller
         $qrPayload = $this->buildQrPayload($bill);
         $qrImageDataUri = $this->buildQrImageDataUri($qrPayload, 120);
         $qrLogoUrl = $this->resolveQrLogoUrl($setting);
+        $qrLogoSize = $this->resolveQrLogoSize($setting, 24, 16, 36);
 
         $pdf = Pdf::loadView('bills.pdf', [
             'bill' => $bill,
             'setting' => $setting,
             'qrImageDataUri' => $qrImageDataUri,
             'qrLogoUrl' => $qrLogoUrl,
+            'qrLogoSize' => $qrLogoSize,
         ])->setPaper('a6');
 
         return $pdf->stream($bill->bill_number.'.pdf');
@@ -142,5 +146,24 @@ class BillController extends Controller
         }
 
         return asset('favicon.svg');
+    }
+
+    private function resolveQrLogoSize(
+        Setting $setting,
+        int $default,
+        int $min,
+        int $max,
+    ): int {
+        $size = (int) ($setting->notification_logo_size ?? $default);
+
+        if ($size < $min) {
+            return $min;
+        }
+
+        if ($size > $max) {
+            return $max;
+        }
+
+        return $size;
     }
 }

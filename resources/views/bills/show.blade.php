@@ -70,8 +70,9 @@
                     <img
                         src="{{ $qrLogoUrl }}"
                         alt="Logo"
-                        width="28"
-                        height="28"
+                        width="{{ $qrLogoSize }}"
+                        height="{{ $qrLogoSize }}"
+                        style="width: {{ $qrLogoSize }}px; height: {{ $qrLogoSize }}px;"
                         class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded bg-white p-0.5 border"
                     >
                 </div>

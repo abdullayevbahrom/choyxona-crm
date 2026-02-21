@@ -20,10 +20,6 @@
             position: absolute;
             left: 50%;
             top: 50%;
-            width: 24px;
-            height: 24px;
-            margin-left: -12px;
-            margin-top: -12px;
             background: #fff;
             border: 1px solid #ddd;
             border-radius: 4px;
@@ -105,7 +101,12 @@
         <div class="mb-6">QR kod:</div>
         <div class="qr-wrap">
             <img src="{{ $qrImageDataUri }}" alt="QR kod" class="qr-img">
-            <img src="{{ $qrLogoUrl }}" alt="Logo" class="qr-logo">
+            <img
+                src="{{ $qrLogoUrl }}"
+                alt="Logo"
+                class="qr-logo"
+                style="width: {{ $qrLogoSize }}px; height: {{ $qrLogoSize }}px; margin-left: -{{ intdiv($qrLogoSize, 2) }}px; margin-top: -{{ intdiv($qrLogoSize, 2) }}px;"
+            >
         </div>
     </div>
     <div class="mb-6">Chek kodi: {{ $bill->bill_number }}</div>

@@ -25,6 +25,12 @@ class SettingUpdateRequest extends FormRequest
                 'max:190',
             ],
             'notification_logo_url' => ['nullable', 'url', 'max:255'],
+            'notification_logo_size' => [
+                'nullable',
+                'integer',
+                'min:16',
+                'max:48',
+            ],
         ];
     }
 }
