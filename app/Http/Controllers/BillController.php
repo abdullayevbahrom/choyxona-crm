@@ -156,8 +156,6 @@ class BillController extends Controller
             );
         }
 
-        $svg = $this->addFinderCornerFrames($svg, $normalizedSize);
-
         return 'data:image/svg+xml;base64,'.base64_encode($svg);
     }
 
@@ -356,40 +354,5 @@ class BillController extends Controller
             $enqueue($x, $y + 1);
             $enqueue($x, $y - 1);
         }
-    }
-
-    private function addFinderCornerFrames(string $svg, int $canvasSize): string
-    {
-        if (! str_contains($svg, '</svg>')) {
-            return $svg;
-        }
-
-        $inset = max(2, (int) round($canvasSize * 0.02));
-        $frameSize = max(18, (int) round($canvasSize * 0.22));
-        $stroke = max(2, (int) round($canvasSize * 0.018));
-        $offset = $canvasSize - $frameSize - $inset;
-
-        $frames = sprintf(
-            '<rect x="%d" y="%d" width="%d" height="%d" fill="none" stroke="#111827" stroke-width="%d" />'.
-                '<rect x="%d" y="%d" width="%d" height="%d" fill="none" stroke="#111827" stroke-width="%d" />'.
-                '<rect x="%d" y="%d" width="%d" height="%d" fill="none" stroke="#111827" stroke-width="%d" />',
-            $inset,
-            $inset,
-            $frameSize,
-            $frameSize,
-            $stroke,
-            $offset,
-            $inset,
-            $frameSize,
-            $frameSize,
-            $stroke,
-            $inset,
-            $offset,
-            $frameSize,
-            $frameSize,
-            $stroke,
-        );
-
-        return str_replace('</svg>', $frames.'</svg>', $svg);
     }
 }
