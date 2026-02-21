@@ -56,5 +56,15 @@ class DatabaseSeeder extends Seeder
                 'email_verified_at' => now(),
             ],
         );
+
+        User::query()->updateOrCreate(
+            ['email' => 'waiter@choyxona.uz'],
+            [
+                'name' => 'Waiter',
+                'password' => Hash::make('password'),
+                'role' => User::ROLE_WAITER,
+                'email_verified_at' => now(),
+            ],
+        );
     }
 }

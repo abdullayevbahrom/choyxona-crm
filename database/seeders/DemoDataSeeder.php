@@ -79,6 +79,10 @@ class DemoDataSeeder extends Seeder
             ])
             ->pluck('id')
             ->all();
+        $waiterIds = User::query()
+            ->where('role', User::ROLE_WAITER)
+            ->pluck('id')
+            ->all();
 
         $pricedMenuItems = $menuItems
             ->whereNotNull('price')
@@ -111,6 +115,7 @@ class DemoDataSeeder extends Seeder
                 $pricedMenuItems,
                 random_int(2, 8),
             );
+            $this->attachRandomWaiters($order, $waiterIds, 1, 3);
             $orderService->recalculateTotal($order);
             $order->refresh();
 
@@ -150,7 +155,7 @@ class DemoDataSeeder extends Seeder
                 'now',
             );
 
-            Order::query()->create([
+            $order = Order::query()->create([
                 'room_id' => $room->id,
                 'order_number' => $orderService->nextOrderNumber(),
                 'status' => Order::STATUS_CANCELLED,
@@ -162,6 +167,8 @@ class DemoDataSeeder extends Seeder
                 'created_at' => $openedAt,
                 'updated_at' => $closedAt,
             ]);
+
+            $this->attachRandomWaiters($order, $waiterIds, 1, 2, 35);
         }
 
         $openRooms = $rooms
@@ -179,6 +186,7 @@ class DemoDataSeeder extends Seeder
                 $pricedMenuItems,
                 random_int(1, 5),
             );
+            $this->attachRandomWaiters($order, $waiterIds, 1, 2);
             $orderService->recalculateTotal($order);
         }
 
@@ -212,6 +220,7 @@ class DemoDataSeeder extends Seeder
         }
 
         $this->truncateIfExists('bills');
+        $this->truncateIfExists('order_waiters');
         $this->truncateIfExists('order_items');
         $this->truncateIfExists('orders');
         $this->truncateIfExists('menu_items');
@@ -226,6 +235,29 @@ class DemoDataSeeder extends Seeder
         } elseif ($driver === 'mysql') {
             DB::statement('SET FOREIGN_KEY_CHECKS=1');
         }
+    }
+
+    private function attachRandomWaiters(
+        Order $order,
+        array $waiterIds,
+        int $minCount = 1,
+        int $maxCount = 2,
+        int $attachChancePercent = 100,
+    ): void {
+        if ($waiterIds === [] || random_int(1, 100) > $attachChancePercent) {
+            return;
+        }
+
+        $minCount = max(1, $minCount);
+        $maxCount = max($minCount, $maxCount);
+        $pickCount = min(count($waiterIds), random_int($minCount, $maxCount));
+
+        $pickedWaiterIds = Arr::random($waiterIds, $pickCount);
+        $pickedWaiterIds = is_array($pickedWaiterIds)
+            ? $pickedWaiterIds
+            : [$pickedWaiterIds];
+
+        $order->waiters()->syncWithoutDetaching($pickedWaiterIds);
     }
 
     private function truncateIfExists(string $table): void
