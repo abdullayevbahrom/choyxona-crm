@@ -75,8 +75,8 @@
                                     @method('PATCH')
                                     <input name="name" value="{{ $item->name }}" class="border rounded p-2" required>
                             </td>
-                            <td class="w-[11rem] min-w-[11rem] p-3">
-                                    <select name="type" class="w-full min-w-[9rem] border rounded p-2" required>
+                            <td class="p-3">
+                                    <select name="type" class="border rounded" required>
                                         @foreach ($typeLabels as $type => $label)
                                             <option value="{{ $type }}" @selected($item->type === $type)>{{ $label }}</option>
                                         @endforeach
