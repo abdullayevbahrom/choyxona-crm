@@ -10,6 +10,8 @@ use App\Services\BillService;
 use App\Support\ActivityLogger;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use RuntimeException;
@@ -63,7 +65,6 @@ class BillController extends Controller
         return view('bills.show', [
             'bill' => $bill,
             'setting' => $setting,
-            'qrPayload' => $qrPayload,
             'qrImageDataUri' => $qrImageDataUri,
         ]);
     }
@@ -84,7 +85,6 @@ class BillController extends Controller
         $pdf = Pdf::loadView('bills.pdf', [
             'bill' => $bill,
             'setting' => $setting,
-            'qrPayload' => $qrPayload,
             'qrImageDataUri' => $qrImageDataUri,
         ])->setPaper('a6');
 
@@ -101,17 +101,18 @@ class BillController extends Controller
             ->with('status', 'Chek chop etildi, xona bo\'shatildi.');
     }
 
+    public function verify(Request $request, Bill $bill): View
+    {
+        $bill->load(['room:id,number', 'order:id,order_number,status']);
+
+        return view('bills.verify', [
+            'bill' => $bill,
+        ]);
+    }
+
     private function buildQrPayload(Bill $bill): string
     {
-        return implode('|', [
-            'bill='.$bill->bill_number,
-            'order='.$bill->order->order_number,
-            'room='.$bill->room->number,
-            'total='.number_format((float) $bill->total_amount, 2, '.', ''),
-            'date='.
-            ($bill->created_at?->format('Y-m-d H:i') ??
-                now()->format('Y-m-d H:i')),
-        ]);
+        return URL::signedRoute('bills.verify', ['bill' => $bill->id]);
     }
 
     private function buildQrImageDataUri(string $payload, int $size): string

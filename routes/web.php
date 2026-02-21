@@ -23,6 +23,9 @@ Route::get('/', function () {
 });
 
 Route::get('/healthz', HealthController::class)->name('healthz');
+Route::get('/verify/bills/{bill}', [BillController::class, 'verify'])
+    ->middleware('signed')
+    ->name('bills.verify');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name(
