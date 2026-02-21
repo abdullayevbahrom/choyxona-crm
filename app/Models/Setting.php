@@ -26,7 +26,7 @@ class Setting extends Model
             ['id' => 1],
             [
                 'company_name' => 'Choyxona CRM',
-                'notification_logo_size' => 60,
+                'notification_logo_size' => 68,
             ],
         );
     }
