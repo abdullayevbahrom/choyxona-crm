@@ -174,7 +174,7 @@
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 <div class="bg-white rounded-xl border overflow-x-auto">
                     <h2 class="font-semibold p-4 border-b">TOP-10 mahsulot</h2>
-                    <table class="min-w-[520px] w-full text-sm">
+                    <table class="w-full text-sm">
                         <thead class="bg-slate-50">
                             <tr><th class="p-3 text-left">Nomi</th><th class="p-3 text-left">Soni</th><th class="p-3 text-left">Daromad</th></tr>
                         </thead>
@@ -190,7 +190,7 @@
 
                 <div class="bg-white rounded-xl border overflow-x-auto">
                     <h2 class="font-semibold p-4 border-b">Xonalar faolligi</h2>
-                    <table class="min-w-[520px] w-full text-sm">
+                    <table class="w-full text-sm">
                         <thead class="bg-slate-50">
                             <tr><th class="p-3 text-left">Xona</th><th class="p-3 text-left">Buyurtma</th><th class="p-3 text-left">Daromad</th></tr>
                         </thead>
@@ -206,7 +206,7 @@
 
                 <div class="bg-white rounded-xl border overflow-x-auto">
                     <h2 class="font-semibold p-4 border-b">Kassirlar statistikasi</h2>
-                    <table class="min-w-[520px] w-full text-sm">
+                    <table class="w-full text-sm">
                         <thead class="bg-slate-50">
                             <tr><th class="p-3 text-left">Kassir</th><th class="p-3 text-left">Chek</th><th class="p-3 text-left">Daromad</th></tr>
                         </thead>
