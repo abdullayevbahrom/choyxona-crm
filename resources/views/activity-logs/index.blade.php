@@ -6,6 +6,32 @@
             \App\Models\ActivityLogExport::STATUS_READY => 'Tayyor',
             \App\Models\ActivityLogExport::STATUS_FAILED => 'Xato',
         ];
+        $quickActionLabels = [
+            'orders.create' => 'Buyurtma ochish',
+            'orders.cancel' => 'Buyurtmani bekor qilish',
+            'orders.items.add' => "Buyurtmaga mahsulot qo'shish",
+            'orders.items.update' => 'Mahsulot miqdorini yangilash',
+            'orders.items.remove' => 'Mahsulotni olib tashlash',
+            'bills.create' => 'Chek yaratish',
+            'bills.print' => 'Chek chop etish',
+            'rooms.toggle_active' => 'Xona faolligini almashtirish',
+            'rooms.create' => 'Xona yaratish',
+            'rooms.update' => 'Xona yangilash',
+            'menu.store' => "Menyu mahsuloti qo'shish",
+            'menu.update' => 'Menyu mahsulotini yangilash',
+            'menu.toggle_active' => 'Menyu faolligini almashtirish',
+            'settings.update' => 'Sozlamalarni yangilash',
+            'users.store' => "Foydalanuvchi qo'shish",
+            'users.update' => 'Foydalanuvchini yangilash',
+        ];
+        $subjectTypeLabels = [
+            \App\Models\Order::class => 'Buyurtma',
+            \App\Models\Bill::class => 'Chek',
+            \App\Models\Room::class => 'Xona',
+            \App\Models\MenuItem::class => 'Menyu mahsuloti',
+            \App\Models\Setting::class => 'Sozlama',
+            \App\Models\User::class => 'Foydalanuvchi',
+        ];
     @endphp
     <div class="py-8">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -20,7 +46,7 @@
                                 href="{{ route('activity-logs.index', array_merge(request()->query(), ['action' => $action])) }}"
                                 class="rounded-full border px-3 py-1 text-xs {{ ($filters['action'] ?? '') === $action ? 'bg-slate-900 text-white border-slate-900' : 'bg-slate-100 text-slate-700 border-slate-300' }}"
                             >
-                                {{ $action }}
+                                {{ $quickActionLabels[$action] ?? $action }}
                             </a>
                         @endforeach
                     </div>
@@ -43,7 +69,7 @@
                 <select name="subject_type" class="border rounded p-2 sm:col-span-2 xl:col-span-2">
                     <option value="">Barcha obyekt turlari</option>
                     @foreach ($subjectTypes as $subjectType)
-                        <option value="{{ $subjectType }}" @selected(($filters['subject_type'] ?? '') === $subjectType)>{{ class_basename($subjectType) }}</option>
+                        <option value="{{ $subjectType }}" @selected(($filters['subject_type'] ?? '') === $subjectType)>{{ $subjectTypeLabels[$subjectType] ?? class_basename($subjectType) }}</option>
                     @endforeach
                 </select>
 
@@ -64,7 +90,7 @@
                         @endforeach
                         <button class="rounded bg-indigo-700 px-3 py-2 text-white text-sm">Fon rejimida eksport</button>
                     </form>
-                    <span class="text-xs text-slate-600">Queue worker ishlayotgan bo'lsa export avtomatik tayyor bo'ladi.</span>
+                    <span class="text-xs text-slate-600">Navbat xizmati ishlayotgan bo'lsa eksport avtomatik tayyor bo'ladi.</span>
                 </div>
 
                 @if($exports->isNotEmpty())
@@ -86,7 +112,7 @@
                                         <td class="p-2">#{{ $export->id }}</td>
                                         <td class="p-2" data-export-status data-export-status-code="{{ $export->status }}">{{ $exportStatusLabels[$export->status] ?? $export->status }}</td>
                                         <td class="p-2">{{ $export->created_at?->format('Y-m-d H:i:s') }}</td>
-                                        <td class="p-2">{{ $export->finished_at?->format('Y-m-d H:i:s') ?? '-' }}</td>
+                                        <td class="p-2" data-export-finished>{{ $export->finished_at?->format('Y-m-d H:i:s') ?? '-' }}</td>
                                         <td class="p-2" data-export-file-size>{{ $export->file_size ? number_format($export->file_size) . ' bayt' : '-' }}</td>
                                         <td class="p-2">
                                             @if($export->status === \App\Models\ActivityLogExport::STATUS_READY)
@@ -128,12 +154,12 @@
                             <tr class="border-t align-top">
                                 <td class="p-3">{{ $log->created_at?->format('Y-m-d H:i:s') }}</td>
                                 <td class="p-3">{{ $log->user?->name ?? '-' }}</td>
-                                <td class="p-3">{{ $log->action }}</td>
+                                <td class="p-3">{{ $quickActionLabels[$log->action] ?? $log->action }}</td>
                                 <td class="p-3">
                                     @if($log->subject_url)
-                                        <a href="{{ $log->subject_url }}" class="text-blue-700 underline">{{ class_basename($log->subject_type ?? '-') }} #{{ $log->subject_id ?? '-' }}</a>
+                                        <a href="{{ $log->subject_url }}" class="text-blue-700 underline">{{ $subjectTypeLabels[$log->subject_type] ?? class_basename($log->subject_type ?? '-') }} #{{ $log->subject_id ?? '-' }}</a>
                                     @else
-                                        {{ class_basename($log->subject_type ?? '-') }} #{{ $log->subject_id ?? '-' }}
+                                        {{ $subjectTypeLabels[$log->subject_type] ?? class_basename($log->subject_type ?? '-') }} #{{ $log->subject_id ?? '-' }}
                                     @endif
                                 </td>
                                 <td class="p-3">{{ $log->description ?? '-' }}</td>
@@ -176,6 +202,13 @@
                 const size = Number(value ?? 0);
                 if (!Number.isFinite(size) || size <= 0) return '-';
                 return `${size.toLocaleString('en-US')} bayt`;
+            };
+            const formatDateTime = (value) => {
+                if (!value) return '-';
+                const date = new Date(value);
+                if (Number.isNaN(date.getTime())) return '-';
+                const pad = (num) => String(num).padStart(2, '0');
+                return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
             };
 
             const poll = () => {
@@ -235,18 +268,20 @@
                             if (!row) return;
 
                             const statusNode = row.querySelector('[data-export-status]');
+                            const finishedNode = row.querySelector('[data-export-finished]');
                             const fileSizeNode = row.querySelector('[data-export-file-size]');
                             const pendingNode = row.querySelector('[data-export-pending]');
                             const failedNode = row.querySelector('[data-export-failed]');
                             const downloadNode = row.querySelector('[data-export-download]');
-                            if (!statusNode || !fileSizeNode || !pendingNode || !downloadNode) return;
+                            if (!statusNode || !finishedNode || !fileSizeNode || !pendingNode || !downloadNode) return;
 
                             statusNode.setAttribute('data-export-status-code', item.status);
                             statusNode.textContent = statusLabels[item.status] ?? item.status;
+                            finishedNode.textContent = formatDateTime(item.finished_at);
                             fileSizeNode.textContent = formatBytes(item.file_size);
 
-                            if (item.status === 'ready' && item.download_url) {
-                                downloadNode.href = item.download_url;
+                            if (item.status === 'ready') {
+                                downloadNode.href = item.download_url ?? `/activity-logs/exports/${item.id}`;
                                 downloadNode.classList.remove('hidden');
                                 pendingNode.classList.add('hidden');
                                 if (failedNode) failedNode.classList.add('hidden');
