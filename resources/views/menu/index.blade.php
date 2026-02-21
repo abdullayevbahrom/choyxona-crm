@@ -48,11 +48,11 @@
             </form>
 
             <div class="bg-white rounded-xl border overflow-x-auto">
-                <table class="min-w-[980px] w-full text-sm">
+                <table class="min-w-[860px] w-full text-sm">
                     <thead class="bg-slate-100">
                     <tr>
                         <th class="text-left p-3">Nomi</th>
-                        <th class="w-[11rem] min-w-[11rem] whitespace-nowrap text-left p-3">Tur</th>
+                        <th class="w-[8rem] min-w-[8rem] whitespace-nowrap text-left p-3">Tur</th>
                         <th class="text-left p-3">Narx</th>
                         <th class="text-left p-3">Miqdor</th>
                         <th class="text-left p-3">Birlik</th>
@@ -67,29 +67,29 @@
                                 <form
                                     method="POST"
                                     action="{{ route('menu.update', $item) }}"
-                                    class="grid grid-cols-1 gap-2 min-w-56"
+                                    class="grid grid-cols-1 gap-2 min-w-0"
                                     data-disable-on-submit
                                     data-pending-text="Saqlanmoqda..."
                                 >
                                     @csrf
                                     @method('PATCH')
-                                    <input name="name" value="{{ $item->name }}" class="border rounded p-2" required>
+                                    <input name="name" value="{{ $item->name }}" class="w-full border rounded p-2" required>
                             </td>
                             <td class="p-3">
-                                    <select name="type" class="border rounded" required>
+                                    <select name="type" class="w-full border rounded p-2" required>
                                         @foreach ($typeLabels as $type => $label)
                                             <option value="{{ $type }}" @selected($item->type === $type)>{{ $label }}</option>
                                         @endforeach
                                     </select>
                             </td>
                             <td class="p-3">
-                                    <input name="price" type="number" step="0.01" min="0" value="{{ $item->price }}" class="border rounded p-2" placeholder="Narx">
+                                    <input name="price" type="number" step="0.01" min="0" value="{{ $item->price }}" class="w-full max-w-36 border rounded p-2" placeholder="Narx">
                             </td>
                             <td class="p-3">
-                                    <input name="stock_quantity" type="number" min="0" value="{{ $item->stock_quantity }}" class="border rounded p-2" placeholder="Miqdor">
+                                    <input name="stock_quantity" type="number" min="0" value="{{ $item->stock_quantity }}" class="w-20 border rounded p-2" placeholder="Miqdor">
                             </td>
                             <td class="p-3">
-                                    <input name="unit" value="{{ $item->unit }}" class="border rounded p-2" placeholder="Birlik">
+                                    <input name="unit" value="{{ $item->unit }}" class="w-full border rounded p-2" placeholder="Birlik">
                                     <textarea
                                         name="description"
                                         rows="2"
@@ -98,7 +98,7 @@
                                     >{{ $item->description }}</textarea>
                             </td>
                             <td class="p-3">{{ $item->is_active ? 'ha' : 'yo\'q' }}</td>
-                            <td class="p-3 align-top">
+                            <td class="w-[9rem] p-3 align-top">
                                     <button class="bg-blue-700 text-white rounded px-3 py-2 text-xs mb-2 w-full">Saqlash</button>
                                 </form>
 
@@ -110,7 +110,7 @@
                                     data-pending-text="Saqlanmoqda..."
                                 >
                                     @csrf
-                                    <button class="text-blue-700 underline text-xs">Faollikni almashtirish</button>
+                                    <button class="text-left text-blue-700 underline text-xs">Faollikni almashtirish</button>
                                 </form>
                             </td>
                         </tr>

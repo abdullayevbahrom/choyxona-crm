@@ -19,7 +19,7 @@
             </form>
 
             <div class="bg-white rounded-xl border overflow-x-auto">
-                <table class="min-w-[920px] w-full text-sm">
+                <table class="min-w-[780px] w-full text-sm">
                     <thead class="bg-slate-100">
                     <tr>
                         <th class="text-left p-3">Raqam</th>
@@ -35,23 +35,23 @@
                     @foreach ($rooms as $room)
                         <tr class="border-t">
                             <td class="p-3">
-                                <form method="POST" action="{{ route('rooms.update', $room) }}" class="grid grid-cols-1 gap-2 min-w-52">
+                                <form method="POST" action="{{ route('rooms.update', $room) }}" class="grid grid-cols-1 gap-2 min-w-0">
                                     @csrf
                                     @method('PATCH')
-                                    <input name="number" value="{{ $room->number }}" class="border rounded p-2" required>
+                                    <input name="number" value="{{ $room->number }}" class="w-full border rounded p-2" required>
                             </td>
                             <td class="p-3">
-                                    <input name="name" value="{{ $room->name }}" class="border rounded p-2" placeholder="Nomi">
+                                    <input name="name" value="{{ $room->name }}" class="w-full border rounded p-2" placeholder="Nomi">
                             </td>
                             <td class="p-3">
-                                    <input name="capacity" type="number" min="1" value="{{ $room->capacity }}" class="border rounded p-2" placeholder="Sig'im">
+                                    <input name="capacity" type="number" min="1" value="{{ $room->capacity }}" class="w-24 border rounded p-2" placeholder="Sig'im">
                             </td>
                             <td class="p-3">
-                                    <input name="description" value="{{ $room->description }}" class="border rounded p-2" placeholder="Izoh">
+                                    <input name="description" value="{{ $room->description }}" class="w-full border rounded p-2" placeholder="Izoh">
                             </td>
                             <td class="p-3">{{ $roomStatusLabels[$room->status] ?? $room->status }}</td>
                             <td class="p-3">{{ $room->is_active ? 'ha' : 'yo\'q' }}</td>
-                            <td class="p-3 align-top">
+                            <td class="w-[9rem] p-3 align-top">
                                     <button class="bg-blue-700 text-white rounded px-3 py-2 text-xs mb-2 w-full">Saqlash</button>
                                 </form>
 
