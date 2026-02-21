@@ -15,10 +15,12 @@ RUN apk add --no-cache \
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 COPY composer.json composer.lock ./
+
 RUN composer install --no-dev --no-scripts --no-interaction --no-progress --prefer-dist --optimize-autoloader
 COPY . .
-RUN rm -f bootstrap/cache/*.php
-RUN composer dump-autoload --optimize --no-scripts
+
+RUN rm -f bootstrap/cache/*.php \
+    && composer dump-autoload --optimize --no-scripts
 
 FROM node:20-alpine AS frontend
 WORKDIR /app
@@ -30,8 +32,8 @@ RUN npm run build
 
 FROM php:8.4-fpm-alpine
 WORKDIR /var/www/html
-ARG APP_UID=1000
-ARG APP_GID=1000
+ARG UID=1000
+ARG GID=1000
 
 RUN apk add --no-cache \
     bash \
@@ -46,18 +48,18 @@ RUN apk add --no-cache \
     sqlite \
     sqlite-dev \
     unzip \
+    shadow \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install pdo pdo_mysql pdo_sqlite mbstring intl zip gd
+    && docker-php-ext-install pdo pdo_mysql pdo_sqlite mbstring intl zip gd \
+    && groupmod -o -g ${GID} www-data \
+    && usermod -o -u ${UID} -g www-data www-data \
+    && rm -rf /tmp/pear /var/cache/apk/*
 
-RUN sed -i -E "s/^www-data:x:[0-9]+:/www-data:x:${APP_GID}:/" /etc/group \
-    && sed -i -E "s/^www-data:x:[0-9]+:[0-9]+:/www-data:x:${APP_UID}:${APP_GID}:/" /etc/passwd
-
-COPY --from=vendor /app /var/www/html
-COPY --from=frontend /app/public/build /var/www/html/public/build
+COPY --chown=www-data:www-data --from=vendor /app /var/www/html
+COPY --chown=www-data:www-data --from=frontend /app/public/build /var/www/html/public/build
 COPY deploy/docker/php/php.ini /usr/local/etc/php/conf.d/99-choyxona.ini
-RUN rm -f /var/www/html/bootstrap/cache/*.php
 
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+RUN chown -R www-data:www-data /var/www/html
 
 EXPOSE 9000
 CMD ["php-fpm"]
