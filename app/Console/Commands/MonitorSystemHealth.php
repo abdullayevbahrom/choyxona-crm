@@ -33,13 +33,15 @@ class MonitorSystemHealth extends Command
         $queueBacklogCount = $this->safeCount('jobs');
         $diskFreePercent = $this->safeDiskFreePercent();
 
-        $lastSummaryDay = DB::table('report_daily_summaries')->max('day');
+        $lastSummaryRefreshAt = DB::table('report_daily_summaries')->max(
+            'updated_at',
+        );
         $isSummaryStale = false;
 
-        if ($lastSummaryDay !== null) {
-            $hoursSinceSummary = Carbon::parse((string) $lastSummaryDay)
-                ->endOfDay()
-                ->diffInHours(now());
+        if ($lastSummaryRefreshAt !== null) {
+            $hoursSinceSummary = Carbon::parse(
+                (string) $lastSummaryRefreshAt,
+            )->diffInHours(now());
             $isSummaryStale = $hoursSinceSummary > $summaryStaleHours;
         }
 
@@ -54,7 +56,7 @@ class MonitorSystemHealth extends Command
         }
 
         if ($isSummaryStale) {
-            $alerts[] = "report_daily_summaries is stale (last_day={$lastSummaryDay})";
+            $alerts[] = "report_daily_summaries is stale (last_refreshed_at={$lastSummaryRefreshAt})";
         }
 
         if (
@@ -76,7 +78,7 @@ class MonitorSystemHealth extends Command
                 'queue_backlog_threshold' => $queueBacklogThreshold,
                 'disk_free_percent' => $diskFreePercent,
                 'disk_free_threshold_percent' => $minDiskFreePercent,
-                'summary_last_day' => $lastSummaryDay,
+                'summary_last_refreshed_at' => $lastSummaryRefreshAt,
                 'summary_stale_hours' => $summaryStaleHours,
                 'alerts' => $alerts,
             ]);
