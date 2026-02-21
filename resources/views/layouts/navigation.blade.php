@@ -1,5 +1,5 @@
-<nav x-data="{ open: false }" class="overflow-x-clip bg-white border-b border-gray-100">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 overflow-hidden">
+<nav x-data="{ open: false }" class="bg-white border-b border-gray-100">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 overflow-visible">
         <div class="flex h-16 items-center justify-between gap-3">
             <div class="flex min-w-0 flex-1 items-center">
                 <div class="shrink-0 flex items-center">
