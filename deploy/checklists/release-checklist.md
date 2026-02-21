@@ -14,11 +14,15 @@
   - [ ] `APP_TIMEZONE=Asia/Tashkent`
   - [ ] `APP_LOCALE=uz`
   - [ ] `APP_NAME="Choyxona CRM"`
+  - [ ] `QUEUE_CONNECTION=redis`
+  - [ ] `SESSION_DRIVER=redis`
+  - [ ] `CACHE_STORE=redis`
 - [ ] Database backup olindi:
   - [ ] `php artisan backup:database --prune-days=30`
 - [ ] Runtime xizmatlar bor:
   - [ ] `supervisorctl status 'choyxona-worker:*' choyxona-scheduler`
   - [ ] Yoki Docker bo'lsa: `docker compose ps`
+  - [ ] Redis holati: `docker compose exec -T redis redis-cli ping` (`PONG`)
 - [ ] Disk va permission tekshirildi:
   - [ ] `storage/` yoziladi
   - [ ] `bootstrap/cache/` yoziladi
@@ -51,6 +55,9 @@
   - [ ] `./deploy/scripts/smoke-web.sh "$APP_URL"`
 - [ ] To'liq post-deploy verify o'tdi:
   - [ ] `./deploy/scripts/post-deploy-verify.sh "$APP_URL"`
+- [ ] Performance gate (`wrk` smoke):
+  - [ ] `wrk -t4 -c60 -d20s "$APP_URL/login"` xatosiz yakunlandi
+  - [ ] Authenticated `dashboard/orders/history` testlarida 4xx/5xx yo'q
 
 ## 4. Product Smoke (Manual)
 
@@ -84,6 +91,9 @@
 - [ ] `php artisan queue:restart`
 - [ ] `php artisan up`
 - [ ] `./deploy/scripts/post-deploy-verify.sh "$APP_URL"` qayta tekshiruv.
+- [ ] Redis rollback tekshiruvi:
+  - [ ] `redis-cli ping` -> `PONG`
+  - [ ] Queue worker loglarida `connection [redis]` bilan ishga tushgani tasdiqlandi
 
 ## 7. Release Close
 
