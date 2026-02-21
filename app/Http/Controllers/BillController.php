@@ -67,7 +67,7 @@ class BillController extends Controller
             payload: $qrPayload,
             size: 140,
             logoPath: $qrLogoPath,
-            logoSize: $this->resolveQrLogoSize($setting, 68, 16, 96),
+            logoSize: $this->resolveQrLogoSize($setting, 60, 16, 96),
         );
 
         return view('bills.show', [
@@ -93,7 +93,7 @@ class BillController extends Controller
             payload: $qrPayload,
             size: 120,
             logoPath: $qrLogoPath,
-            logoSize: $this->resolveQrLogoSize($setting, 68, 16, 96),
+            logoSize: $this->resolveQrLogoSize($setting, 60, 16, 96),
         );
 
         $pdf = Pdf::loadView('bills.pdf', [
@@ -232,17 +232,20 @@ class BillController extends Controller
         $radius = (int) floor($targetSize / 2);
         $cx = $x + $radius;
         $cy = $y + $radius;
+        $ringStroke = max(2, (int) round($targetSize * 0.04));
+        $ringRadius = $radius + (int) ceil($ringStroke / 2);
         $encodedLogo = base64_encode($preparedLogo);
         $clipId = 'qr-logo-clip-'.substr(md5($encodedLogo), 0, 10);
         $overlay = sprintf(
-            '<defs><clipPath id="%s"><circle cx="%d" cy="%d" r="%d" /></clipPath></defs><circle cx="%d" cy="%d" r="%d" fill="#FFFFFF" stroke="#E5E7EB" stroke-width="2" /><image x="%d" y="%d" width="%d" height="%d" href="data:image/png;base64,%s" preserveAspectRatio="xMidYMid slice" clip-path="url(#%s)" />',
+            '<defs><clipPath id="%s"><circle cx="%d" cy="%d" r="%d" /></clipPath></defs><circle cx="%d" cy="%d" r="%d" fill="#FFFFFF" stroke="#E5E7EB" stroke-width="%d" /><image x="%d" y="%d" width="%d" height="%d" href="data:image/png;base64,%s" preserveAspectRatio="xMidYMid slice" clip-path="url(#%s)" />',
             $clipId,
             $cx,
             $cy,
             $radius,
             $cx,
             $cy,
-            $radius + 2,
+            $ringRadius,
+            $ringStroke,
             $x,
             $y,
             $targetSize,

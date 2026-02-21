@@ -59,9 +59,9 @@
                             max="96"
                             value="{{ old('notification_logo_size', $setting->notification_logo_size) }}"
                             class="border rounded p-2 w-full sm:max-w-xs"
-                            placeholder="68"
+                            placeholder="60"
                         >
-                        <p class="mt-1 text-xs text-slate-500">16 dan 96 gacha. Bo'sh bo'lsa default: 68 px.</p>
+                        <p class="mt-1 text-xs text-slate-500">16 dan 96 gacha. Bo'sh bo'lsa default: 60 px.</p>
                     </div>
                 </div>
 
