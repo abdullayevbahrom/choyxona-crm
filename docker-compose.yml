@@ -31,6 +31,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      mailtrap:
+        condition: service_started
 
   web:
     image: nginx:1.27-alpine
@@ -76,6 +78,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      mailtrap:
+        condition: service_started
 
   scheduler:
     image: choyxona-app:latest
@@ -104,6 +108,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      mailtrap:
+        condition: service_started
 
   db:
     image: mysql:8.0
@@ -128,6 +134,13 @@ services:
     restart: unless-stopped
     ports:
       - "6380:6379"
+
+  mailtrap:
+    image: axllent/mailpit:latest
+    restart: unless-stopped
+    ports:
+      - "1025:1025"
+      - "8025:8025"
 
 volumes:
   db_data:

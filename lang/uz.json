@@ -64,7 +64,7 @@
     "Edit :name": "Edit :name",
     "Email": "E-pochta",
     "email": ":Attribute haqiqiy elektron pochta manzili bo‘lishi kerak.",
-    "Email Password Reset Link": "Email Parolni Tiklash Link",
+    "Email Password Reset Link": "Parolni tiklash havolasini yuborish",
     "Enable": "Yoqish",
     "Encrypted environment file already exists.": "Shifrlangan muhit fayli allaqachon mavjud.",
     "Encrypted environment file not found.": "Shifrlangan muhit fayli topilmadi.",
@@ -83,7 +83,7 @@
     "Files": "Files",
     "Forbidden": "Harom qilingan",
     "Forgot your password?": "Parolingizni unutdingizmi?",
-    "Forgot your password? No problem. Just let us know your email address and we will email you a password reset link that will allow you to choose a new one.": "Parolingizni unutdingizmi? Hech qanday muammo. Faqat bizga elektron pochta manzilini xabar bering va biz sizga yangi tanlash imkonini beradi parol reset link elektron pochta qiladi.",
+    "Forgot your password? No problem. Just let us know your email address and we will email you a password reset link that will allow you to choose a new one.": "Parolingizni unutdingizmi? Muammo emas. Elektron pochta manzilingizni kiriting, biz sizga parolni tiklash havolasini yuboramiz.",
     "Found": "Found",
     "Gateway Timeout": "Gateway Timeout",
     "Go Home": "Uy Borish",
@@ -257,7 +257,7 @@
     "Web Server is Down": "Web Server is Down",
     "Whoops!": "Voy!",
     "Yes": "Ha mayli",
-    "You are receiving this email because we received a password reset request for your account.": "Biz sizning hisob uchun parol reset so'rov qabul chunki siz bu elektron pochta qabul qilinadi.",
+    "You are receiving this email because we received a password reset request for your account.": "Siz ushbu xabarni hisobingiz uchun parolni tiklash so'rovi yuborilgani sababli oldingiz.",
     "You're logged in!": "Siz tizimga kirdingiz!",
     "Your email address is unverified.": "Email manzilingiz tasdiqlanmagan."
 }
