@@ -12,19 +12,6 @@ services:
     command: ["sh", "-c", "php artisan migrate --force && php-fpm -F"]
     env_file:
       - .env
-    environment:
-      APP_NAME: Choyxona CRM
-      APP_ENV: production
-      APP_DEBUG: "false"
-      DB_CONNECTION: mysql
-      DB_HOST: db
-      DB_PORT: 3306
-      DB_DATABASE: choyxona
-      DB_USERNAME: choyxona
-      DB_PASSWORD: choyxona
-      QUEUE_CONNECTION: database
-      CACHE_STORE: database
-      SESSION_DRIVER: database
     volumes:
       - ./public:/var/www/html/public:ro
       - storage_data:/var/www/html/storage
@@ -55,29 +42,19 @@ services:
         "php",
         "artisan",
         "queue:work",
-        "database",
         "--sleep=1",
         "--tries=3",
         "--timeout=120",
       ]
     env_file:
       - .env
-    environment:
-      APP_NAME: Choyxona CRM
-      APP_ENV: production
-      APP_DEBUG: "false"
-      DB_CONNECTION: mysql
-      DB_HOST: db
-      DB_PORT: 3306
-      DB_DATABASE: choyxona
-      DB_USERNAME: choyxona
-      DB_PASSWORD: choyxona
-      QUEUE_CONNECTION: database
     volumes:
       - storage_data:/var/www/html/storage
     depends_on:
       db:
         condition: service_healthy
+      redis:
+        condition: service_started
       mailtrap:
         condition: service_started
 
@@ -93,21 +70,13 @@ services:
       ]
     env_file:
       - .env
-    environment:
-      APP_NAME: Choyxona CRM
-      APP_ENV: production
-      APP_DEBUG: "false"
-      DB_CONNECTION: mysql
-      DB_HOST: db
-      DB_PORT: 3306
-      DB_DATABASE: choyxona
-      DB_USERNAME: choyxona
-      DB_PASSWORD: choyxona
     volumes:
       - storage_data:/var/www/html/storage
     depends_on:
       db:
         condition: service_healthy
+      redis:
+        condition: service_started
       mailtrap:
         condition: service_started
 
