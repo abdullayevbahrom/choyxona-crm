@@ -87,6 +87,7 @@
   2. Har bir patchdan keyin `vendor/bin/pint --test` ishlatiladi.
   3. Har bir patchdan keyin `php artisan test` (to'liq test suite) ishlatiladi.
   4. Har bir patchdan keyin `make verify-rebuild` ishlatiladi.
+  5. Har bir patchdan keyin docker ichida `php artisan test` (to'liq test suite) ishlatiladi.
 
 ## Tez-tez ishlatiladigan buyruqlar
 - `php artisan migrate --force`
