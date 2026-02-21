@@ -66,7 +66,7 @@ class BillController extends Controller
             payload: $qrPayload,
             size: 140,
             logoPath: $qrLogoPath,
-            logoSize: $this->resolveQrLogoSize($setting, 28, 16, 48),
+            logoSize: $this->resolveQrLogoSize($setting, 34, 16, 48),
         );
 
         return view('bills.show', [
@@ -92,7 +92,7 @@ class BillController extends Controller
             payload: $qrPayload,
             size: 120,
             logoPath: $qrLogoPath,
-            logoSize: $this->resolveQrLogoSize($setting, 24, 16, 36),
+            logoSize: $this->resolveQrLogoSize($setting, 30, 16, 36),
         );
 
         $pdf = Pdf::loadView('bills.pdf', [
