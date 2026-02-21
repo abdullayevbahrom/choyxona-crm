@@ -19,8 +19,22 @@ class UserController extends Controller
             (int) ($validated['per_page'] ??
                 config('pagination.default_per_page', 10));
 
+        $query = User::query();
+
+        if (! empty($validated['name'])) {
+            $query->where('name', 'like', '%'.$validated['name'].'%');
+        }
+
+        if (! empty($validated['email'])) {
+            $query->where('email', 'like', '%'.$validated['email'].'%');
+        }
+
+        if (! empty($validated['role'])) {
+            $query->where('role', $validated['role']);
+        }
+
         return view('users.index', [
-            'users' => User::query()
+            'users' => $query
                 ->orderBy('name')
                 ->paginate($perPage)
                 ->withQueryString(),

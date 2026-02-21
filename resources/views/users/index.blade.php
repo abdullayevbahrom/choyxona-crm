@@ -3,19 +3,24 @@
         <div class="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
             <h1 class="text-2xl font-bold">Foydalanuvchilar</h1>
 
-            <form method="GET" class="grid grid-cols-1 gap-3 rounded-xl border bg-white p-4 sm:grid-cols-4">
-                <div class="sm:col-span-2">
-                    <label class="mb-1 block text-sm text-slate-600">Sahifadagi yozuvlar</label>
-                    <select name="per_page" class="w-full rounded border p-2">
-                        @foreach ($perPageOptions as $option)
-                            <option value="{{ $option }}" @selected((int) ($filters['per_page'] ?? config('pagination.default_per_page', 10)) === (int) $option)>
-                                {{ $option }} ta
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-                <button class="rounded bg-slate-900 px-4 py-2 text-white sm:col-span-1 sm:self-end">Qo'llash</button>
-                <a href="{{ route('users.index') }}" class="inline-flex items-center justify-center rounded border border-slate-300 bg-white px-4 py-2 text-slate-700 hover:bg-slate-50 sm:col-span-1 sm:self-end">Tozalash</a>
+            <form method="GET" class="grid grid-cols-1 gap-3 rounded-xl border bg-white p-4 sm:grid-cols-2 xl:grid-cols-6">
+                <input name="name" value="{{ $filters['name'] ?? '' }}" class="rounded border p-2" placeholder="Ism">
+                <input name="email" value="{{ $filters['email'] ?? '' }}" class="rounded border p-2" placeholder="Email">
+                <select name="role" class="rounded border p-2">
+                    <option value="">Barcha rollar</option>
+                    @foreach ($roles as $role)
+                        <option value="{{ $role }}" @selected(($filters['role'] ?? '') === $role)>{{ $role }}</option>
+                    @endforeach
+                </select>
+                <select name="per_page" class="rounded border p-2">
+                    @foreach ($perPageOptions as $option)
+                        <option value="{{ $option }}" @selected((int) ($filters['per_page'] ?? config('pagination.default_per_page', 10)) === (int) $option)>
+                            {{ $option }} ta
+                        </option>
+                    @endforeach
+                </select>
+                <button class="rounded bg-slate-900 px-4 py-2 text-white">Qo'llash</button>
+                <a href="{{ route('users.index') }}" class="inline-flex items-center justify-center rounded border border-slate-300 bg-white px-4 py-2 text-slate-700 hover:bg-slate-50">Tozalash</a>
             </form>
 
             <form method="POST" action="{{ route('users.store') }}" class="grid grid-cols-1 gap-3 rounded-xl border bg-white p-4 sm:grid-cols-2 xl:grid-cols-5">

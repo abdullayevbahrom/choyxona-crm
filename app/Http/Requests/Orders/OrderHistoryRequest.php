@@ -16,6 +16,7 @@ class OrderHistoryRequest extends FormRequest
     {
         return [
             'room_id' => ['nullable', 'integer', 'exists:rooms,id'],
+            'staff_id' => ['nullable', 'integer', 'exists:users,id'],
             'date_from' => ['nullable', 'date'],
             'date_to' => ['nullable', 'date'],
             'status' => ['nullable', 'in:open,closed,cancelled'],

@@ -56,7 +56,33 @@ class RoomController extends Controller
         $perPage =
             (int) ($validated['per_page'] ??
                 config('pagination.default_per_page', 10));
-        $rooms = Room::query()
+        $query = Room::query();
+
+        if (! empty($validated['number'])) {
+            $query->where('number', 'like', '%'.$validated['number'].'%');
+        }
+
+        if (! empty($validated['name'])) {
+            $query->where('name', 'like', '%'.$validated['name'].'%');
+        }
+
+        if (! empty($validated['capacity'])) {
+            $query->where('capacity', (int) $validated['capacity']);
+        }
+
+        if (! empty($validated['status'])) {
+            $query->where('status', $validated['status']);
+        }
+
+        if (
+            array_key_exists('is_active', $validated) &&
+            $validated['is_active'] !== null &&
+            $validated['is_active'] !== ''
+        ) {
+            $query->where('is_active', (bool) (int) $validated['is_active']);
+        }
+
+        $rooms = $query
             ->orderBy('number')
             ->paginate($perPage)
             ->withQueryString();

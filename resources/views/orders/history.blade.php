@@ -3,7 +3,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h1 class="text-2xl font-bold mb-4">Buyurtmalar tarixi</h1>
 
-            <form method="GET" class="bg-white rounded-xl border p-4 mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-7">
+            <form method="GET" class="bg-white rounded-xl border p-4 mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-8">
                 <select name="room_id" class="border rounded p-2">
                     <option value="">Barcha xonalar</option>
                     @foreach ($rooms as $room)
@@ -16,6 +16,14 @@
                     <option value="open" @selected(($filters['status'] ?? '') === 'open')>Ochiq</option>
                     <option value="closed" @selected(($filters['status'] ?? '') === 'closed')>Yopilgan</option>
                     <option value="cancelled" @selected(($filters['status'] ?? '') === 'cancelled')>Bekor qilingan</option>
+                </select>
+                <select name="staff_id" class="border rounded p-2">
+                    <option value="">Barcha xodimlar</option>
+                    @foreach ($staff as $member)
+                        <option value="{{ $member->id }}" @selected((string) ($filters['staff_id'] ?? '') === (string) $member->id)>
+                            {{ $member->name }} ({{ $member->role }})
+                        </option>
+                    @endforeach
                 </select>
 
                 <input type="date" name="date_from" value="{{ $filters['date_from'] ?? '' }}" class="border rounded p-2">

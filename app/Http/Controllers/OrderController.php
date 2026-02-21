@@ -13,6 +13,7 @@ use App\Models\MenuItem;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Room;
+use App\Models\User;
 use App\Services\OrderService;
 use App\Support\ActivityLogger;
 use Illuminate\Http\JsonResponse;
@@ -317,6 +318,14 @@ class OrderController extends Controller
             $query->where('status', $validated['status']);
         }
 
+        if (! empty($validated['staff_id'])) {
+            $query->whereHas('waiters', function ($staffQuery) use (
+                $validated,
+            ) {
+                $staffQuery->where('users.id', (int) $validated['staff_id']);
+            });
+        }
+
         if (! empty($validated['date_from'])) {
             $query->whereRaw("{$historyTimestampColumn} >= ?", [
                 $validated['date_from'].' 00:00:00',
@@ -338,10 +347,15 @@ class OrderController extends Controller
             ->where('is_active', true)
             ->orderBy('number')
             ->get(['id', 'number']);
+        $staff = User::query()
+            ->whereHas('servedOrders')
+            ->orderBy('name')
+            ->get(['id', 'name', 'role']);
 
         return view('orders.history', [
             'orders' => $orders,
             'rooms' => $rooms,
+            'staff' => $staff,
             'filters' => $validated,
             'perPageOptions' => config('pagination.allowed_per_page'),
         ]);

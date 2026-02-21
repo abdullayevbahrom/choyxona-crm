@@ -15,6 +15,9 @@ class UserIndexRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'name' => ['nullable', 'string', 'max:255'],
+            'email' => ['nullable', 'string', 'max:255'],
+            'role' => ['nullable', 'in:admin,manager,cashier,waiter'],
             'per_page' => [
                 'nullable',
                 'integer',

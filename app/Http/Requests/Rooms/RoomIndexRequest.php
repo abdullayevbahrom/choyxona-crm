@@ -15,6 +15,11 @@ class RoomIndexRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'number' => ['nullable', 'string', 'max:20'],
+            'name' => ['nullable', 'string', 'max:100'],
+            'capacity' => ['nullable', 'integer', 'min:1', 'max:1000'],
+            'status' => ['nullable', 'in:empty,occupied'],
+            'is_active' => ['nullable', 'in:0,1'],
             'per_page' => [
                 'nullable',
                 'integer',
