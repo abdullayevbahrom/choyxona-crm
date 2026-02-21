@@ -83,6 +83,7 @@ class DemoDataSeeder extends Seeder
             ->where('role', User::ROLE_WAITER)
             ->pluck('id')
             ->all();
+        $waiterIds = $this->ensureWaiterPool($waiterIds, 3);
 
         $pricedMenuItems = $menuItems
             ->whereNotNull('price')
@@ -110,11 +111,14 @@ class DemoDataSeeder extends Seeder
                 'updated_at' => $closedAt,
             ]);
 
+            $forceMultiWaiterItems = $i % 5 === 0;
+
             $this->attachRandomItems(
                 $order,
                 $pricedMenuItems,
                 random_int(2, 8),
                 $waiterIds,
+                $forceMultiWaiterItems,
             );
             $this->attachRandomWaiters($order, $waiterIds, 1, 3);
             $orderService->recalculateTotal($order);
@@ -392,6 +396,7 @@ class DemoDataSeeder extends Seeder
         Collection $menuItems,
         int $count,
         array $waiterIds = [],
+        bool $preferMultipleWaitersPerItem = false,
     ): void {
         $selected = $menuItems->shuffle()->take($count);
 
@@ -411,9 +416,15 @@ class DemoDataSeeder extends Seeder
             ]);
 
             if ($waiterIds !== []) {
+                $minWaiters = $preferMultipleWaitersPerItem
+                    ? min(2, count($waiterIds))
+                    : 1;
+                $maxWaiters = $preferMultipleWaitersPerItem
+                    ? min(3, count($waiterIds))
+                    : min(2, count($waiterIds));
                 $pickedWaiters = Arr::random(
                     $waiterIds,
-                    min(count($waiterIds), random_int(1, 2)),
+                    random_int($minWaiters, $maxWaiters),
                 );
                 $pickedWaiters = is_array($pickedWaiters)
                     ? $pickedWaiters
@@ -517,5 +528,31 @@ class DemoDataSeeder extends Seeder
         }
 
         return $value;
+    }
+
+    private function ensureWaiterPool(array $waiterIds, int $minCount): array
+    {
+        if (count($waiterIds) >= $minCount) {
+            return $waiterIds;
+        }
+
+        $needed = $minCount - count($waiterIds);
+
+        for ($i = 1; $i <= $needed; $i++) {
+            $suffix = sprintf('demo%02d', $i);
+            $waiter = User::query()->updateOrCreate(
+                ['email' => "demo.waiter.{$suffix}@choyxona.uz"],
+                [
+                    'name' => "Demo Waiter {$suffix}",
+                    'password' => bcrypt('password'),
+                    'role' => User::ROLE_WAITER,
+                    'email_verified_at' => now(),
+                ],
+            );
+
+            $waiterIds[] = $waiter->id;
+        }
+
+        return array_values(array_unique($waiterIds));
     }
 }
