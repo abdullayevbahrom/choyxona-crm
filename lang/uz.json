@@ -68,7 +68,7 @@
     "Enable": "Yoqish",
     "Encrypted environment file already exists.": "Shifrlangan muhit fayli allaqachon mavjud.",
     "Encrypted environment file not found.": "Shifrlangan muhit fayli topilmadi.",
-    "Ensure your account is using a long, random password to stay secure.": "Hisob uzoq yordamida ishonch hosil qiling, xavfsiz qolish tasodifiy parol.",
+    "Ensure your account is using a long, random password to stay secure.": "Hisobingiz xavfsiz bo'lishi uchun uzun va tasodifiy paroldan foydalaning.",
     "Environment file already exists.": "Atrof-muhit fayli allaqachon mavjud.",
     "Environment file not found.": "Atrof-muhit fayli topilmadi.",
     "errors": "xatolar",
