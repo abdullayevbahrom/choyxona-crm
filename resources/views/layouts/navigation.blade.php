@@ -1,7 +1,7 @@
 <nav x-data="{ open: false }" class="bg-white border-b border-gray-100">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between h-16">
-            <div class="flex">
+        <div class="flex h-16 justify-between">
+            <div class="flex min-w-0 items-center">
                 <div class="shrink-0 flex items-center">
                     <a href="{{ route('dashboard') }}" class="flex items-center gap-2 text-lg font-bold text-amber-700">
                         <x-application-logo class="h-8 w-8" />
@@ -9,7 +9,7 @@
                     </a>
                 </div>
 
-                <div class="hidden md:-my-px md:ms-10 md:flex md:space-x-8">
+                <div class="hidden md:-my-px md:ms-6 md:flex md:min-w-0 md:flex-1 md:items-center md:space-x-5 md:overflow-x-auto md:whitespace-nowrap lg:ms-10 lg:space-x-8">
                     @php $role = Auth::user()->role; @endphp
 
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
@@ -52,7 +52,7 @@
                 </div>
             </div>
 
-            <div class="hidden md:flex md:items-center md:ms-6">
+            <div class="hidden shrink-0 md:ms-4 md:flex md:items-center lg:ms-6">
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
                         <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
