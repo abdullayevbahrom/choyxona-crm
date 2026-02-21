@@ -64,9 +64,11 @@
                                 }}
                             </td>
                             <td class="p-3">{{ number_format((float) $order->total_amount, 2) }}</td>
-                            <td class="p-3">{{ $order->user?->name ?? '-' }}</td>
                             <td class="p-3">
-                                @php($waiterNames = $order->waiters->pluck('name')->filter()->values())
+                                {{ $order->status === \App\Models\Order::STATUS_CLOSED ? ($order->user?->name ?? '-') : '-' }}
+                            </td>
+                            <td class="p-3">
+                                @php($waiterNames = $order->servedWaiterNames())
                                 @if ($waiterNames->isNotEmpty())
                                     {{ $waiterNames->join(', ') }}
                                 @else

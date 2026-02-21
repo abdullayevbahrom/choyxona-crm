@@ -299,6 +299,8 @@ class OrderController extends Controller
                 'room',
                 'user',
                 'waiters:id,name',
+                'items:id,order_id',
+                'items.waiters:id,name',
                 'bill:id,order_id,bill_number,is_printed',
             ])
             ->whereIn('status', [

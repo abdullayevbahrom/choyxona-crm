@@ -39,7 +39,7 @@
     <div class="mb-6">Xona: {{ $bill->room->number }}</div>
     <div class="mb-6">Buyurtma: {{ $bill->order->order_number }}</div>
     <div class="mb-6">Kassir: {{ $bill->order->user?->name ?? 'Noma\'lum' }}</div>
-    @php($servedWaiterNames = $bill->order->waiters->pluck('name')->filter()->values())
+    @php($servedWaiterNames = $bill->order->servedWaiterNames())
     @if ($servedWaiterNames->isNotEmpty())
         <div class="mb-6">Xizmat ko'rsatgan ofitsiant(lar): {{ $servedWaiterNames->join(', ') }}</div>
     @endif

@@ -19,7 +19,7 @@
             <h2 class="text-xl font-semibold mb-2">Chek: {{ $bill->bill_number }}</h2>
             <p class="text-slate-600 mb-4">Buyurtma: {{ $bill->order->order_number }} | Xona: {{ $bill->room->number }}</p>
             <p class="text-slate-600 mb-4">Kassir: {{ $bill->order->user?->name ?? 'Noma\'lum' }}</p>
-            @php($servedWaiterNames = $bill->order->waiters->pluck('name')->filter()->values())
+            @php($servedWaiterNames = $bill->order->servedWaiterNames())
             @if ($servedWaiterNames->isNotEmpty())
                 <p class="text-slate-600 mb-4">Xizmat ko'rsatgan ofitsiant(lar): {{ $servedWaiterNames->join(', ') }}</p>
             @endif

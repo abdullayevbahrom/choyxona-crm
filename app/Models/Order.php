@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Collection;
 
 class Order extends Model
 {
@@ -65,5 +66,30 @@ class Order extends Model
             User::class,
             'order_waiters',
         )->withTimestamps();
+    }
+
+    public function servedWaiterNames(): Collection
+    {
+        $orderWaiterNames = ($this->relationLoaded('waiters')
+            ? $this->waiters
+            : $this->waiters()->get(['users.id', 'users.name'])
+        )->pluck('name');
+
+        $itemWaiterNames = ($this->relationLoaded('items')
+            ? $this->items
+            : $this->items()->with('waiters:id,name')->get()
+        )->flatMap(function (OrderItem $item) {
+            $waiters = $item->relationLoaded('waiters')
+                ? $item->waiters
+                : $item->waiters()->get(['users.id', 'users.name']);
+
+            return $waiters->pluck('name');
+        });
+
+        return $orderWaiterNames
+            ->merge($itemWaiterNames)
+            ->filter()
+            ->unique()
+            ->values();
     }
 }
