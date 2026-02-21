@@ -58,7 +58,7 @@ class OrderItemWaiterAttributionTest extends TestCase
         $this->actingAs($waiter)
             ->get(route('orders.show', $order))
             ->assertOk()
-            ->assertSee('Kiritgan ofitsiant(lar)')
+            ->assertSee('Kiritgan xodim(lar)')
             ->assertSee('Hasan Ofitsiant');
     }
 

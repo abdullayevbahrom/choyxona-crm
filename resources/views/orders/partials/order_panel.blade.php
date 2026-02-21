@@ -13,7 +13,7 @@
 <p class="mb-4 text-slate-600">Xona: {{ $order->room->number }} | Holat: {{ $statusLabels[$order->status] ?? $order->status }}</p>
 @php($servedWaiterNames = $order->servedWaiterNames())
 @if ($servedWaiterNames->isNotEmpty())
-    <p class="mb-4 text-slate-600">Xizmat ko'rsatgan ofitsiant(lar): {{ $servedWaiterNames->join(', ') }}</p>
+    <p class="mb-4 text-slate-600">Xizmat ko'rsatgan xodim(lar): {{ $servedWaiterNames->join(', ') }}</p>
 @endif
 
 <div class="mb-6 overflow-x-auto rounded-xl border bg-white">
@@ -24,7 +24,7 @@
             <th class="p-3 text-left">Soni</th>
             <th class="p-3 text-left">Narx</th>
             <th class="p-3 text-left">Jami</th>
-            <th class="p-3 text-left">Kiritgan ofitsiant(lar)</th>
+            <th class="p-3 text-left">Kiritgan xodim(lar)</th>
             @if ($order->status === 'open')
                 <th class="p-3 text-left">Amal</th>
             @endif

@@ -21,7 +21,7 @@
             <p class="text-slate-600 mb-4">Kassir: {{ $bill->order->user?->name ?? 'Noma\'lum' }}</p>
             @php($servedWaiterNames = $bill->order->servedWaiterNames())
             @if ($servedWaiterNames->isNotEmpty())
-                <p class="text-slate-600 mb-4">Xizmat ko'rsatgan ofitsiant(lar): {{ $servedWaiterNames->join(', ') }}</p>
+                <p class="text-slate-600 mb-4">Xizmat ko'rsatgan xodim(lar): {{ $servedWaiterNames->join(', ') }}</p>
             @endif
             @if($bill->payment_method)
                 <p class="text-slate-600 mb-4">To'lov usuli: {{ $paymentLabels[$bill->payment_method] ?? $bill->payment_method }}</p>
@@ -36,7 +36,7 @@
                     <th class="text-left p-2">Soni</th>
                     <th class="text-left p-2">Narx</th>
                     <th class="text-left p-2">Jami</th>
-                    <th class="text-left p-2">Kiritgan ofitsiant(lar)</th>
+                    <th class="text-left p-2">Kiritgan xodim(lar)</th>
                 </tr>
                 </thead>
                 <tbody>

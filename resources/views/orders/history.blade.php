@@ -42,7 +42,7 @@
                         <th class="text-left p-3">Holat</th>
                         <th class="text-left p-3">Jami</th>
                         <th class="text-left p-3">Kassir</th>
-                        <th class="text-left p-3">Ofitsiant(lar)</th>
+                        <th class="text-left p-3">Xodim(lar)</th>
                         <th class="text-left p-3">Vaqt</th>
                         <th class="text-left p-3">Chek</th>
                         <th class="text-left p-3">Amal</th>

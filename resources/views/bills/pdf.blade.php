@@ -41,7 +41,7 @@
     <div class="mb-6">Kassir: {{ $bill->order->user?->name ?? 'Noma\'lum' }}</div>
     @php($servedWaiterNames = $bill->order->servedWaiterNames())
     @if ($servedWaiterNames->isNotEmpty())
-        <div class="mb-6">Xizmat ko'rsatgan ofitsiant(lar): {{ $servedWaiterNames->join(', ') }}</div>
+        <div class="mb-6">Xizmat ko'rsatgan xodim(lar): {{ $servedWaiterNames->join(', ') }}</div>
     @endif
 
     <div class="line"></div>
@@ -53,7 +53,7 @@
                 <th>Soni</th>
                 <th>Narx</th>
                 <th>Jami</th>
-                <th>Kiritgan ofitsiant(lar)</th>
+                <th>Kiritgan xodim(lar)</th>
             </tr>
         </thead>
         <tbody>
