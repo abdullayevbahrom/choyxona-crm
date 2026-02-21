@@ -14,6 +14,21 @@
         th:last-child, td:last-child { text-align: right; }
         .totals td { padding-top: 2px; }
         .bold { font-weight: bold; }
+        .qr-wrap { position: relative; width: 100px; height: 100px; margin: 0 auto; }
+        .qr-img { width: 100px; height: 100px; }
+        .qr-logo {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 24px;
+            height: 24px;
+            margin-left: -12px;
+            margin-top: -12px;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 1px;
+        }
     </style>
 </head>
 <body>
@@ -87,11 +102,11 @@
     @endif
 
     <div class="center mb-6">
-        <div class="mb-6">
-            <img src="{{ $qrLogoUrl }}" alt="Logo" width="36" height="36">
-        </div>
         <div class="mb-6">QR kod:</div>
-        <img src="{{ $qrImageDataUri }}" alt="QR kod" width="100" height="100">
+        <div class="qr-wrap">
+            <img src="{{ $qrImageDataUri }}" alt="QR kod" class="qr-img">
+            <img src="{{ $qrLogoUrl }}" alt="Logo" class="qr-logo">
+        </div>
     </div>
     <div class="mb-6">Chek kodi: {{ $bill->bill_number }}</div>
 
