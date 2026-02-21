@@ -82,6 +82,11 @@
   - `abdullayevbahrom <fergusuz1313@gmail.com>`
 - Namuna:
   - `git commit --author="abdullayevbahrom <fergusuz1313@gmail.com>" -m "feat(ui): ..."`
+- Majburiy ish tartibi:
+  1. Har bir patchdan keyin alohida commit qilinadi.
+  2. Har bir patchdan keyin `vendor/bin/pint --test` ishlatiladi.
+  3. Har bir patchdan keyin `php artisan test` (to'liq test suite) ishlatiladi.
+  4. Har bir patchdan keyin `make verify-rebuild` ishlatiladi.
 
 ## Tez-tez ishlatiladigan buyruqlar
 - `php artisan migrate --force`
