@@ -79,6 +79,7 @@ class OrderController extends Controller
                 auth()->id(),
                 $validated['notes'] ?? null,
             );
+            $this->orderService->attachServingWaiter($order, auth()->id());
         } catch (RuntimeException $e) {
             throw ValidationException::withMessages([
                 'room_id' => $e->getMessage(),
@@ -96,6 +97,7 @@ class OrderController extends Controller
             'items:id,order_id,menu_item_id,quantity,unit_price,subtotal,notes,updated_at',
             'items.menuItem:id,name,type,is_active',
             'bill:id,order_id,bill_number,subtotal,discount_percent,discount_amount,total_amount,payment_method,is_printed,updated_at',
+            'waiters:id,name',
         ]);
 
         return view('orders.show', compact('order'));
@@ -118,6 +120,7 @@ class OrderController extends Controller
             'items:id,order_id,menu_item_id,quantity,unit_price,subtotal,notes,updated_at',
             'items.menuItem:id,name,type,is_active',
             'bill:id,order_id,bill_number,subtotal,discount_percent,discount_amount,total_amount,payment_method,is_printed,updated_at',
+            'waiters:id,name',
         ]);
 
         $response = response()->view(
@@ -187,6 +190,7 @@ class OrderController extends Controller
                 (int) ($validated['quantity'] ?? 1),
                 $validated['notes'] ?? null,
             );
+            $this->orderService->attachServingWaiter($order, auth()->id());
         } catch (RuntimeException $e) {
             throw ValidationException::withMessages([
                 'menu_item_id' => $e->getMessage(),
@@ -227,6 +231,7 @@ class OrderController extends Controller
                 $item,
                 (int) $validated['quantity'],
             );
+            $this->orderService->attachServingWaiter($order, auth()->id());
         } catch (RuntimeException $e) {
             throw ValidationException::withMessages([
                 'quantity' => $e->getMessage(),
@@ -249,6 +254,7 @@ class OrderController extends Controller
     {
         try {
             $this->orderService->removeItem($order, $item);
+            $this->orderService->attachServingWaiter($order, auth()->id());
         } catch (RuntimeException $e) {
             throw ValidationException::withMessages([
                 'item' => $e->getMessage(),
@@ -287,7 +293,12 @@ class OrderController extends Controller
         $validated = $request->validated();
 
         $query = Order::query()
-            ->with(['room', 'user'])
+            ->with([
+                'room',
+                'user',
+                'waiters:id,name',
+                'bill:id,order_id,bill_number,is_printed',
+            ])
             ->whereIn('status', [
                 Order::STATUS_OPEN,
                 Order::STATUS_CLOSED,

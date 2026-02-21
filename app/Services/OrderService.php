@@ -6,6 +6,7 @@ use App\Models\MenuItem;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Room;
+use App\Models\User;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
@@ -182,6 +183,24 @@ class OrderService
     {
         $sum = (float) $order->items()->sum('subtotal');
         $order->update(['total_amount' => $sum]);
+    }
+
+    public function attachServingWaiter(Order $order, ?int $userId): void
+    {
+        if (! $userId) {
+            return;
+        }
+
+        $isWaiter = User::query()
+            ->whereKey($userId)
+            ->where('role', User::ROLE_WAITER)
+            ->exists();
+
+        if (! $isWaiter) {
+            return;
+        }
+
+        $order->waiters()->syncWithoutDetaching([$userId]);
     }
 
     public function nextOrderNumber(): string

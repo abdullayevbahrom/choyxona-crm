@@ -35,7 +35,9 @@
                         <th class="text-left p-3">Holat</th>
                         <th class="text-left p-3">Jami</th>
                         <th class="text-left p-3">Kassir</th>
+                        <th class="text-left p-3">Waiter(lar)</th>
                         <th class="text-left p-3">Vaqt</th>
+                        <th class="text-left p-3">Chek</th>
                         <th class="text-left p-3">Amal</th>
                     </tr>
                     </thead>
@@ -56,11 +58,29 @@
                             </td>
                             <td class="p-3">{{ number_format((float) $order->total_amount, 2) }}</td>
                             <td class="p-3">{{ $order->user?->name ?? '-' }}</td>
+                            <td class="p-3">
+                                @php($waiterNames = $order->waiters->pluck('name')->filter()->values())
+                                @if ($waiterNames->isNotEmpty())
+                                    {{ $waiterNames->join(', ') }}
+                                @else
+                                    -
+                                @endif
+                            </td>
                             <td class="p-3">{{ $order->closed_at?->format('Y-m-d H:i') ?? $order->opened_at?->format('Y-m-d H:i') ?? '-' }}</td>
-                            <td class="p-3"><a class="text-blue-700 underline" href="{{ route('orders.show', $order) }}">Ko'rish</a></td>
+                            <td class="p-3">
+                                @if ($order->bill)
+                                    <div class="flex flex-wrap items-center gap-2">
+                                        <a class="text-blue-700 underline" href="{{ route('bills.show', $order->bill) }}">Ko'rish</a>
+                                        <a class="text-blue-700 underline" target="_blank" href="{{ route('bills.pdf', $order->bill) }}">PDF</a>
+                                    </div>
+                                @else
+                                    -
+                                @endif
+                            </td>
+                            <td class="p-3"><a class="text-blue-700 underline" href="{{ route('orders.show', $order) }}">Buyurtma</a></td>
                         </tr>
                     @empty
-                        <tr class="border-t"><td colspan="7" class="p-3">Tarix topilmadi.</td></tr>
+                        <tr class="border-t"><td colspan="9" class="p-3">Tarix topilmadi.</td></tr>
                     @endforelse
                     </tbody>
                 </table>

@@ -28,7 +28,7 @@ class ResetPasswordNotification extends ResetPassword
             ? (string) $setting->notification_logo_url
             : asset('favicon.svg');
 
-        return (new MailMessage())
+        return (new MailMessage)
             ->from($fromEmail, $fromName)
             ->subject(__('Reset Password Notification'))
             ->markdown('mail.auth.reset-password', [

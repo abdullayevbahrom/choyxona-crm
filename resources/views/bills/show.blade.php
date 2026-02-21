@@ -19,6 +19,10 @@
             <h2 class="text-xl font-semibold mb-2">Chek: {{ $bill->bill_number }}</h2>
             <p class="text-slate-600 mb-4">Buyurtma: {{ $bill->order->order_number }} | Xona: {{ $bill->room->number }}</p>
             <p class="text-slate-600 mb-4">Kassir: {{ $bill->order->user?->name ?? 'Noma\'lum' }}</p>
+            @php($servedWaiterNames = $bill->order->waiters->pluck('name')->filter()->values())
+            @if ($servedWaiterNames->isNotEmpty())
+                <p class="text-slate-600 mb-4">Xizmat ko'rsatgan waiter(lar): {{ $servedWaiterNames->join(', ') }}</p>
+            @endif
             @if($bill->payment_method)
                 <p class="text-slate-600 mb-4">To'lov usuli: {{ $paymentLabels[$bill->payment_method] ?? $bill->payment_method }}</p>
             @endif

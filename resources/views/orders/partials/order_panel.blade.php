@@ -11,6 +11,10 @@
     ], true);
 @endphp
 <p class="mb-4 text-slate-600">Xona: {{ $order->room->number }} | Holat: {{ $statusLabels[$order->status] ?? $order->status }}</p>
+@php($servedWaiterNames = $order->waiters->pluck('name')->filter()->values())
+@if ($servedWaiterNames->isNotEmpty())
+    <p class="mb-4 text-slate-600">Xizmat ko'rsatgan waiter(lar): {{ $servedWaiterNames->join(', ') }}</p>
+@endif
 
 <div class="mb-6 overflow-x-auto rounded-xl border bg-white">
     <table class="min-w-[680px] w-full text-sm">

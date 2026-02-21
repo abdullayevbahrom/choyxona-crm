@@ -14,7 +14,7 @@ class PasswordResetTest extends TestCase
 
     public function test_reset_password_link_screen_can_be_rendered(): void
     {
-        $response = $this->get("/forgot-password");
+        $response = $this->get('/forgot-password');
 
         $response->assertStatus(200);
     }
@@ -25,11 +25,11 @@ class PasswordResetTest extends TestCase
 
         $user = User::factory()->create();
 
-        $response = $this->post("/forgot-password", ["email" => $user->email]);
+        $response = $this->post('/forgot-password', ['email' => $user->email]);
 
         $response->assertSessionHasNoErrors();
         $response->assertRedirect();
-        $response->assertSessionHas("status");
+        $response->assertSessionHas('status');
 
         Notification::assertSentTo($user, ResetPasswordNotification::class);
     }
@@ -40,14 +40,14 @@ class PasswordResetTest extends TestCase
 
         $user = User::factory()->create();
 
-        $this->post("/forgot-password", ["email" => $user->email]);
+        $this->post('/forgot-password', ['email' => $user->email]);
 
         Notification::assertSentTo(
             $user,
             ResetPasswordNotification::class,
             function ($notification) {
                 $response = $this->get(
-                    "/reset-password/" . $notification->token,
+                    '/reset-password/'.$notification->token,
                 );
 
                 $response->assertStatus(200);
@@ -63,22 +63,22 @@ class PasswordResetTest extends TestCase
 
         $user = User::factory()->create();
 
-        $this->post("/forgot-password", ["email" => $user->email]);
+        $this->post('/forgot-password', ['email' => $user->email]);
 
         Notification::assertSentTo(
             $user,
             ResetPasswordNotification::class,
             function ($notification) use ($user) {
-                $response = $this->post("/reset-password", [
-                    "token" => $notification->token,
-                    "email" => $user->email,
-                    "password" => "password",
-                    "password_confirmation" => "password",
+                $response = $this->post('/reset-password', [
+                    'token' => $notification->token,
+                    'email' => $user->email,
+                    'password' => 'password',
+                    'password_confirmation' => 'password',
                 ]);
 
                 $response
                     ->assertSessionHasNoErrors()
-                    ->assertRedirect(route("login"));
+                    ->assertRedirect(route('login'));
 
                 return true;
             },
@@ -87,13 +87,13 @@ class PasswordResetTest extends TestCase
 
     public function test_email_form_is_hidden_after_success_message_is_shown(): void
     {
-        $response = $this->withSession(["status" => __("passwords.sent")])->get(
-            "/forgot-password",
+        $response = $this->withSession(['status' => __('passwords.sent')])->get(
+            '/forgot-password',
         );
 
         $response->assertOk();
-        $response->assertSee("Boshqa email manziliga yuborish");
+        $response->assertSee('Boshqa email manziliga yuborish');
         $response->assertDontSee('name="email"', false);
-        $response->assertDontSee("Email Password Reset Link");
+        $response->assertDontSee('Email Password Reset Link');
     }
 }
