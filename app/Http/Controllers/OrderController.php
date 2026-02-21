@@ -18,6 +18,8 @@ use App\Support\ActivityLogger;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use RuntimeException;
@@ -293,6 +295,7 @@ class OrderController extends Controller
     public function history(OrderHistoryRequest $request): View
     {
         $validated = $request->validated();
+        $historyTimestampColumn = $this->historyTimestampColumn();
 
         $query = Order::query()
             ->with([
@@ -303,12 +306,7 @@ class OrderController extends Controller
                 'items.waiters:id,name',
                 'bill:id,order_id,bill_number,is_printed',
             ])
-            ->whereIn('status', [
-                Order::STATUS_OPEN,
-                Order::STATUS_CLOSED,
-                Order::STATUS_CANCELLED,
-            ])
-            ->orderByRaw('coalesce(closed_at, opened_at) desc')
+            ->orderByRaw("{$historyTimestampColumn} desc")
             ->latest('id');
 
         if (! empty($validated['room_id'])) {
@@ -320,13 +318,13 @@ class OrderController extends Controller
         }
 
         if (! empty($validated['date_from'])) {
-            $query->whereRaw('coalesce(closed_at, opened_at) >= ?', [
+            $query->whereRaw("{$historyTimestampColumn} >= ?", [
                 $validated['date_from'].' 00:00:00',
             ]);
         }
 
         if (! empty($validated['date_to'])) {
-            $query->whereRaw('coalesce(closed_at, opened_at) <= ?', [
+            $query->whereRaw("{$historyTimestampColumn} <= ?", [
                 $validated['date_to'].' 23:59:59',
             ]);
         }
@@ -439,5 +437,17 @@ class OrderController extends Controller
                 '|'.
                 (string) $openOrder->total_amount,
         );
+    }
+
+    private function historyTimestampColumn(): string
+    {
+        if (
+            DB::getDriverName() === 'mysql' &&
+            Schema::hasColumn('orders', 'history_at')
+        ) {
+            return 'history_at';
+        }
+
+        return 'coalesce(closed_at, opened_at)';
     }
 }
