@@ -114,6 +114,7 @@ class DemoDataSeeder extends Seeder
                 $order,
                 $pricedMenuItems,
                 random_int(2, 8),
+                $waiterIds,
             );
             $this->attachRandomWaiters($order, $waiterIds, 1, 3);
             $orderService->recalculateTotal($order);
@@ -185,6 +186,7 @@ class DemoDataSeeder extends Seeder
                 $order,
                 $pricedMenuItems,
                 random_int(1, 5),
+                $waiterIds,
             );
             $this->attachRandomWaiters($order, $waiterIds, 1, 2);
             $orderService->recalculateTotal($order);
@@ -220,6 +222,7 @@ class DemoDataSeeder extends Seeder
         }
 
         $this->truncateIfExists('bills');
+        $this->truncateIfExists('order_item_waiters');
         $this->truncateIfExists('order_waiters');
         $this->truncateIfExists('order_items');
         $this->truncateIfExists('orders');
@@ -388,6 +391,7 @@ class DemoDataSeeder extends Seeder
         Order $order,
         Collection $menuItems,
         int $count,
+        array $waiterIds = [],
     ): void {
         $selected = $menuItems->shuffle()->take($count);
 
@@ -395,7 +399,7 @@ class DemoDataSeeder extends Seeder
             $qty = random_int(1, 4);
             $unitPrice = (float) $menuItem->price;
 
-            OrderItem::query()->create([
+            $item = OrderItem::query()->create([
                 'order_id' => $order->id,
                 'menu_item_id' => $menuItem->id,
                 'quantity' => $qty,
@@ -405,6 +409,17 @@ class DemoDataSeeder extends Seeder
                 'created_at' => $order->opened_at,
                 'updated_at' => $order->opened_at,
             ]);
+
+            if ($waiterIds !== []) {
+                $pickedWaiters = Arr::random(
+                    $waiterIds,
+                    min(count($waiterIds), random_int(1, 2)),
+                );
+                $pickedWaiters = is_array($pickedWaiters)
+                    ? $pickedWaiters
+                    : [$pickedWaiters];
+                $item->waiters()->syncWithoutDetaching($pickedWaiters);
+            }
         }
     }
 

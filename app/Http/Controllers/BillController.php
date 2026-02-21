@@ -53,16 +53,17 @@ class BillController extends Controller
             'order.user',
             'order.waiters:id,name',
             'order.items.menuItem',
+            'order.items.waiters:id,name',
         ]);
         $setting = Setting::current();
         $qrPayload = $this->buildQrPayload($bill);
+        $qrImageUrl = $this->buildQrImageUrl($qrPayload, 140);
 
         return view('bills.show', [
             'bill' => $bill,
             'setting' => $setting,
             'qrPayload' => $qrPayload,
-            'qrImageUrl' => 'https://api.qrserver.com/v1/create-qr-code/?size=120x120&data='.
-                rawurlencode($qrPayload),
+            'qrImageUrl' => $qrImageUrl,
         ]);
     }
 
@@ -73,15 +74,20 @@ class BillController extends Controller
             'order.user',
             'order.waiters:id,name',
             'order.items.menuItem',
+            'order.items.waiters:id,name',
         ]);
         $setting = Setting::current();
         $qrPayload = $this->buildQrPayload($bill);
+        $qrImageUrl = $this->buildQrImageUrl($qrPayload, 120);
 
         $pdf = Pdf::loadView('bills.pdf', [
             'bill' => $bill,
             'setting' => $setting,
             'qrPayload' => $qrPayload,
-        ])->setPaper('a6');
+            'qrImageUrl' => $qrImageUrl,
+        ])
+            ->setOption('isRemoteEnabled', true)
+            ->setPaper('a6');
 
         return $pdf->stream($bill->bill_number.'.pdf');
     }
@@ -107,5 +113,17 @@ class BillController extends Controller
             ($bill->created_at?->format('Y-m-d H:i') ??
                 now()->format('Y-m-d H:i')),
         ]);
+    }
+
+    private function buildQrImageUrl(string $payload, int $size): string
+    {
+        $normalizedSize = max(80, min(300, $size));
+
+        return 'https://api.qrserver.com/v1/create-qr-code/?size='.
+            $normalizedSize.
+            'x'.
+            $normalizedSize.
+            '&data='.
+            rawurlencode($payload);
     }
 }

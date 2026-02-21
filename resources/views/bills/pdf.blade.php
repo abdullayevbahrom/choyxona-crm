@@ -41,7 +41,7 @@
     <div class="mb-6">Kassir: {{ $bill->order->user?->name ?? 'Noma\'lum' }}</div>
     @php($servedWaiterNames = $bill->order->waiters->pluck('name')->filter()->values())
     @if ($servedWaiterNames->isNotEmpty())
-        <div class="mb-6">Xizmat ko'rsatgan waiter(lar): {{ $servedWaiterNames->join(', ') }}</div>
+        <div class="mb-6">Xizmat ko'rsatgan ofitsiant(lar): {{ $servedWaiterNames->join(', ') }}</div>
     @endif
 
     <div class="line"></div>
@@ -53,6 +53,7 @@
                 <th>Soni</th>
                 <th>Narx</th>
                 <th>Jami</th>
+                <th>Kiritgan ofitsiant(lar)</th>
             </tr>
         </thead>
         <tbody>
@@ -62,6 +63,10 @@
                     <td>{{ $item->quantity }}</td>
                     <td>{{ number_format((float) $item->unit_price, 2) }}</td>
                     <td>{{ number_format((float) $item->subtotal, 2) }}</td>
+                    <td>
+                        @php($itemWaiterNames = $item->waiters->pluck('name')->filter()->values())
+                        {{ $itemWaiterNames->isNotEmpty() ? $itemWaiterNames->join(', ') : '-' }}
+                    </td>
                 </tr>
             @endforeach
         </tbody>
@@ -81,6 +86,10 @@
         <div class="mb-6">To'lov: {{ $paymentLabels[$bill->payment_method] ?? $bill->payment_method }}</div>
     @endif
 
+    <div class="center mb-6">
+        <div class="mb-6">QR kod:</div>
+        <img src="{{ $qrImageUrl }}" alt="QR kod" width="100" height="100">
+    </div>
     <div class="mb-6">QR ma'lumot: {{ $qrPayload }}</div>
 
     @if($setting->receipt_footer)

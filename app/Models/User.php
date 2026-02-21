@@ -73,6 +73,14 @@ class User extends Authenticatable
         )->withTimestamps();
     }
 
+    public function servedOrderItems(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            OrderItem::class,
+            'order_item_waiters',
+        )->withTimestamps();
+    }
+
     public function sendPasswordResetNotification($token): void
     {
         $this->notify(new ResetPasswordNotification($token));

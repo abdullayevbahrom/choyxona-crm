@@ -21,7 +21,7 @@
             <p class="text-slate-600 mb-4">Kassir: {{ $bill->order->user?->name ?? 'Noma\'lum' }}</p>
             @php($servedWaiterNames = $bill->order->waiters->pluck('name')->filter()->values())
             @if ($servedWaiterNames->isNotEmpty())
-                <p class="text-slate-600 mb-4">Xizmat ko'rsatgan waiter(lar): {{ $servedWaiterNames->join(', ') }}</p>
+                <p class="text-slate-600 mb-4">Xizmat ko'rsatgan ofitsiant(lar): {{ $servedWaiterNames->join(', ') }}</p>
             @endif
             @if($bill->payment_method)
                 <p class="text-slate-600 mb-4">To'lov usuli: {{ $paymentLabels[$bill->payment_method] ?? $bill->payment_method }}</p>
@@ -36,6 +36,7 @@
                     <th class="text-left p-2">Soni</th>
                     <th class="text-left p-2">Narx</th>
                     <th class="text-left p-2">Jami</th>
+                    <th class="text-left p-2">Kiritgan ofitsiant(lar)</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -45,6 +46,10 @@
                         <td class="p-2">{{ $item->quantity }}</td>
                         <td class="p-2">{{ number_format((float) $item->unit_price, 2) }}</td>
                         <td class="p-2">{{ number_format((float) $item->subtotal, 2) }}</td>
+                        <td class="p-2">
+                            @php($itemWaiterNames = $item->waiters->pluck('name')->filter()->values())
+                            {{ $itemWaiterNames->isNotEmpty() ? $itemWaiterNames->join(', ') : '-' }}
+                        </td>
                     </tr>
                 @endforeach
                 </tbody>

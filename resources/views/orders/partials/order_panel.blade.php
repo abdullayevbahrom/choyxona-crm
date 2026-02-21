@@ -13,7 +13,7 @@
 <p class="mb-4 text-slate-600">Xona: {{ $order->room->number }} | Holat: {{ $statusLabels[$order->status] ?? $order->status }}</p>
 @php($servedWaiterNames = $order->waiters->pluck('name')->filter()->values())
 @if ($servedWaiterNames->isNotEmpty())
-    <p class="mb-4 text-slate-600">Xizmat ko'rsatgan waiter(lar): {{ $servedWaiterNames->join(', ') }}</p>
+    <p class="mb-4 text-slate-600">Xizmat ko'rsatgan ofitsiant(lar): {{ $servedWaiterNames->join(', ') }}</p>
 @endif
 
 <div class="mb-6 overflow-x-auto rounded-xl border bg-white">
@@ -24,6 +24,7 @@
             <th class="p-3 text-left">Soni</th>
             <th class="p-3 text-left">Narx</th>
             <th class="p-3 text-left">Jami</th>
+            <th class="p-3 text-left">Kiritgan ofitsiant(lar)</th>
             @if ($order->status === 'open')
                 <th class="p-3 text-left">Amal</th>
             @endif
@@ -53,6 +54,10 @@
                 </td>
                 <td class="p-3">{{ number_format((float) $item->unit_price, 2) }}</td>
                 <td class="p-3">{{ number_format((float) $item->subtotal, 2) }}</td>
+                <td class="p-3">
+                    @php($itemWaiterNames = $item->waiters->pluck('name')->filter()->values())
+                    {{ $itemWaiterNames->isNotEmpty() ? $itemWaiterNames->join(', ') : '-' }}
+                </td>
                 @if ($order->status === 'open')
                     <td class="p-3">
                         <form
@@ -71,13 +76,13 @@
             </tr>
         @empty
             <tr class="border-t">
-                <td colspan="{{ $order->status === 'open' ? 5 : 4 }}" class="p-3">Mahsulot yo'q.</td>
+                <td colspan="{{ $order->status === 'open' ? 6 : 5 }}" class="p-3">Mahsulot yo'q.</td>
             </tr>
         @endforelse
         </tbody>
         <tfoot>
         <tr class="border-t bg-slate-50">
-            <td colspan="{{ $order->status === 'open' ? 4 : 3 }}" class="p-3 text-right font-bold">{{ $order->bill ? "Jami (chegirmasiz)" : 'Jami' }}</td>
+            <td colspan="{{ $order->status === 'open' ? 5 : 4 }}" class="p-3 text-right font-bold">{{ $order->bill ? "Jami (chegirmasiz)" : 'Jami' }}</td>
             <td class="p-3 font-bold">{{ number_format((float) $order->total_amount, 2) }}</td>
         </tr>
         </tfoot>

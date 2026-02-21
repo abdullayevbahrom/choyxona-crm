@@ -118,6 +118,7 @@ class OrderService
                 ]);
             }
 
+            $this->attachServingWaiterToItem($item, auth()->id());
             $this->recalculateTotal($order);
 
             return $item;
@@ -143,6 +144,7 @@ class OrderService
                 'subtotal' => $quantity * (float) $item->unit_price,
             ]);
 
+            $this->attachServingWaiterToItem($item, auth()->id());
             $this->recalculateTotal($order);
         });
     }
@@ -187,20 +189,22 @@ class OrderService
 
     public function attachServingWaiter(Order $order, ?int $userId): void
     {
-        if (! $userId) {
-            return;
-        }
-
-        $isWaiter = User::query()
-            ->whereKey($userId)
-            ->where('role', User::ROLE_WAITER)
-            ->exists();
-
-        if (! $isWaiter) {
+        if (! $this->isWaiterId($userId)) {
             return;
         }
 
         $order->waiters()->syncWithoutDetaching([$userId]);
+    }
+
+    public function attachServingWaiterToItem(
+        OrderItem $item,
+        ?int $userId,
+    ): void {
+        if (! $this->isWaiterId($userId)) {
+            return;
+        }
+
+        $item->waiters()->syncWithoutDetaching([$userId]);
     }
 
     public function nextOrderNumber(): string
@@ -229,5 +233,17 @@ class OrderService
                 $e->getMessage(),
                 'UNIQUE constraint failed: orders.order_number',
             );
+    }
+
+    private function isWaiterId(?int $userId): bool
+    {
+        if (! $userId) {
+            return false;
+        }
+
+        return User::query()
+            ->whereKey($userId)
+            ->where('role', User::ROLE_WAITER)
+            ->exists();
     }
 }

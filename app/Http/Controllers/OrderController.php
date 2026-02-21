@@ -96,6 +96,7 @@ class OrderController extends Controller
             'room:id,number,name,status',
             'items:id,order_id,menu_item_id,quantity,unit_price,subtotal,notes,updated_at',
             'items.menuItem:id,name,type,is_active',
+            'items.waiters:id,name',
             'bill:id,order_id,bill_number,subtotal,discount_percent,discount_amount,total_amount,payment_method,is_printed,updated_at',
             'waiters:id,name',
         ]);
@@ -119,6 +120,7 @@ class OrderController extends Controller
             'room:id,number,name,status',
             'items:id,order_id,menu_item_id,quantity,unit_price,subtotal,notes,updated_at',
             'items.menuItem:id,name,type,is_active',
+            'items.waiters:id,name',
             'bill:id,order_id,bill_number,subtotal,discount_percent,discount_amount,total_amount,payment_method,is_printed,updated_at',
             'waiters:id,name',
         ]);
