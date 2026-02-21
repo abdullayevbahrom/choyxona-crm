@@ -235,11 +235,14 @@ class BillController extends Controller
         $encodedLogo = base64_encode($preparedLogo);
         $clipId = 'qr-logo-clip-'.substr(md5($encodedLogo), 0, 10);
         $overlay = sprintf(
-            '<defs><clipPath id="%s"><circle cx="%d" cy="%d" r="%d" /></clipPath></defs><image x="%d" y="%d" width="%d" height="%d" href="data:image/png;base64,%s" preserveAspectRatio="xMidYMid slice" clip-path="url(#%s)" />',
+            '<defs><clipPath id="%s"><circle cx="%d" cy="%d" r="%d" /></clipPath></defs><circle cx="%d" cy="%d" r="%d" fill="#FFFFFF" stroke="#E5E7EB" stroke-width="2" /><image x="%d" y="%d" width="%d" height="%d" href="data:image/png;base64,%s" preserveAspectRatio="xMidYMid slice" clip-path="url(#%s)" />',
             $clipId,
             $cx,
             $cy,
             $radius,
+            $cx,
+            $cy,
+            $radius + 2,
             $x,
             $y,
             $targetSize,
