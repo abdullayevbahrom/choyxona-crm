@@ -112,7 +112,12 @@ class BillController extends Controller
 
     private function buildQrPayload(Bill $bill): string
     {
-        return URL::signedRoute('bills.verify', ['bill' => $bill->id]);
+        return URL::signedRoute(
+            'bills.verify',
+            ['bill' => $bill->id],
+            null,
+            false,
+        );
     }
 
     private function buildQrImageDataUri(string $payload, int $size): string

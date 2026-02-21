@@ -43,7 +43,12 @@ class BillVerifyRouteTest extends TestCase
             'is_printed' => true,
         ]);
 
-        $url = URL::signedRoute('bills.verify', ['bill' => $bill->id]);
+        $url = URL::signedRoute(
+            'bills.verify',
+            ['bill' => $bill->id],
+            null,
+            false,
+        );
 
         $this->get($url)
             ->assertOk()
