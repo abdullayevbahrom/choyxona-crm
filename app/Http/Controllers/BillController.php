@@ -229,14 +229,23 @@ class BillController extends Controller
         $targetSize = max(16, min(96, $logoSize));
         $x = (int) floor(($canvasSize - $targetSize) / 2);
         $y = (int) floor(($canvasSize - $targetSize) / 2);
+        $radius = (int) floor($targetSize / 2);
+        $cx = $x + $radius;
+        $cy = $y + $radius;
         $encodedLogo = base64_encode($preparedLogo);
+        $clipId = 'qr-logo-clip-'.substr(md5($encodedLogo), 0, 10);
         $overlay = sprintf(
-            '<image x="%d" y="%d" width="%d" height="%d" href="data:image/png;base64,%s" preserveAspectRatio="xMidYMid slice" />',
+            '<defs><clipPath id="%s"><circle cx="%d" cy="%d" r="%d" /></clipPath></defs><image x="%d" y="%d" width="%d" height="%d" href="data:image/png;base64,%s" preserveAspectRatio="xMidYMid slice" clip-path="url(#%s)" />',
+            $clipId,
+            $cx,
+            $cy,
+            $radius,
             $x,
             $y,
             $targetSize,
             $targetSize,
             $encodedLogo,
+            $clipId,
         );
 
         $needle = '</svg>';
