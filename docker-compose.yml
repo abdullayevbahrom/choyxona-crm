@@ -3,8 +3,12 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        APP_UID: ${APP_UID:-1000}
+        APP_GID: ${APP_GID:-1000}
     image: choyxona-app:latest
     restart: unless-stopped
+    user: "${APP_UID:-1000}:${APP_GID:-1000}"
     command: ["sh", "-c", "php artisan migrate --force && php-fpm -F"]
     env_file:
       - .env
@@ -27,6 +31,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      storage-permissions:
+        condition: service_completed_successfully
 
   web:
     image: nginx:1.27-alpine
@@ -43,6 +49,7 @@ services:
   worker:
     image: choyxona-app:latest
     restart: unless-stopped
+    user: "${APP_UID:-1000}:${APP_GID:-1000}"
     command:
       [
         "php",
@@ -71,10 +78,13 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      storage-permissions:
+        condition: service_completed_successfully
 
   scheduler:
     image: choyxona-app:latest
     restart: unless-stopped
+    user: "${APP_UID:-1000}:${APP_GID:-1000}"
     command:
       [
         "sh",
@@ -98,6 +108,21 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      storage-permissions:
+        condition: service_completed_successfully
+
+  storage-permissions:
+    image: choyxona-app:latest
+    user: "0:0"
+    restart: "no"
+    command:
+      [
+        "sh",
+        "-c",
+        "mkdir -p /var/www/html/storage && chown -R ${APP_UID:-1000}:${APP_GID:-1000} /var/www/html/storage && find /var/www/html/storage -type d -exec chmod 775 {} + && find /var/www/html/storage -type f -exec chmod 664 {} +",
+      ]
+    volumes:
+      - storage_data:/var/www/html/storage
 
   db:
     image: mysql:8.0
