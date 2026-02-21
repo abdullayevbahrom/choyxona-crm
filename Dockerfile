@@ -49,15 +49,15 @@ RUN apk add --no-cache \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install pdo pdo_mysql pdo_sqlite mbstring intl zip gd
 
-RUN addgroup -g "${APP_GID}" -S appgroup \
-    && adduser -S -D -H -u "${APP_UID}" -G appgroup appuser
+RUN sed -i -E "s/^www-data:x:[0-9]+:/www-data:x:${APP_GID}:/" /etc/group \
+    && sed -i -E "s/^www-data:x:[0-9]+:[0-9]+:/www-data:x:${APP_UID}:${APP_GID}:/" /etc/passwd
 
 COPY --from=vendor /app /var/www/html
 COPY --from=frontend /app/public/build /var/www/html/public/build
 COPY deploy/docker/php/php.ini /usr/local/etc/php/conf.d/99-choyxona.ini
 RUN rm -f /var/www/html/bootstrap/cache/*.php
 
-RUN chown -R appuser:appgroup /var/www/html/storage /var/www/html/bootstrap/cache
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
 EXPOSE 9000
 CMD ["php-fpm"]

@@ -8,7 +8,7 @@ services:
         APP_GID: ${APP_GID:-1000}
     image: choyxona-app:latest
     restart: unless-stopped
-    user: "${APP_UID:-1000}:${APP_GID:-1000}"
+    user: "www-data"
     command: ["sh", "-c", "php artisan migrate --force && php-fpm -F"]
     env_file:
       - .env
@@ -49,7 +49,7 @@ services:
   worker:
     image: choyxona-app:latest
     restart: unless-stopped
-    user: "${APP_UID:-1000}:${APP_GID:-1000}"
+    user: "www-data"
     command:
       [
         "php",
@@ -84,7 +84,7 @@ services:
   scheduler:
     image: choyxona-app:latest
     restart: unless-stopped
-    user: "${APP_UID:-1000}:${APP_GID:-1000}"
+    user: "www-data"
     command:
       [
         "sh",
@@ -119,7 +119,7 @@ services:
       [
         "sh",
         "-c",
-        "mkdir -p /var/www/html/storage && chown -R ${APP_UID:-1000}:${APP_GID:-1000} /var/www/html/storage && find /var/www/html/storage -type d -exec chmod 775 {} + && find /var/www/html/storage -type f -exec chmod 664 {} +",
+        "mkdir -p /var/www/html/storage && chown -R www-data:www-data /var/www/html/storage && find /var/www/html/storage -type d -exec chmod 775 {} + && find /var/www/html/storage -type f -exec chmod 664 {} +",
       ]
     volumes:
       - storage_data:/var/www/html/storage
